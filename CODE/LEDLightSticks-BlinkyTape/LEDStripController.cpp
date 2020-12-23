@@ -37,27 +37,27 @@
 
 /*--------------------------------------------------------------------------------------------------*
  *                          CONSTRUCTOR                                                             *
- * LEDStripController(*leds, stripLength, colorPalette, reverseStrip = 0, startIndex = 0 )     *
+ * LEDStripController(*leds, stripLength, colorPalette, invertStrip = 0, stripStartIndex = 0 )     *
  * *leds            A reference to the array of LEDs                                                *
  * stripLength      The number of LEDs in the strip                                                 *
  * colorPalette     The color palette to use in certain animations                                  *
- * reverseStrip     Whether the strip is regular orientation (0) or reversed (1)                    *
- * startIndex       In case this controller is only supposed to control a subset of the leds array, * 
+ * invertStrip     Whether the strip is regular orientation (0) or reversed (1)                    *
+ * stripStartIndex       In case this controller is only supposed to control a subset of the leds array, * 
  *                  this would be the index at which to start from                                  *
  *                  (the endIndex can be calculated by adding _stripLength)                         *
  *--------------------------------------------------------------------------------------------------*/
 LEDStripController::LEDStripController( CRGB *leds, 
                                         uint16_t stripLength, 
                                         CRGBPalette16 colorPalette, 
-                                        uint8_t reverseStrip, 
-                                        uint16_t startIndex)
+                                        uint8_t invertStrip, 
+                                        uint16_t stripStartIndex)
 {
 
-    _leds = &leds[startIndex];
+    _leds = &leds[stripStartIndex];
     _stripLength = stripLength;
     _colorPalette = colorPalette;
-    _reverseStrip = reverseStrip;
-    _startIndex = startIndex;
+    _invertStrip = invertStrip;
+    //_stripStartIndex = stripStartIndex;
 
     _state = RUN_ANIMATION;
     _showBrightnessColor = CRGB::Blue;
@@ -65,7 +65,7 @@ LEDStripController::LEDStripController( CRGB *leds,
     _lastUpdateTime = 0;
     _updateInterval = DEFAULT_UPDATE_INTERVAL;
 
-    bsTimebase = 0;
+    _bsTimebase = 0;
     heat = new byte[stripLength];
 
 
@@ -132,7 +132,7 @@ void LEDStripController::setState(LEDStripControllerState newState){
     switch(_state){
 
         case TRANSITION_STATE:
-            bsTimebase = millis();
+            _bsTimebase = millis();
             break;
 
         case SHOW_BRIGHTNESS_LEVEL:
@@ -153,13 +153,13 @@ void LEDStripController::setState(LEDStripControllerState newState){
   //Used for button long press feedback
 void LEDStripController::fastBlink() {
     uint8_t bpm = 60;
-    uint8_t saw60bpm = beatsin8(bpm, 0, 255, bsTimebase, 256 / 2 - 1);
+    uint8_t saw60bpm = beatsin8(bpm, 0, 255, _bsTimebase, 256 / 2 - 1);
     if (saw60bpm > 127) {
         fill_solid( _leds, _stripLength, CHSV( 255, 0, 100) );
     } 
     else {
         fill_solid( _leds, _stripLength, CRGB::Black );
-        //fill_solid(&(ledStrip[ledStripStartIndex]), numPixelsInStrip, CRGB::Black);    
+        //fill_solid(&(_leds[_stripStartIndex]), _stripLength, CRGB::Black);    
     }
 }
 
@@ -175,7 +175,7 @@ void LEDStripController::runAnimation(){
 
 
     // mimmick led strip animation with rainbow + glitter
-    if(_reverseStrip){
+    if(_invertStrip){
         hue++;
     }
     else{

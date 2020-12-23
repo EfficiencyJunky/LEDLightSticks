@@ -87,9 +87,9 @@ class LEDStripController
     public:
         LEDStripController( CRGB *leds, 
                             uint16_t stripLength, 
-                            CRGBPalette16 colorPalette, 
-                            uint8_t reverseStrip = 0, 
-                            uint16_t startIndex = 0 );
+                            CRGBPalette16 colorPalette = (CRGBPalette16)RainbowColors_p, 
+                            uint8_t invertStrip = 0, 
+                            uint16_t stripStartIndex = 0 );
         void update();
         void nextAnimation();
         void setState(LEDStripControllerState newState);
@@ -99,8 +99,7 @@ class LEDStripController
         CRGB *_leds;                    // the array of LEDs
         uint16_t _stripLength;          // the number of LEDs in the strip
         CRGBPalette16 _colorPalette;    // the color palette to use in certain animations
-        uint8_t _reverseStrip;          // whether the strip is regular orientation (0) or reversed (1)
-        uint16_t _startIndex;           // in case this controller is only supposed to control a subset of the leds array, this would be the index at which to start from (the endIndex can be calculated by adding _stripLength)
+        uint8_t _invertStrip;          // whether the strip is regular orientation (0) or reversed (1)
 
         // uint16_t* ledOrder;
         LEDStripControllerState _state; // the state of the controller to be updated by external input        
@@ -110,7 +109,7 @@ class LEDStripController
         uint32_t _lastUpdateTime;       // time the .update() function was last allowed to update the current animation
         uint8_t _updateInterval;        // milliseconds between updates. Likely needs to be 5-10
 
-        uint32_t bsTimebase;
+        uint32_t _bsTimebase;
         //FIRE ANIMATION VARIABLE - convert to static function var eventually
         // Array of temperature readings at each simulation cell
         byte *heat;

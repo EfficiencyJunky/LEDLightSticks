@@ -53,7 +53,7 @@ LEDStripController::LEDStripController( CRGB *leds,
                                         uint16_t startIndex)
 {
 
-    _leds = leds;
+    _leds = &leds[startIndex];
     _stripLength = stripLength;
     _colorPalette = colorPalette;
     _reverseStrip = reverseStrip;
@@ -62,9 +62,10 @@ LEDStripController::LEDStripController( CRGB *leds,
     _state = RUN_ANIMATION;
     _showBrightnessColor = CRGB::Blue;
 
-    
+    _lastUpdateTime = 0;
     _updateInterval = DEFAULT_UPDATE_INTERVAL;
 
+    bsTimebase = 0;
     heat = new byte[stripLength];
 
 
@@ -83,21 +84,19 @@ LEDStripController::LEDStripController( CRGB *leds,
  *--------------------------------------------------------------------------------------------------*/
 void LEDStripController::update() {
 
-    // static variables for time keeping
+    // static variable for time keeping and because I'm a n00b
     static uint32_t now_ms;
-    static uint32_t lastUpdateTime = 0;
-
     now_ms = millis();
 
-    if( (now_ms - lastUpdateTime) > _updateInterval ){
+    if( (now_ms - _lastUpdateTime) > _updateInterval ){
         switch (_state) {
     
             case RUN_ANIMATION:
-                runAnimation(1, now_ms);                     
-            break;
+                runAnimation();                     
+                break;
 
             case TRANSITION_STATE:      
-                runAnimation(2, now_ms);
+                fastBlink();
                 break;
 
             case SHOW_BRIGHTNESS_LEVEL:
@@ -109,7 +108,7 @@ void LEDStripController::update() {
 
         }
 
-        lastUpdateTime = now_ms;
+        _lastUpdateTime = now_ms;
     }
 }
 
@@ -119,7 +118,7 @@ void LEDStripController::update() {
  *                          NEXT PATTERN                                                            *
  *                                                                                                  *
  *--------------------------------------------------------------------------------------------------*/
-void LEDStripController::nextPattern(){
+void LEDStripController::nextAnimation(){
 
     glitter = !glitter;
 
@@ -131,6 +130,10 @@ void LEDStripController::setState(LEDStripControllerState newState){
     _state = newState;
 
     switch(_state){
+
+        case TRANSITION_STATE:
+            bsTimebase = millis();
+            break;
 
         case SHOW_BRIGHTNESS_LEVEL:
             fill_solid( _leds, _stripLength, CRGB::Blue );
@@ -147,38 +150,44 @@ void LEDStripController::setState(LEDStripControllerState newState){
 // ****************************************************************************************    
 //      PRIVATE METHODS        
 // ****************************************************************************************
+  //Used for button long press feedback
+void LEDStripController::fastBlink() {
+    uint8_t bpm = 60;
+    uint8_t saw60bpm = beatsin8(bpm, 0, 255, bsTimebase, 256 / 2 - 1);
+    if (saw60bpm > 127) {
+        fill_solid( _leds, _stripLength, CHSV( 255, 0, 100) );
+    } 
+    else {
+        fill_solid( _leds, _stripLength, CRGB::Black );
+        //fill_solid(&(ledStrip[ledStripStartIndex]), numPixelsInStrip, CRGB::Black);    
+    }
+}
+
+
+
+
 
 /*--------------------------------------------------------------------------------------------------*
  *                          PLACEHOLDER                                                             *
  *                                                                                                  *
  *--------------------------------------------------------------------------------------------------*/
-void LEDStripController::runAnimation(uint8_t animationType, uint32_t now_ms){
+void LEDStripController::runAnimation(){
 
-    static uint32_t lastBlinkTime = 0;
 
-    if(animationType == 1){
-        // mimmick led strip animation with rainbow + glitter
+    // mimmick led strip animation with rainbow + glitter
+    if(_reverseStrip){
         hue++;
-        fill_rainbow( _leds, _stripLength, hue, 7);
-
-        if(glitter){
-            if( random8() < 80) {
-            _leds[ random16(_stripLength) ] += CRGB::White;
-            }        
-        }
-
     }
-    else if(animationType == 2){
-        if( (now_ms - lastBlinkTime) < 500 ){
-            fill_solid( _leds, _stripLength, CHSV( 255, 0, 100) );
-        }
-        else if( (now_ms - lastBlinkTime) < 1000 ){
-            fill_solid( _leds, _stripLength, CRGB::Black );
-        }
-        else{
-            lastBlinkTime = now_ms;
-        }
+    else{
+        hue--;
     }
+    
+    fill_rainbow( _leds, _stripLength, hue, 7);
 
+    if(glitter){
+        if( random8() < 80) {
+        _leds[ random16(_stripLength) ] += CRGB::White;
+        }        
+    }
 
 }

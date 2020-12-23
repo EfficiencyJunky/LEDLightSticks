@@ -91,7 +91,7 @@ class LEDStripController
                             uint8_t reverseStrip = 0, 
                             uint16_t startIndex = 0 );
         void update();
-        void nextPattern();
+        void nextAnimation();
         void setState(LEDStripControllerState newState);
     
 
@@ -106,31 +106,33 @@ class LEDStripController
         LEDStripControllerState _state; // the state of the controller to be updated by external input        
         CRGB _showBrightnessColor;      // the color of the strip when in SHOW_BRIGHTNESS_LEVEL state
         
-        //uint32_t _lastUpdateTime;       // time the .Update function was last allowed to update the current animation
+        // uint32_t now_ms;
+        uint32_t _lastUpdateTime;       // time the .update() function was last allowed to update the current animation
         uint8_t _updateInterval;        // milliseconds between updates. Likely needs to be 5-10
 
-
+        uint32_t bsTimebase;
         //FIRE ANIMATION VARIABLE - convert to static function var eventually
         // Array of temperature readings at each simulation cell
         byte *heat;
 
 
-
-
-
-        bool glitter = false;
+        // **********************************************************
+        //      PLACEHOLDERS
+        // **********************************************************
+        uint8_t glitter = false;
         uint8_t hue = 0;
 
 
 
-        void runAnimation(uint8_t animationType, uint32_t now_ms);
+        // **********************************************************
+        //      PRIVATE METHODS
+        // **********************************************************
+        void fastBlink();
+        void runAnimation();
 
 
 /*
-        
-        unsigned long lastHueUpdateTime = 0;  
-        unsigned long lastCycleUpdateTime = 0;
-    
+            
         unsigned long hueUpdateInterval = 10;
         unsigned long fireUpdateInterval = 15;
         unsigned long cycleUpdateInterval = 10000;
@@ -163,8 +165,9 @@ class LEDStripController
 */
 
 
-    
-
 
 };
+
+
+
 #endif

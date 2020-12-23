@@ -26,16 +26,11 @@ enum ProgramState {
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 
-
 // *********************************************************************************
 //    ARDUINO HARDWARE SETTINGS -- Change these according to your hardware
 // *********************************************************************************
 
-// this will set whether or not the strip is inverted
-// meaning the beginning is the end and the end is the beginning
-#define INVERT_STRIP true
-
-//#define __BLINKY_TAPE__
+// #define __BLINKY_TAPE__
 #define __TEENSY__
 
 // ******* Blinky Tape Pins *******
@@ -60,6 +55,7 @@ enum ProgramState {
     // LED STRIP DEFINITIONS
     #define LEDS_01_PIN 3
     #define LEDS_01_NUM_LEDS 30
+    #define LEDS_02_NUM_LEDS 30
 
     // BUTTON DEFINITIONS
     #define ANIMATION_BUTTON_PIN  1
@@ -67,6 +63,10 @@ enum ProgramState {
 
 #endif
 
+
+// this will set whether or not the strip is inverted
+// meaning the beginning is the end and the end is the beginning
+#define INVERT_STRIP true
 
 
 // *********************************************************************************

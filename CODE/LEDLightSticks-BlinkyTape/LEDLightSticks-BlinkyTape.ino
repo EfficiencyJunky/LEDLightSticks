@@ -3,17 +3,8 @@
 */
 
 /////// INCLUDES ///////
-#include <FastLED.h>
-
-FASTLED_USING_NAMESPACE
-
-#if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
-#warning "Requires FastLED 3.1 or later; check github for latest code."
-#endif
-
-
+#include "LEDLightSticks.h"
 #include "LEDStripController.h"
-
 
 
 
@@ -203,48 +194,6 @@ void readButtons(){
   // }
 
 }
-
-
-
-// void runAnimation(uint8_t animationType){
-
-
-//   if( (millis() - lastUpdateTime) > updateInterval ){
-
-//     if(animationType == 1){
-//       // mimmick led strip animation with rainbow + glitter
-//       hue++;
-//       fill_rainbow( leds_01, LEDS_01_NUM_LEDS, hue, 7);
-
-//       if(glitter){
-//         if( random8() < 80) {
-//           leds_01[ random16(LEDS_01_NUM_LEDS) ] += CRGB::White;
-//         }        
-//       }
-
-//     }
-//     else if(animationType == 2){
-//       if( (millis() - lastBlinkTime) < 500 ){
-//         fill_solid( leds_01, LEDS_01_NUM_LEDS, CHSV( 255, 0, 100) );
-//       }
-//       else if( (millis() - lastBlinkTime) < 1000 ){
-//         fill_solid( leds_01, LEDS_01_NUM_LEDS, CRGB::Black );
-//       }
-//       else{
-//         lastBlinkTime = millis();
-//       }
-//     }
-
-
-//     lastUpdateTime = millis();
-//   }
-
-// }
-
-
-
-
-
 
 
 

@@ -26,8 +26,51 @@
 #ifndef LEDStripController_h
 #define LEDStripController_h
 
-#include "LEDLightSticks.h"
 
+// *********************************************************************************
+//    FAST LED LIBRARY INITIALIZATION
+// *********************************************************************************
+#include <FastLED.h>
+
+
+FASTLED_USING_NAMESPACE
+
+#if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
+#warning "Requires FastLED 3.1 or later; check github for latest code."
+#endif
+
+
+
+// *********************************************************************************
+//    GLOBAL DEFINES FOR CERTAIN LED RELATED FUNCTIONS
+// *********************************************************************************
+//******* VARIOUS LED RELATED CONSTANTS ********
+#define FULL_BRIGHT 255
+#define FULL_SAT    255
+#define WHITE_HUE   255
+
+//******* FIRE ANIMATION GLOBAL VARIABLES ********
+// There are two main parameters you can play with to control the look and
+// feel of your fire: COOLING (used in step 1 above), and SPARKING (used
+// in step 3 above).
+//
+// COOLING: How much does the air cool as it rises?
+// Less cooling = taller flames.  More cooling = shorter flames.
+// Default 55, suggested range 20-100 
+#define COOLING  55
+
+// SPARKING: What chance (out of 255) is there that a new spark will be lit?
+// Higher chance = more roaring fire.  Lower chance = more flickery fire.
+// Default 120, suggested range 50-200.
+#define SPARKING 120
+
+
+//******* LED STRIP CONTROLLER TIMING VARIABLES ********
+// UPDATE INTERVALS: this is the time in ms between updates to the LEDStripController
+#define DEFAULT_UPDATE_INTERVAL 10
+#define GLOBAL_BPM   13
+
+//******* ENUM FOR MANAGING STRIP CONTROLLER STATES ********
 //The possible states for the button state machine
 enum LEDStripControllerState {
         RUN_ANIMATION,
@@ -36,10 +79,17 @@ enum LEDStripControllerState {
     };
 
 
+// *********************************************************************************
+//    MAIN CLASS DEFINITION
+// *********************************************************************************
 class LEDStripController
 {
     public:
-        LEDStripController( CRGB *leds, uint16_t stripLength, CRGBPalette16 colorPalette, uint8_t reverseStrip = 0, uint16_t startIndex = 0 );
+        LEDStripController( CRGB *leds, 
+                            uint16_t stripLength, 
+                            CRGBPalette16 colorPalette, 
+                            uint8_t reverseStrip = 0, 
+                            uint16_t startIndex = 0 );
         void update();
         void nextPattern();
         void setState(LEDStripControllerState newState);

@@ -46,7 +46,11 @@
  *                  this would be the index at which to start from                                  *
  *                  (the endIndex can be calculated by adding _stripLength)                         *
  *--------------------------------------------------------------------------------------------------*/
-LEDStripController::LEDStripController( CRGB *leds, uint16_t stripLength, CRGBPalette16 colorPalette, uint8_t reverseStrip = 0, uint16_t startIndex = 0 )
+LEDStripController::LEDStripController( CRGB *leds, 
+                                        uint16_t stripLength, 
+                                        CRGBPalette16 colorPalette, 
+                                        uint8_t reverseStrip, 
+                                        uint16_t startIndex)
 {
 
     _leds = leds;
@@ -129,7 +133,7 @@ void LEDStripController::setState(LEDStripControllerState newState){
     switch(_state){
 
         case SHOW_BRIGHTNESS_LEVEL:
-            fill_solid( _leds, LEDS_01_NUM_LEDS, CRGB::Blue );
+            fill_solid( _leds, _stripLength, CRGB::Blue );
             break;
         
         default:

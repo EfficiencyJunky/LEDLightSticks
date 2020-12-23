@@ -1,22 +1,38 @@
 /*  LED Light Sticks Code
-      -- This is a program that uses FastLED and JC_Button to make the light sticks light up and change patterns and colors
+      -- This is a program that uses FastLED and JC_Button to make the light sticks light up and change animations and colors
 */
 
 /////// INCLUDES ///////
-#include "LEDLightSticks.h"
+#include <FastLED.h>
+
+FASTLED_USING_NAMESPACE
+
+#if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
+#warning "Requires FastLED 3.1 or later; check github for latest code."
+#endif
+
+
 #include "LEDStripController.h"
+
+
+
+
+// *********************************************************************************
+//      TEST VARIABLES DELETE THESE LATER
+// *********************************************************************************
+//uint8_t hue = 0;
+//unsigned long lastUpdateTime = 0; // time of last update of position
+
+
+//bool glitter = false;
+//unsigned long lastBlinkTime = 0; // time of last call to FastLED.show()
+
+
 
 // *********************************************************************************
 //      GLOBAL MUTABLE VARIABLES
 // *********************************************************************************
 unsigned long lastFastLEDShowTime = 0; // time of last call to FastLED.show()
-
-
-
-uint8_t hue = 0;
-unsigned long lastUpdateTime = 0; // time of last update of position
-uint16_t updateInterval = DEFAULT_UPDATE_INTERVAL;   // milliseconds between updates. Likely needs to be 5
-
 
 
 
@@ -26,7 +42,7 @@ uint16_t updateInterval = DEFAULT_UPDATE_INTERVAL;   // milliseconds between upd
 Button animationButton(ANIMATION_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
 Button paletteButton(PALETTE_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
 
-uint8_t STATE = SHOW_PATTERN;
+ProgramState currentState = ANIMATION_IS_RUNNING;
 
 #if defined(__BLINKY_TAPE__)
   Button animationButton_blinkyTape(ANIMATION_BUTTON_PIN_BLINKYTAPE, PULLUP, INVERT, DEBOUNCE_MS);
@@ -48,7 +64,7 @@ CRGBPalette16 colorPalette(HeatColors_p);
 CRGB leds_01[LEDS_01_NUM_LEDS];
 
 // Controller for each led strip (to manage each led array's state without blocking main thread)
-//LedStripController leds_01_Controller(&(leds_01[0]), colorPalette, 0, LEDS_01_NUM_LEDS, INVERT_STRIP);
+LEDStripController leds_01_Controller(&(leds_01[0]), LEDS_01_NUM_LEDS, colorPalette, INVERT_STRIP, 0);
 
 
 
@@ -79,11 +95,11 @@ void loop() {
   // Add entropy to random number generator; we use a lot of it for the FIRE ANIMATION
   random16_add_entropy( random());
 
-  // READ THE BUTTONS TO SEE IF ANY USER INPUT HAS OCCURED
+  // READ THE BUTTONS TO SEE IF ANY OPERATOR INPUT HAS OCCURED
   readButtons();
 
   // UPDATE THE VISUAL REPRESENTATION OF OUR STRIPS IN EACH STRIP CONTROLLER OBJECT
-  //leds_01_Controller.Update();
+  leds_01_Controller.update();
   
 
   // PUSH OUT LATEST FRAME TO THE ACTUAL PHYSICAL LEDS
@@ -101,74 +117,88 @@ void loop() {
 
 
 // *********************************************************************************
-//      HELPER FUNCTIONS
+//   READ BUTTONS FUNCTION
+//      This function is where we read our buttons
+//      and manage the state of our program based on button input
 // *********************************************************************************
 void readButtons(){
 
-  //Read the button associated with bike center strip and brightness change (with long press)
+  //READ THE BUTTONS
   animationButton.read();
+  paletteButton.read();
 
-  switch (STATE) {
+  //STORE THE BUTTON'S UPDATED STATES IN LOCAL VARIABLES
+  uint8_t animationButtPressed = animationButton.wasReleased();
+  uint8_t animationButtHeld = animationButton.pressedFor(LONG_PRESS);
 
-    //This state watches for short and long presses, switches the pattern for
-    //short presses, and moves to the TO_CHANGE_BRIGHTNESS state for long presses.
-    case SHOW_PATTERN:
-      if (animationButton.wasReleased()){
-        //leds_01_Controller.nextPattern();
-        fill_solid( leds_01, LEDS_01_NUM_LEDS, CHSV( random8(), 255, 255) ); 
+  #if defined(__BLINKY_TAPE__)
+    animationButton_blinkyTape.read();
+    animationButtPressed = ( animationButtPressed || animationButton_blinkyTape.wasReleased() );
+    animationButtHeld = ( animationButtHeld || animationButton_blinkyTape.pressedFor(LONG_PRESS) );
+  #endif
+
+  uint8_t paletteButtPressed = paletteButton.wasReleased();
+  uint8_t paletteButtHeld = paletteButton.pressedFor(LONG_PRESS);
+
+
+  // TAKE ACTIONS BASED ON THE CURRENT STATE OF OUR PROGRAM AND THE UPDATED STATE OF THE BUTTONS
+  switch (currentState) {
+
+    // Executes while the animation is running...
+    case ANIMATION_IS_RUNNING:
+      // if the animation change button is pressed, change the animation
+      if (animationButtPressed){
+        leds_01_Controller.nextPattern();
+        //glitter = !glitter;        
       }
-      else if (animationButton.pressedFor(LONG_PRESS)){
-        //leds_01_Controller.setStripState(TO_CHANGE_BRIGHTNESS);
-        STATE = TO_CHANGE_BRIGHTNESS;
+      // if the animation change button is held down
+      // put the strip in its transition state
+      else if (animationButtHeld){
+        leds_01_Controller.setState(TRANSITION_STATE);
+        currentState = TRANSITION_TO_CHANGE_BRIGHTNESS;
       }
+
       break;
-      
-    //This is a transition state where we start the fast blink as feedback to the user,
-    //but we also need to wait for the user to release the button, i.e. end the
-    //long press, before moving to the CHANGE_BRIGHTNESS state.    
-    case TO_CHANGE_BRIGHTNESS:
-      if (animationButton.wasReleased()){
-        STATE = CHANGE_BRIGHTNESS;
-        //leds_01_Controller.setStripState(CHANGE_BRIGHTNESS);
-      }
 
-      runAnimation(1);
-      
+    //This is a transition state where we need to wait for the operator to release the button, 
+    // i.e. release the button from a long press, before moving to the CHANGE_BRIGHTNESS state.    
+    case TRANSITION_TO_CHANGE_BRIGHTNESS:      
+      // if the animation change button is pressed, move to the CHANGE_BRIGHTNESS state
+      if (animationButtPressed){
+        leds_01_Controller.setState(SHOW_BRIGHTNESS_LEVEL);        
+        currentState = CHANGE_BRIGHTNESS;
+      }
       break;
 
     //Watch for another long press which will cause us to
-    //put the strip into "TO_SHOW_PATTERN" which is the fast-blink state.
+    //put the strip into "TRANSITION_TO_ANIMATION_IS_RUNNING" which is the fast-blink state.
     case CHANGE_BRIGHTNESS:
-      if (animationButton.pressedFor(LONG_PRESS)){
-        //leds_01_Controller.setStripState(TO_SHOW_PATTERN);
-        STATE = TO_SHOW_PATTERN;
-      }
-      else if (animationButton.wasReleased()){
+
+      if (animationButtPressed){
         nextBrightness();
       }
-      
-      runAnimation(2);
-
-      break;
-
-    //This is a transition state where we just wait for the user to release the button
-    //before moving back to the SHOW_PATTERN state.
-    case TO_SHOW_PATTERN:
-      if (animationButton.wasReleased()){
-        //leds_01_Controller.setStripState(SHOW_PATTERN);
-        STATE = SHOW_PATTERN;
+      else if (animationButtHeld){
+        leds_01_Controller.setState(TRANSITION_STATE);
+        currentState = TRANSITION_TO_ANIMATION_IS_RUNNING;
       }
 
-      runAnimation(1);
-
       break;
-  }  
+
+    //This is a transition state where we just wait for the operator to release the button
+    //before moving back to the ANIMATION_IS_RUNNING state.
+    case TRANSITION_TO_ANIMATION_IS_RUNNING:
+      if (animationButtPressed){
+        leds_01_Controller.setState(RUN_ANIMATION);
+        currentState = ANIMATION_IS_RUNNING;
+      }
+      break;
+  }
 
 
   //Read the button associated with bike side strip and palette change (with long press)
   // paletteButton.read();
   
-  // if (paletteButton.wasReleased()){
+  // if (paletteButtPressed){
   //   leds_01_Controller.nextPalette();
   // }
 
@@ -176,22 +206,40 @@ void readButtons(){
 
 
 
-void runAnimation(uint8_t animationType){
+// void runAnimation(uint8_t animationType){
 
 
-      if( (millis() - lastUpdateTime) > updateInterval ){
-        // mimmick led strip animation with rainbow + glitter
-        hue++;
-        fill_rainbow( leds_01, LEDS_01_NUM_LEDS, hue, 7);
+//   if( (millis() - lastUpdateTime) > updateInterval ){
 
-        if( random8() < 80 && animationType == 2) {
-          leds_01[ random16(LEDS_01_NUM_LEDS) ] += CRGB::White;
-        }
+//     if(animationType == 1){
+//       // mimmick led strip animation with rainbow + glitter
+//       hue++;
+//       fill_rainbow( leds_01, LEDS_01_NUM_LEDS, hue, 7);
 
-        lastUpdateTime = millis();
-      }
+//       if(glitter){
+//         if( random8() < 80) {
+//           leds_01[ random16(LEDS_01_NUM_LEDS) ] += CRGB::White;
+//         }        
+//       }
 
-}
+//     }
+//     else if(animationType == 2){
+//       if( (millis() - lastBlinkTime) < 500 ){
+//         fill_solid( leds_01, LEDS_01_NUM_LEDS, CHSV( 255, 0, 100) );
+//       }
+//       else if( (millis() - lastBlinkTime) < 1000 ){
+//         fill_solid( leds_01, LEDS_01_NUM_LEDS, CRGB::Black );
+//       }
+//       else{
+//         lastBlinkTime = millis();
+//       }
+//     }
+
+
+//     lastUpdateTime = millis();
+//   }
+
+// }
 
 
 
@@ -214,8 +262,3 @@ void nextBrightness() {
 
   FastLED.setBrightness(currentBrightness);
 }
-
-
-
-
-

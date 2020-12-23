@@ -6,17 +6,23 @@
 #ifndef LEDLightSticks_h
 #define LEDLightSticks_h
 
-    // ************************************************************************************
+    // *********************************************************************************
     //    EXTERNAL LIBRARY INITIALIZATION
-    // ************************************************************************************
+    // *********************************************************************************
     #include <FastLED.h>
     #include "JC_Button_old.h"
 
-    FASTLED_USING_NAMESPACE
 
-    #if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
-    #warning "Requires FastLED 3.1 or later; check github for latest code."
-    #endif
+    // *********************************************************************************
+    //    UTILITY VARIABLES
+    // *********************************************************************************
+    //The possible states for the button state machine
+    enum ProgramState {
+            ANIMATION_IS_RUNNING, 
+            TRANSITION_TO_CHANGE_BRIGHTNESS, 
+            CHANGE_BRIGHTNESS,
+            TRANSITION_TO_ANIMATION_IS_RUNNING
+        };
 
 
     // HELPER MACRO FOR CALCULATING THE LENGTH OF AN ARRAY
@@ -26,16 +32,16 @@
 
 
 
-    // ************************************************************************************
+    // *********************************************************************************
     //    ARDUINO HARDWARE SETTINGS -- Change these according to your hardware
-    // ************************************************************************************
+    // *********************************************************************************
 
     // this will set whether or not the strip is inverted
     // meaning the beginning is the end and the end is the beginning
     #define INVERT_STRIP true
 
-    //#define __BLINKY_TAPE__
-    #define __TEENSY__
+    #define __BLINKY_TAPE__
+    //#define __TEENSY__
 
     // ******* Blinky Tape Pins *******
     #if defined(__BLINKY_TAPE__)
@@ -46,6 +52,8 @@
 
         // BUTTON DEFINITIONS
         #define ANIMATION_BUTTON_PIN  11
+
+        // this is the button sodered directly to the blinkytape
         #define ANIMATION_BUTTON_PIN_BLINKYTAPE  10
 
         #define PALETTE_BUTTON_PIN  7
@@ -66,9 +74,9 @@
 
 
 
-    // ************************************************************************************
+    // *********************************************************************************
     //    FastLED LIBRARY AND OTHER LED RELATED GLOBAL VARIABLES
-    // ************************************************************************************
+    // *********************************************************************************
 
     #define LED_TYPE NEOPIXEL
     #define FRAMES_PER_SECOND  60
@@ -102,36 +110,17 @@
     // Default 120, suggested range 50-200.
     #define SPARKING 120
 
-
-
+    // UPDATE INTERVALS: this is the time in ms between updates to the LEDStripController
     #define DEFAULT_UPDATE_INTERVAL 10
 
-
-
-
-    // ************************************************************************************
+    // *********************************************************************************
     //    JC_BUTTON LIBRARY VARIABLES
-    // ************************************************************************************
+    // *********************************************************************************
 
     #define LONG_PRESS   1000
     #define DEBOUNCE_MS  20
     #define PULLUP  true
     #define INVERT  true
-
-    //The possible states for the button state machine
-    enum {
-            SHOW_PATTERN, 
-            TO_CHANGE_BRIGHTNESS, 
-            CHANGE_BRIGHTNESS, 
-            TO_CHANGE_PALETTE, 
-            CHANGE_PALETTE, 
-            TO_SHOW_PATTERN
-        };
-
-    
-
-
-
 
 
 

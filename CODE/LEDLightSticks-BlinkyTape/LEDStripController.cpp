@@ -88,20 +88,21 @@ LEDStripController::LEDStripController( CRGB *leds,
     //      ANIMATIOIN SPECIFIC VARIABLES
     // **********************************************************
     _activeAnimationIndex = 0;
-    _bpm = 0;
+    _bpm = GLOBAL_BPM;
     _bsTimebase = 0;
     _glitter = false;
     _forward = true;
     _heat = new byte[stripLength];
 
-    _numAnimations = 6;
+    _numAnimations = 2;
     _animations = new Animation[_numAnimations];
     _animations[0] = &LEDStripController::rainbow;
-    _animations[1] = &LEDStripController::rainbowWithGlitter;
-    _animations[2] = &LEDStripController::confetti;
-    _animations[3] = &LEDStripController::sinelon;
-    _animations[4] = &LEDStripController::sinelonDual;
-    _animations[5] = &LEDStripController::palette;
+    // _animations[1] = &LEDStripController::rainbowWithGlitter;
+    _animations[1] = &LEDStripController::palette;
+    // _animations[3] = &LEDStripController::paletteWithGlitter;
+    // _animations[3] = &LEDStripController::confetti;
+    // _animations[4] = &LEDStripController::sinelon;
+    // _animations[5] = &LEDStripController::sinelonDual;
 
 
 }
@@ -138,7 +139,11 @@ void LEDStripController::update(uint32_t now_ms)
             case SHOW_BRIGHTNESS_LEVEL:
             {
                 setStripCHSV(CHSV( 92*2, FULL_SAT, _brightness));
-                //setStripCRGB(CRGB::Blue);
+                break;
+            }
+            case SHOW_SPEED_LEVEL:
+            {
+                setStripCHSV(CHSV( _bpm*2, FULL_SAT, _brightness));
                 break;
             }
             default:
@@ -170,6 +175,14 @@ void LEDStripController::nextAnimation(){
 }
 
 
+void LEDStripController::nextPalette(){
+
+    Serial.print("BPM: ");
+    Serial.println(_bpm);
+    Serial.println("***********************");
+
+}
+
 
 void LEDStripController::nextBrightness(){
 
@@ -181,6 +194,20 @@ void LEDStripController::nextBrightness(){
     }
 
 }
+
+
+void LEDStripController::nextSpeed(){
+
+    _bpm += SPEED_INCREMENT;
+
+    // if our current BPM is greater than the max speed defined by number of speeds, speed increment, and base speed
+    if(_bpm >= PALETTE_BPM + (NUM_SPEEDS * SPEED_INCREMENT) ){
+        _bpm = PALETTE_BPM;
+    }
+}
+
+
+
 
 void LEDStripController::setBrightness(uint8_t brightness){
     _brightness = brightness;
@@ -265,7 +292,7 @@ void LEDStripController::setStripCRGB(CRGB newCRGB) {
  *                          PLACEHOLDER                                                             *
  *                                                                                                  *
  *--------------------------------------------------------------------------------------------------*/
-void LEDStripController::rainbow(){
+void LEDStripController::rainbow(){    
 
     // mimmick led strip animation with rainbow + glitter
     if(_invertStrip){
@@ -275,6 +302,8 @@ void LEDStripController::rainbow(){
         _paletteHue--;
     }
     
+    _paletteHue = beat8(_bpm);
+
     fill_rainbow( _leds, _stripLength, _paletteHue, 7);
 
     if(_activeAnimationIndex > 3){
@@ -295,8 +324,8 @@ void LEDStripController::palette(){
         _paletteHue--;
     }
     
-    // fill_palette( _leds, _stripLength, _paletteHue, 7, _brightness, LINEARBLEND);
-    fill_rainbow( _leds, _stripLength, _paletteHue, 7);
+    fill_palette( _leds, _stripLength, _paletteHue, 7, _colorPalette, 255, LINEARBLEND);
+    // fill_rainbow( _leds, _stripLength, _paletteHue, 7);
 }
 
 // the glitter function, randomly selects a pixel and sets it to white (aka glitter)

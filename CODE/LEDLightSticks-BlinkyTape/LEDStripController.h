@@ -33,11 +33,11 @@
 #include <FastLED.h>
 
 
-FASTLED_USING_NAMESPACE
+// FASTLED_USING_NAMESPACE
 
-#if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
-#warning "Requires FastLED 3.1 or later; check github for latest code."
-#endif
+// #if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
+// #warning "Requires FastLED 3.1 or later; check github for latest code."
+// #endif
 
 
 // *********************************************************************************
@@ -48,13 +48,15 @@ FASTLED_USING_NAMESPACE
 enum LEDStripControllerState {
         NORMAL_OPERATION,
         STATE_TRANSITION,
-        SHOW_BRIGHTNESS_LEVEL
+        SHOW_BRIGHTNESS_LEVEL,
+        SHOW_SPEED_LEVEL
     };
 
 // *******  Helper macro for calculating the length of an array ******* 
 // creates a macro that computes the length of an array (number of elements)
 // assuming all of the elements are the same size as the element in position 0
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+//#define ENUM_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 // *******  Human readable definition for when we want to invert a strip ******* 
 // this will set whether or not the strip is inverted
@@ -93,7 +95,7 @@ enum LEDStripControllerState {
 #define SPARKING 120
 
 //******* COLOR PALETTES ********
-const CRGBPalette16 DEFAULT_PALETTE = HeatColors_p;
+const CRGBPalette16 DEFAULT_PALETTE = RainbowColors_p;
 
 const CRGBPalette16 COLOR_PALETTES[] = {
                                             RainbowColors_p,
@@ -115,6 +117,10 @@ const uint8_t NUM_COLOR_PALETTES = ARRAY_SIZE(COLOR_PALETTES);
 // UPDATE INTERVALS: this is the time in ms between updates to the LEDStripController
 #define DEFAULT_UPDATE_INTERVAL 10
 #define GLOBAL_BPM   13
+#define SINELON_BPM   13
+#define PALETTE_BPM   25
+#define NUM_SPEEDS   10
+#define SPEED_INCREMENT   5
 
 
 
@@ -132,7 +138,9 @@ class LEDStripController
                             uint16_t stripStartIndex = 0 );
         void update(uint32_t now_ms = 0);
         void nextAnimation();
+        void nextPalette();
         void nextBrightness();
+        void nextSpeed();
         void setBrightness(uint8_t brightness);
         void setOperationState(LEDStripControllerState newState);
 
@@ -190,8 +198,8 @@ class LEDStripController
         void setStripCHSV(CHSV newCHSV);
         void setStripCRGB(CRGB newCRGB);
         
-        // **** Animation Methods ******
         
+        // **** Animation Methods ******        
         void rainbow();
         void palette();
         void addGlitter( fract8 chanceOfGlitter );

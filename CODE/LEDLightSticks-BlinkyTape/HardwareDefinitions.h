@@ -35,6 +35,7 @@
 
     // LED STRIP DEFINITIONS
     #define LEDS_01_PIN 3
+    #define LEDS_02_PIN 4
     #define LEDS_01_NUM_LEDS 30
     #define LEDS_02_NUM_LEDS 30
 

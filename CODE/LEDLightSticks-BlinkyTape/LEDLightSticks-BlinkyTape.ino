@@ -5,14 +5,34 @@
 // *********************************************************************************
 //      INCLUDES
 // *********************************************************************************
-#include "LEDLightSticks.h"
+#include "HardwareDefinitions.h"
 #include "LEDStripController.h"
-
+#include "JC_Button_old.h"
 
 // *********************************************************************************
 //      GLOBAL MUTABLE VARIABLES
 // *********************************************************************************
-unsigned long lastFastLEDShowTime = 0; // time of last call to FastLED.show()
+uint32_t timeToCallFastLEDShow = 0; // time of last call to FastLED.show()
+
+
+// *********************************************************************************
+//    GLOBAL ENUM FOR MANAGING PROGRAM STATE
+// *********************************************************************************
+//The possible states for the button state machine
+enum ProgramState {
+        ANIMATION_IS_RUNNING, 
+        TRANSITION_TO_CHANGE_BRIGHTNESS, 
+        CHANGE_BRIGHTNESS,
+        TRANSITION_TO_ANIMATION_IS_RUNNING
+    };
+
+const uint8_t mapToLEDStripControllerState[4] = {
+                              NORMAL_OPERATION,
+                              STATE_TRANSITION,
+                              SHOW_BRIGHTNESS_LEVEL,
+                              STATE_TRANSITION
+                          };
+
 
 
 // *********************************************************************************
@@ -39,34 +59,49 @@ CRGBPalette16 colorPalette(HeatColors_p);
 
 // CRGB Array for each strip.
 CRGB leds_01[LEDS_01_NUM_LEDS];
+CRGB leds_02[LEDS_01_NUM_LEDS];
 
 // Controller for each led strip (to manage each led array's state without blocking main thread)
-LEDStripController stripController_01s1(leds_01, LEDS_01_NUM_LEDS, colorPalette, INVERT_STRIP, 0);
+LEDStripController stripController_01sA(leds_01, LEDS_01_NUM_LEDS, colorPalette, INVERT_STRIP, 0);
+//LEDStripController stripController_01sB(leds_02, LEDS_02_NUM_LEDS, colorPalette, INVERT_STRIP, 0);
+
+// LEDStripController stripController_01sA(aLEDs, floor(ALEN * 1.0/3.0));
+// LEDStripController stripController_01sB(aLEDs, ceil(ALEN * 1.0/3.0), DEFAULT_PALETTE, !INVERT_STRIP, floor(ALEN * 1.0/3.0));
+// LEDStripController stripController_01sC(aLEDs, ceil(ALEN * 1.0/3.0), DEFAULT_PALETTE, INVERT_STRIP, floor(ALEN * 2.0/3.0));
 //LEDStripController stripController_01s2(leds_01, LEDS_01_NUM_LEDS-15, colorPalette, !INVERT_STRIP, 15);
 
 // Array of pointers to our LEDStripController objects.
 // Makes updating them all at once more efficient
-LEDStripController *stripControllerArray[1] = {  
-                                                &stripController_01s1
-                                                //&stripController_01s2
+LEDStripController *stripControllerArray[] = {  
+                                                &stripController_01sA
+                                                //&stripController_01sB
                                               };
 
+const uint8_t NUM_STRIP_CONTROLLERS = ARRAY_SIZE(stripControllerArray);
 
+
+uint32_t timeToIncreaseBrightness = 0;
+uint32_t brightnessIncreaseInterval = 1000;
+uint8_t gBright = 0;
 
 // *********************************************************************************
 //      SETUP FUNCTION
 // *********************************************************************************
 void setup() {
 
-  //Serial.begin(9600);
+  Serial.begin(9600);
+
+  Serial.print("Num Color Palettes: ");
+  Serial.println(NUM_COLOR_PALETTES);
 
   // THIS STEP SETS UP THE PHYSICAL REPRESENTATION OF OUR LED STRIPS
-  FastLED.addLeds<LED_TYPE, LEDS_01_PIN>(leds_01, LEDS_01_NUM_LEDS).setCorrection(TypicalLEDStrip);;
-
+  FastLED.addLeds<LED_TYPE, LEDS_01_PIN>(leds_01, LEDS_01_NUM_LEDS);
+  //FastLED.setCorrection(UncorrectedColor);
+  //FastLED.setCorrection(TypicalPixelString);
 
   // set master brightness control from our global variable
-  FastLED.setBrightness(INITIAL_BRIGHTNESS);
-
+  //FastLED.setBrightness(FAST_LED_MAX_BRIGHTNESS);
+  // FastLED.setBrightness(INITIAL_BRIGHTNESS);
 }
 
 
@@ -77,22 +112,28 @@ void setup() {
 // *********************************************************************************
 void loop() {
 
+  static uint32_t ms;
+  ms = millis();
+
   // Add entropy to random number generator; we use a lot of it for the FIRE ANIMATION
   random16_add_entropy( random());
 
   // READ THE BUTTONS TO SEE IF ANY OPERATOR INPUT HAS OCCURED
-  readAndRespondToButtonInput();
+  readAndRespondToButtonInput(ms);
 
   // UPDATE THE VISUAL REPRESENTATION OF OUR STRIPS IN EACH STRIP CONTROLLER OBJECT 
-  updateStripControllers();
+  updateStripControllers(ms);
 
   // PUSH OUT LATEST FRAME TO THE ACTUAL PHYSICAL LEDS
   // this physically displays the current state of leds in each strip controller object
   // we wrap it in a timer so that it only triggers at a modest frame rate
-  if( (millis() - lastFastLEDShowTime) > (1000/FRAMES_PER_SECOND) ){
+  if( ms > timeToCallFastLEDShow ){
      FastLED.show();
-     lastFastLEDShowTime = millis();
+     timeToCallFastLEDShow = ms + (1000/FRAMES_PER_SECOND);
   }
+
+
+  
 
 }
 
@@ -104,7 +145,7 @@ void loop() {
 //      and manage/update the state of our program
 //      and strip controllers based on button input
 // *********************************************************************************
-void readAndRespondToButtonInput(){
+void readAndRespondToButtonInput(uint32_t ms){
 
   //READ THE BUTTONS
   animationButton.read();
@@ -136,8 +177,8 @@ void readAndRespondToButtonInput(){
       // if the animation change button is held down
       // put the strip in its transition state
       else if (animationButtHeld){
-        setStripControllerStates(TRANSITION_STATE);
         programState = TRANSITION_TO_CHANGE_BRIGHTNESS;
+        setStripControllerStates(programState);
       }
 
       break;
@@ -147,8 +188,8 @@ void readAndRespondToButtonInput(){
     case TRANSITION_TO_CHANGE_BRIGHTNESS:      
       // if the animation change button is pressed, move to the CHANGE_BRIGHTNESS state
       if (animationButtPressed){
-        setStripControllerStates(SHOW_BRIGHTNESS_LEVEL);
         programState = CHANGE_BRIGHTNESS;
+        setStripControllerStates(programState);
       }
       break;
 
@@ -160,8 +201,8 @@ void readAndRespondToButtonInput(){
         nextBrightness();
       }
       else if (animationButtHeld){
-        setStripControllerStates(TRANSITION_STATE);
         programState = TRANSITION_TO_ANIMATION_IS_RUNNING;
+        setStripControllerStates(programState);
       }
 
       break;
@@ -170,18 +211,16 @@ void readAndRespondToButtonInput(){
     //before moving back to the ANIMATION_IS_RUNNING state.
     case TRANSITION_TO_ANIMATION_IS_RUNNING:
       if (animationButtPressed){
-        setStripControllerStates(RUN_ANIMATION);
         programState = ANIMATION_IS_RUNNING;
+        setStripControllerStates(programState);
       }
       break;
   }
 
 
-  //Read the button associated with bike side strip and palette change (with long press)
-  // paletteButton.read();
-  
+  // respond to the paletteButton state  
   // if (paletteButtPressed){
-  //   stripController_01s1.nextPalette();
+  //   nextStripControllerAnimation();
   // }
 
 }
@@ -190,35 +229,85 @@ void readAndRespondToButtonInput(){
 // *********************************************************************************
 //      LED STRIP CONTROLLER MODIFICATION FUNCTIONS
 // *********************************************************************************
-void updateStripControllers(){
-  for(uint8_t i = 0; i < ARRAY_SIZE(stripControllerArray); i++){
-    stripControllerArray[i]->update();
+void updateStripControllers(uint32_t ms){
+  for(uint8_t i = 0; i < NUM_STRIP_CONTROLLERS; i++){
+    stripControllerArray[i]->update(ms);
   }
 }
 
 void nextStripControllerAnimation(){
-  for(uint8_t i = 0; i < ARRAY_SIZE(stripControllerArray); i++){
+  for(uint8_t i = 0; i < NUM_STRIP_CONTROLLERS; i++){
     stripControllerArray[i]->nextAnimation();
   }
 }
 
-void setStripControllerStates(LEDStripControllerState newState){
-  for(uint8_t i = 0; i < ARRAY_SIZE(stripControllerArray); i++){
-    stripControllerArray[i]->setState(newState);
+void setStripControllerStates(ProgramState newState){
+  for(uint8_t i = 0; i < NUM_STRIP_CONTROLLERS; i++){
+    stripControllerArray[i]->setOperationState(mapToLEDStripControllerState[newState]);
   }
 }
-
 
 void nextBrightness() {
-  uint8_t currentBrightness = FastLED.getBrightness();
-  currentBrightness += BRIGHTNESS_INCREMENT;
-
-  if(currentBrightness < BRIGHTNESS_MAX_MODULO){
-    currentBrightness = currentBrightness % BRIGHTNESS_MAX_MODULO;
+  for(uint8_t i = 0; i < NUM_STRIP_CONTROLLERS; i++){
+    stripControllerArray[i]->nextBrightness();
   }
-  else if(currentBrightness >= BRIGHTNESS_MAX_MODULO){
-    currentBrightness = BRIGHTNESS_INCREMENT;
-  }
-
-  FastLED.setBrightness(currentBrightness);
 }
+
+
+
+// void nextBrightness() {
+//   uint8_t currentBrightness = FastLED.getBrightness();
+//   currentBrightness += BRIGHTNESS_INCREMENT;
+
+//   if(currentBrightness < BRIGHTNESS_MAX_MODULO){
+//     currentBrightness = currentBrightness % BRIGHTNESS_MAX_MODULO;
+//   }
+//   else if(currentBrightness >= BRIGHTNESS_MAX_MODULO){
+//     currentBrightness = BRIGHTNESS_INCREMENT;
+//   }
+
+//   FastLED.setBrightness(currentBrightness);
+
+// }
+
+
+
+// void increaseBrightness(){
+
+  
+//   gBright += 16;
+
+//   Serial.println("*********************");
+//   Serial.print("FastLED brightness: ");
+//   Serial.println(gBright);
+//   Serial.println("*********************");
+
+//   FastLED.setBrightness(gBright);
+//   //setBright(gBright);
+
+// }
+
+// void setBright(uint8_t brightness){
+//   for(uint8_t i = 0; i < ARRAY_SIZE(stripControllerArray); i++){
+//     stripControllerArray[i]->setBrightness(brightness);
+//   }
+// }
+
+// void nextBrightness() {
+//   uint8_t currentBrightness = FastLED.getBrightness();
+
+//   if(currentBrightness <= STRIP_MAX_BRIGHTNESS - BRIGHTNESS_INCREMENT){
+//     currentBrightness += BRIGHTNESS_INCREMENT;
+//   }
+//   else {
+//     currentBrightness = BRIGHTNESS_INCREMENT;
+//   }
+
+//   Serial.println("*********************");
+//   Serial.print("FastLED brightness: ");
+//   Serial.println(currentBrightness);
+//   Serial.println("*********************");
+  
+//   FastLED.setBrightness(currentBrightness);
+
+// }

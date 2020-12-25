@@ -3,27 +3,8 @@
                     -- Hardware definitions for various testing setups etc/
 */
 
-#ifndef LEDLightSticks_h
-#define LEDLightSticks_h
-
-#include "JC_Button_old.h"
-
-// *********************************************************************************
-//    GLOBAL ENUM FOR MANAGING PROGRAM STATE
-// *********************************************************************************
-//The possible states for the button state machine
-enum ProgramState {
-        ANIMATION_IS_RUNNING, 
-        TRANSITION_TO_CHANGE_BRIGHTNESS, 
-        CHANGE_BRIGHTNESS,
-        TRANSITION_TO_ANIMATION_IS_RUNNING
-    };
-
-
-// HELPER MACRO FOR CALCULATING THE LENGTH OF AN ARRAY
-// creates a macro that computes the length of an array (number of elements)
-// assuming all of the elements are the same size as the element in position 0
-#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+#ifndef HardwareDefinitions_h
+#define HardwareDefinitions_h
 
 
 // *********************************************************************************
@@ -64,26 +45,22 @@ enum ProgramState {
 #endif
 
 
-// this will set whether or not the strip is inverted
-// meaning the beginning is the end and the end is the beginning
-#define INVERT_STRIP true
-
 
 // *********************************************************************************
-//    FastLED LIBRARY VARIABLES
+//    FastLED LIBRARY DEFINITIONS
 // *********************************************************************************
 
 #define LED_TYPE NEOPIXEL
 #define FRAMES_PER_SECOND  60
-#define INITIAL_BRIGHTNESS  60  //set between 0 (off) to 255
 
-// variables for changing brightness
-#define BRIGHTNESS_INCREMENT    20 
+#define FAST_LED_MAX_BRIGHTNESS 255
+
+
 #define BRIGHTNESS_MAX_MODULO   180
 
 
 // *********************************************************************************
-//    JC_BUTTON LIBRARY VARIABLES
+//    JC_BUTTON LIBRARY DEFINITIONS
 // *********************************************************************************
 #define LONG_PRESS   1000
 #define DEBOUNCE_MS  20

@@ -28,7 +28,7 @@
 
 
 // *********************************************************************************
-//    FAST LED LIBRARY INITIALIZATION
+//            Includes and Defines - FastLED required
 // *********************************************************************************
 #include <FastLED.h>
 
@@ -40,14 +40,42 @@ FASTLED_USING_NAMESPACE
 #endif
 
 
+// *********************************************************************************
+//    Definitions for things that need to be used externally
+// *********************************************************************************
+//******* ENUM for managing strip controller states ********
+//The possible states for the button state machine
+enum LEDStripControllerState {
+        NORMAL_OPERATION,
+        STATE_TRANSITION,
+        SHOW_BRIGHTNESS_LEVEL
+    };
+
+// *******  Helper macro for calculating the length of an array ******* 
+// creates a macro that computes the length of an array (number of elements)
+// assuming all of the elements are the same size as the element in position 0
+#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+
+// *******  Human readable definition for when we want to invert a strip ******* 
+// this will set whether or not the strip is inverted
+// meaning the beginning is the end and the end is the beginning
+#define INVERT_STRIP true
+
 
 // *********************************************************************************
-//    GLOBAL DEFINES FOR CERTAIN LED RELATED FUNCTIONS
+//    Global defines for colors and animation related functions
 // *********************************************************************************
 //******* VARIOUS LED RELATED CONSTANTS ********
 #define FULL_BRIGHT 255
 #define FULL_SAT    255
 #define WHITE_HUE   255
+
+// variables for changing brightness
+#define INITIAL_BRIGHTNESS  80  //set between 0 (off) to 255
+#define LOWEST_BRIGHTNESS  40  //set between 0 (off) to 255
+#define MAX_BRIGHTNESS   200
+#define BRIGHTNESS_INCREMENT    20 
+
 
 //******* FIRE ANIMATION GLOBAL VARIABLES ********
 // There are two main parameters you can play with to control the look and
@@ -64,19 +92,30 @@ FASTLED_USING_NAMESPACE
 // Default 120, suggested range 50-200.
 #define SPARKING 120
 
+//******* COLOR PALETTES ********
+const CRGBPalette16 DEFAULT_PALETTE = HeatColors_p;
 
+const CRGBPalette16 COLOR_PALETTES[] = {
+                                            RainbowColors_p,
+                                            ForestColors_p,
+                                            CloudColors_p,
+                                            LavaColors_p,
+                                            OceanColors_p,
+                                            PartyColors_p,
+                                            HeatColors_p, // fire
+                                            RainbowStripeColors_p,
+                                        };
+
+const uint8_t NUM_COLOR_PALETTES = ARRAY_SIZE(COLOR_PALETTES);
+
+// *********************************************************************************
+//    Global settings for Animation Timings
+// *********************************************************************************
 //******* LED STRIP CONTROLLER TIMING VARIABLES ********
 // UPDATE INTERVALS: this is the time in ms between updates to the LEDStripController
 #define DEFAULT_UPDATE_INTERVAL 10
 #define GLOBAL_BPM   13
 
-//******* ENUM FOR MANAGING STRIP CONTROLLER STATES ********
-//The possible states for the button state machine
-enum LEDStripControllerState {
-        RUN_ANIMATION,
-        TRANSITION_STATE,
-        SHOW_BRIGHTNESS_LEVEL
-    };
 
 
 // *********************************************************************************
@@ -87,54 +126,88 @@ class LEDStripController
     public:
         LEDStripController( CRGB *leds, 
                             uint16_t stripLength, 
-                            CRGBPalette16 colorPalette = (CRGBPalette16)RainbowColors_p, 
+                            //CRGBPalette16 colorPalette = (CRGBPalette16)RainbowColors_p, 
+                            CRGBPalette16 colorPalette = DEFAULT_PALETTE, 
                             uint8_t invertStrip = 0, 
                             uint16_t stripStartIndex = 0 );
-        void update();
+        void update(uint32_t now_ms = 0);
         void nextAnimation();
-        void setState(LEDStripControllerState newState);
-    
+        void nextBrightness();
+        void setBrightness(uint8_t brightness);
+        void setOperationState(LEDStripControllerState newState);
+
 
     private:
         CRGB *_leds;                    // the array of LEDs
         uint16_t _stripLength;          // the number of LEDs in the strip
-        CRGBPalette16 _colorPalette;    // the color palette to use in certain animations
         uint8_t _invertStrip;          // whether the strip is regular orientation (0) or reversed (1)
-
-        // uint16_t* ledOrder;
-        LEDStripControllerState _state; // the state of the controller to be updated by external input        
-        CRGB _showBrightnessColor;      // the color of the strip when in SHOW_BRIGHTNESS_LEVEL state
         
-        // uint32_t now_ms;
-        uint32_t _lastUpdateTime;       // time the .update() function was last allowed to update the current animation
-        uint8_t _updateInterval;        // milliseconds between updates. Likely needs to be 5-10
-
-        uint32_t _bsTimebase;
-        //FIRE ANIMATION VARIABLE - convert to static function var eventually
-        // Array of temperature readings at each simulation cell
-        byte *heat;
+        // **********************************************************
+        //      TIME KEEPING VARIABLES
+        // **********************************************************        
+        uint32_t _timeToUpdate;       // time the .update() function should be called
+        uint8_t _updateInterval;      // milliseconds between updates. Likely needs to be 5-10
 
 
         // **********************************************************
-        //      PLACEHOLDERS
+        //      PIXEL STATE VARIABLES
         // **********************************************************
-        uint8_t glitter = false;
-        uint8_t hue = 0;
+        uint8_t _hue;
+        uint8_t _brightness;
+        uint8_t _saturation;
+        uint8_t _paletteHue;
+        CRGBPalette16 _colorPalette;   // the color palette being used
+
+        // **********************************************************
+        //      STRIP STATE VARIABLES
+        // **********************************************************
+        LEDStripControllerState _state; // the state of the controller to be updated by external input        
+        CRGB _showBrightnessColor;      // the color of the strip when in SHOW_BRIGHTNESS_LEVEL state        
+        uint16_t _width;
+        uint16_t _center;
+        
+
+        // **********************************************************
+        //      ANIMATIOIN SPECIFIC VARIABLES
+        // **********************************************************
+        uint8_t _activeAnimationIndex;
+        uint8_t _numAnimations;
+        uint8_t _bpm;
+        uint32_t _bsTimebase; // used to reset beatsin() phase to 0
+        uint8_t _glitter;
+        uint8_t _forward;  // used to set which direction palette animations are going
+        byte *_heat; // FIRE - Array of temperature readings at each simulation cell
 
 
+        typedef void (LEDStripController::*Animation)();
+
+        Animation *_animations;
 
         // **********************************************************
         //      PRIVATE METHODS
         // **********************************************************
         void fastBlink();
-        void runAnimation();
+        void setStripCHSV(CHSV newCHSV);
+        void setStripCRGB(CRGB newCRGB);
+        
+        // **** Animation Methods ******
+        
+        void rainbow();
+        void palette();
+        void addGlitter( fract8 chanceOfGlitter );
+        void rainbowWithGlitter();
+        void paletteWithGlitter();
+        void confetti();
+        void confettiFromPalette();
+        void sinelon();
+        void sinelonDual();
 
 
 /*
             
-        unsigned long hueUpdateInterval = 10;
-        unsigned long fireUpdateInterval = 15;
-        unsigned long cycleUpdateInterval = 10000;
+        uint32_t long hueUpdateInterval = 10;
+        uint32_t long fireUpdateInterval = 15;
+        uint32_t long cycleUpdateInterval = 10000;
         
         typedef void (LEDStripSegment::*AnimationsList[13])(); // make sure to update the number (currently 13) when adding animations to the structure below
     

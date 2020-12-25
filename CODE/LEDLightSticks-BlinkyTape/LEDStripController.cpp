@@ -54,19 +54,54 @@ LEDStripController::LEDStripController( CRGB *leds,
 {
 
     _leds = &leds[stripStartIndex];
-    _stripLength = stripLength;
-    _colorPalette = colorPalette;
+    _stripLength = stripLength;    
     _invertStrip = invertStrip;
-    //_stripStartIndex = stripStartIndex;
 
-    _state = RUN_ANIMATION;
-    _showBrightnessColor = CRGB::Blue;
-
-    _lastUpdateTime = 0;
+    // **********************************************************
+    //      TIME KEEPING VARIABLES
+    // ********************************************************** 
+    _timeToUpdate = 0;
     _updateInterval = DEFAULT_UPDATE_INTERVAL;
 
+
+    // **********************************************************
+    //      PIXEL STATE VARIABLES
+    // **********************************************************
+    _hue = 0;
+    _brightness = INITIAL_BRIGHTNESS;
+    _brightness = FULL_BRIGHT;
+    _saturation = FULL_SAT;
+    _paletteHue = 0;
+    _colorPalette = colorPalette;
+
+
+    // **********************************************************
+    //      STRIP STATE VARIABLES
+    // **********************************************************    
+    _state = NORMAL_OPERATION;
+    _showBrightnessColor = CRGB::Blue;
+    _width = _stripLength;
+    _center = stripLength / 2;
+
+
+    // **********************************************************
+    //      ANIMATIOIN SPECIFIC VARIABLES
+    // **********************************************************
+    _activeAnimationIndex = 0;
+    _bpm = 0;
     _bsTimebase = 0;
-    heat = new byte[stripLength];
+    _glitter = false;
+    _forward = true;
+    _heat = new byte[stripLength];
+
+    _numAnimations = 6;
+    _animations = new Animation[_numAnimations];
+    _animations[0] = &LEDStripController::rainbow;
+    _animations[1] = &LEDStripController::rainbowWithGlitter;
+    _animations[2] = &LEDStripController::confetti;
+    _animations[3] = &LEDStripController::sinelon;
+    _animations[4] = &LEDStripController::sinelonDual;
+    _animations[5] = &LEDStripController::palette;
 
 
 }
@@ -82,33 +117,37 @@ LEDStripController::LEDStripController( CRGB *leds,
  * This method is called externally everytime the caller wants our LEDStripController to Update     *
  * it's LEDs array.                                                                                 *
  *--------------------------------------------------------------------------------------------------*/
-void LEDStripController::update() {
+void LEDStripController::update(uint32_t now_ms) 
+{
 
-    // static variable for time keeping and because I'm a n00b
-    static uint32_t now_ms;
-    now_ms = millis();
+    if(now_ms == 0){ now_ms = millis(); }
 
-    if( (now_ms - _lastUpdateTime) > _updateInterval ){
+    if( now_ms >= _timeToUpdate ){
         switch (_state) {
     
-            case RUN_ANIMATION:
-                runAnimation();                     
+            case NORMAL_OPERATION:
+            {
+                (this->*(_animations[_activeAnimationIndex]))();
                 break;
-
-            case TRANSITION_STATE:      
+            }
+            case STATE_TRANSITION:
+            {
                 fastBlink();
                 break;
-
+            }
             case SHOW_BRIGHTNESS_LEVEL:
-                //runAnimation(3, now_ms);
-                break;   
-
+            {
+                setStripCHSV(CHSV( 92*2, FULL_SAT, _brightness));
+                //setStripCRGB(CRGB::Blue);
+                break;
+            }
             default:
+            {
                 break; 
-
+            }
         }
 
-        _lastUpdateTime = now_ms;
+        _timeToUpdate = now_ms + _updateInterval;
     }
 }
 
@@ -120,27 +159,59 @@ void LEDStripController::update() {
  *--------------------------------------------------------------------------------------------------*/
 void LEDStripController::nextAnimation(){
 
-    glitter = !glitter;
+    _activeAnimationIndex++;
+
+    if(_activeAnimationIndex >= _numAnimations ){
+    //if(_activeAnimationIndex >= 6){
+        _activeAnimationIndex = 0;
+    }
+
 
 }
 
 
-void LEDStripController::setState(LEDStripControllerState newState){
+
+void LEDStripController::nextBrightness(){
+
+    if(_brightness <= MAX_BRIGHTNESS - BRIGHTNESS_INCREMENT){
+        _brightness += BRIGHTNESS_INCREMENT;
+    }
+    else {
+        _brightness = LOWEST_BRIGHTNESS;
+    }
+
+}
+
+void LEDStripController::setBrightness(uint8_t brightness){
+    _brightness = brightness;
+}
+
+
+
+
+void LEDStripController::setOperationState(LEDStripControllerState newState){
 
     _state = newState;
 
     switch(_state){
-
-        case TRANSITION_STATE:
+        case NORMAL_OPERATION:
+        {
+            break;
+        }
+        case STATE_TRANSITION:
+        {
             _bsTimebase = millis();
             break;
-
+        }
         case SHOW_BRIGHTNESS_LEVEL:
-            fill_solid( _leds, _stripLength, CRGB::Blue );
+        {
+            //fill_solid( _leds, _stripLength, CRGB::Blue );
             break;
-        
+        }
         default:
+        {
             break;
+        }
     }
 
 }
@@ -150,18 +221,41 @@ void LEDStripController::setState(LEDStripControllerState newState){
 // ****************************************************************************************    
 //      PRIVATE METHODS        
 // ****************************************************************************************
-  //Used for button long press feedback
+
+// *********************************************************************************
+//      Basic functions for setting the strip to a solid color
+// *********************************************************************************
+//Used for button long press feedback
+// creates a sine wave at 60 bpm and then turns the strip on half the time
 void LEDStripController::fastBlink() {
-    uint8_t bpm = 60;
-    uint8_t saw60bpm = beatsin8(bpm, 0, 255, _bsTimebase, 256 / 2 - 1);
-    if (saw60bpm > 127) {
-        fill_solid( _leds, _stripLength, CHSV( 255, 0, 100) );
+    static uint8_t bpm = 60;
+    uint8_t sin60bpm = beatsin8(bpm, 0, 255, _bsTimebase, 256 / 2 - 1);
+    if (sin60bpm > 127) {
+        fill_solid( _leds, _stripLength, CHSV( 255, 0, 80) );
     } 
     else {
         fill_solid( _leds, _stripLength, CRGB::Black );
         //fill_solid(&(_leds[_stripStartIndex]), _stripLength, CRGB::Black);    
     }
 }
+
+
+// set strip to color based on CHSV input
+void LEDStripController::setStripCHSV(CHSV newCHSV) {
+
+    // for( int i = 0; i < _stripLength; ++i) {
+    //     _leds[i] = newCHSV;
+    // }
+    fill_solid( _leds, _stripLength, newCHSV );
+}
+
+
+// set strip to color based on CRGB input
+void LEDStripController::setStripCRGB(CRGB newCRGB) {
+
+    fill_solid( _leds, _stripLength, newCRGB );
+}
+
 
 
 
@@ -171,23 +265,120 @@ void LEDStripController::fastBlink() {
  *                          PLACEHOLDER                                                             *
  *                                                                                                  *
  *--------------------------------------------------------------------------------------------------*/
-void LEDStripController::runAnimation(){
-
+void LEDStripController::rainbow(){
 
     // mimmick led strip animation with rainbow + glitter
     if(_invertStrip){
-        hue++;
+        _paletteHue++;
     }
     else{
-        hue--;
+        _paletteHue--;
     }
     
-    fill_rainbow( _leds, _stripLength, hue, 7);
+    fill_rainbow( _leds, _stripLength, _paletteHue, 7);
 
-    if(glitter){
-        if( random8() < 80) {
-        _leds[ random16(_stripLength) ] += CRGB::White;
-        }        
+    if(_activeAnimationIndex > 3){
+        addGlitter(80);
     }
+
+
+}
+
+
+void LEDStripController::palette(){
+
+    // mimmick led strip animation with rainbow + glitter
+    if(_invertStrip){
+        _paletteHue++;
+    }
+    else{
+        _paletteHue--;
+    }
+    
+    // fill_palette( _leds, _stripLength, _paletteHue, 7, _brightness, LINEARBLEND);
+    fill_rainbow( _leds, _stripLength, _paletteHue, 7);
+}
+
+// the glitter function, randomly selects a pixel and sets it to white (aka glitter)
+void LEDStripController::addGlitter( fract8 chanceOfGlitter ) {
+  if( random8() < chanceOfGlitter) {
+    _leds[ random16(_stripLength) ] += CRGB::White;
+    //_leds[ random16(_stripLength) ] = CHSV( 0, 0, brightness);
+  }
+}
+
+
+// same as the above rainbow function except this also ads glitter
+void LEDStripController::rainbowWithGlitter() {
+  // reference our rainbow function, plus some random sparkly glitter
+  rainbow();
+  addGlitter(80); // MAGIC NUMBER ALERT!!!
+}
+
+// same as the above palette function except this also ads glitter
+void LEDStripController::paletteWithGlitter() {
+  // reference our palette function, plus some random sparkly glitter
+  palette();
+  addGlitter(80); // MAGIC NUMBER ALERT!!!
+}
+
+
+
+
+// Pop and Fade. like confetti!!! random colored speckles that blink in and fade smoothly
+void LEDStripController::confetti() {
+  
+  _paletteHue++;
+  
+  fadeToBlackBy( _leds, _stripLength, 20); // MAGIC NUMBER ALERT!!!
+  uint16_t pos = random16(_stripLength);  
+
+  // here's an alternate method that just cycles through the rainbow  
+  _leds[pos] += CHSV( _paletteHue + random8(64), 200, FULL_BRIGHT); //, _brightness);
+  
+}
+
+
+// Pop and Fade. like confetti!!! random colored speckles that blink in and fade smoothly
+void LEDStripController::confettiFromPalette() {
+  
+  _paletteHue++;
+  
+  fadeToBlackBy( _leds, _stripLength, 20); // MAGIC NUMBER ALERT!!!
+  uint16_t pos = random16(_stripLength);  
+  
+  // if you want to draw from a palette use this method
+  _leds[pos] += ColorFromPalette( _colorPalette, _paletteHue + random8(64), FULL_BRIGHT); //, _brightness);
+  //_leds[pos] += ColorFromPalette( _colorPalette, random8(), FULL_BRIGHT); //, _brightness);
+  
+}
+
+
+// a colored dot sweeping back and forth, with fading trails
+void LEDStripController::sinelon(){
+
+    _paletteHue++;
+
+    fadeToBlackBy( _leds, _stripLength, 20); // MAGIC NUMBER ALERT!!!
+
+    uint16_t pos = beatsin16( 13, 0, _stripLength - 1 );
+
+    _leds[pos] += CHSV( _paletteHue, 255, FULL_BRIGHT);
+
+}
+
+
+// a colored dot sweeping back and forth, with fading trails
+void LEDStripController::sinelonDual(){
+
+    _paletteHue++;
+
+    fadeToBlackBy( _leds, _stripLength, 20); // MAGIC NUMBER ALERT!!!
+
+    uint16_t pos1 = beatsin16( 13, 0, floor(_stripLength/2.0) - 1 );
+    uint16_t pos2 = beatsin16( 13, ceil(_stripLength/2.0) - 1, _stripLength - 1 );
+
+    _leds[pos1] += CHSV( _paletteHue, 255, FULL_BRIGHT);
+    _leds[pos2] += CHSV( _paletteHue, 255, FULL_BRIGHT);
 
 }

@@ -145,7 +145,7 @@ const uint8_t NUM_COLOR_PALETTES = ARRAY_SIZE(COLOR_PALETTES);
 
 
 // *********************************************************************************
-//    DONE SETTING THESE UP
+//    SETTINGS FOR BMP RELATED ANIMATIONS
 // *********************************************************************************
 #define NORMAL_HUE_INDEX_BPM 13
 #define NORMAL_HUE_INDEX_DIRECTION 1 // 1 means normal direction is forward (DONT CHANGE THIS!) if you want to invert a strip, use the INVERT_STRIP argument when calling the LEDStripController constructor
@@ -155,8 +155,7 @@ const uint8_t NUM_COLOR_PALETTES = ARRAY_SIZE(COLOR_PALETTES);
 #define RAINBOW_HUE_INDEX_BPM_MIN   13
 #define RAINBOW_HUE_INDEX_BPM_MAX   13 * NUM_SPEED_LEVELS
 
-#define PALETTE_HUE_INDEX_BPM_MIN   26
-#define PALETTE_HUE_INDEX_BPM_MAX   26 + 13 * NUM_SPEED_LEVELS
+#define PALETTE_HUE_INDEX_BPM_ADD   3
 
 #define SINELON_PIXEL_INDEX_BPM_MIN   13
 #define SINELON_PIXEL_INDEX_BPM_MAX   13 * NUM_SPEED_LEVELS
@@ -204,6 +203,7 @@ class LEDStripController
         // **********************************************************
         uint8_t _hue;
         uint8_t _brightness;
+        uint8_t _brightnessLevel;
         uint8_t _saturation;
         // uint8_t _hueIndex;
         CRGBPalette16 _colorPalette;   // the color palette being used
@@ -218,13 +218,13 @@ class LEDStripController
         
 
         // **********************************************************
-        //      ANIMATIOIN SPECIFIC VARIABLES
+        //      ANIMATION SPECIFIC VARIABLES
         // **********************************************************                
         uint8_t _bpm;
+        uint8_t _speedLevel;
         uint8_t _minBPM;
         uint8_t _maxBPM;
         uint32_t _bsTimebase; // used to reset beatsin() phase to 0
-        uint8_t _speedIndex;
 
 
         uint8_t _forward;  // used to set which direction palette animations are going

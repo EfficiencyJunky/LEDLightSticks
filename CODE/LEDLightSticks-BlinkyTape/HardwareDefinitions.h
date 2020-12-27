@@ -11,8 +11,8 @@
 //    ARDUINO HARDWARE SETTINGS -- Change these according to your hardware
 // *********************************************************************************
 
-// #define __BLINKY_TAPE__
-#define __TEENSY__
+#define __BLINKY_TAPE__
+// #define __TEENSY__
 
 // ******* Blinky Tape Pins *******
 #if defined(__BLINKY_TAPE__)
@@ -22,12 +22,12 @@
     #define LEDS_01_NUM_LEDS 34
 
     // BUTTON DEFINITIONS
-    #define ANIMATION_BUTTON_PIN  11
+    #define PRIMARY_BUTTON_PIN  11
 
     // this is the button sodered directly to the blinkytape
-    #define ANIMATION_BUTTON_PIN_BLINKYTAPE  10
+    #define PRIMARY_BUTTON_PIN_BLINKYTAPE  10
 
-    #define PALETTE_BUTTON_PIN  7
+    #define SECONDARY_BUTTON_PIN  7
 
 
 // ******* Teensy Pins *******
@@ -40,8 +40,8 @@
     #define LEDS_02_NUM_LEDS 30
 
     // BUTTON DEFINITIONS
-    #define ANIMATION_BUTTON_PIN  1
-    #define PALETTE_BUTTON_PIN    2
+    #define PRIMARY_BUTTON_PIN  1
+    #define SECONDARY_BUTTON_PIN    2
 
 #endif
 

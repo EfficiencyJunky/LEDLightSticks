@@ -30,24 +30,24 @@ enum ProgramState {
     };
 
 
-const uint8_t mapToLEDStripControllerState[5] = {
-                              NORMAL_OPERATION,
-                              STATE_TRANSITION,
-                              SHOW_BRIGHTNESS_LEVEL,
-                              SHOW_SPEED_LEVEL,
-                              STATE_TRANSITION
-                          };
+const LEDStripControllerState mapToLEDStripControllerState[5] = {
+                                                                    NORMAL_OPERATION,
+                                                                    STATE_TRANSITION,
+                                                                    SHOW_BRIGHTNESS_LEVEL,
+                                                                    SHOW_SPEED_LEVEL,
+                                                                    STATE_TRANSITION
+                                                                };
 
 
 
 // *********************************************************************************
 //      BUTTON DECLARATIONS
 // *********************************************************************************
-Button animationButton(ANIMATION_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
-Button paletteButton(PALETTE_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
+Button primaryButton(PRIMARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
+Button secondaryButton(SECONDARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
 
 #if defined(__BLINKY_TAPE__)
-  Button animationButton_blinkyTape(ANIMATION_BUTTON_PIN_BLINKYTAPE, PULLUP, INVERT, DEBOUNCE_MS);
+  Button primaryButton_blinkyTape(PRIMARY_BUTTON_PIN_BLINKYTAPE, PULLUP, INVERT, DEBOUNCE_MS);
 #endif
 
 ProgramState programState = ANIMATION_IS_RUNNING;
@@ -64,11 +64,11 @@ ProgramState programState = ANIMATION_IS_RUNNING;
 
 // CRGB Array for each strip.
 CRGB leds_01[LEDS_01_NUM_LEDS];
-CRGB leds_02[LEDS_02_NUM_LEDS];
+// CRGB leds_02[LEDS_02_NUM_LEDS];
 
 // Controller for each led strip (to manage each led array's state without blocking main thread)
 LEDStripController stripController_01sA(leds_01, LEDS_01_NUM_LEDS, DEFAULT_PALETTE, INVERT_STRIP, 0);
-LEDStripController stripController_01sB(leds_02, LEDS_02_NUM_LEDS, DEFAULT_PALETTE, INVERT_STRIP, 0);
+//LEDStripController stripController_01sB(leds_02, LEDS_02_NUM_LEDS, DEFAULT_PALETTE, INVERT_STRIP, 0);
 
 // LEDStripController stripController_01sA(aLEDs, floor(ALEN * 1.0/3.0));
 // LEDStripController stripController_01sB(aLEDs, ceil(ALEN * 1.0/3.0), DEFAULT_PALETTE, !INVERT_STRIP, floor(ALEN * 1.0/3.0));
@@ -78,8 +78,8 @@ LEDStripController stripController_01sB(leds_02, LEDS_02_NUM_LEDS, DEFAULT_PALET
 // Array of pointers to our LEDStripController objects.
 // Makes updating them all at once more efficient
 LEDStripController *stripControllerArray[] = {  
-                                                &stripController_01sA,
-                                                &stripController_01sB
+                                                &stripController_01sA//,
+                                                //&stripController_01sB
                                               };
 
 const uint8_t NUM_STRIP_CONTROLLERS = ARRAY_SIZE(stripControllerArray);
@@ -90,15 +90,15 @@ const uint8_t NUM_STRIP_CONTROLLERS = ARRAY_SIZE(stripControllerArray);
 // *********************************************************************************
 void setup() {
 
-  Serial.begin(9600);
+  // Serial.begin(9600);
 
-  Serial.print("Num Strip Controllers: ");
-  Serial.println(NUM_STRIP_CONTROLLERS);
-  Serial.println("***********************");
+  // Serial.print("Num Strip Controllers: ");
+  // Serial.println(NUM_STRIP_CONTROLLERS);
+  // Serial.println("***********************");
 
-  Serial.print("Num Color Palettes: ");
-  Serial.println(NUM_COLOR_PALETTES);
-  Serial.println("***********************");
+  // Serial.print("Num Color Palettes: ");
+  // Serial.println(NUM_COLOR_PALETTES);
+  // Serial.println("***********************");
 
   // THIS STEP SETS UP THE PHYSICAL REPRESENTATION OF OUR LED STRIPS
   FastLED.addLeds<LED_TYPE, LEDS_01_PIN>(leds_01, LEDS_01_NUM_LEDS);
@@ -154,21 +154,21 @@ void loop() {
 void readAndRespondToButtonInput(uint32_t ms){
 
   //READ THE BUTTONS
-  animationButton.read();
-  paletteButton.read();
+  primaryButton.read();
+  secondaryButton.read();
 
   //STORE THE BUTTON'S UPDATED STATES IN LOCAL VARIABLES
-  uint8_t animationButtPressed = animationButton.wasReleased();
-  uint8_t animationButtHeld = animationButton.pressedFor(LONG_PRESS);
+  uint8_t primaryButtPressed = primaryButton.wasReleased();
+  uint8_t primaryButtHeld = primaryButton.pressedFor(LONG_PRESS);
 
   #if defined(__BLINKY_TAPE__)
-    animationButton_blinkyTape.read();
-    animationButtPressed = ( animationButtPressed || animationButton_blinkyTape.wasReleased() );
-    animationButtHeld = ( animationButtHeld || animationButton_blinkyTape.pressedFor(LONG_PRESS) );
+    primaryButton_blinkyTape.read();
+    primaryButtPressed = ( primaryButtPressed || primaryButton_blinkyTape.wasReleased() );
+    primaryButtHeld = ( primaryButtHeld || primaryButton_blinkyTape.pressedFor(LONG_PRESS) );
   #endif
 
-  uint8_t paletteButtPressed = paletteButton.wasReleased();
-  uint8_t paletteButtHeld = paletteButton.pressedFor(LONG_PRESS);
+  uint8_t secondaryButtPressed = secondaryButton.wasReleased();
+  uint8_t secondaryButtHeld = secondaryButton.pressedFor(LONG_PRESS);
 
 
   // TAKE ACTIONS BASED ON THE CURRENT STATE OF OUR PROGRAM AND THE UPDATED STATE OF THE BUTTONS
@@ -176,41 +176,39 @@ void readAndRespondToButtonInput(uint32_t ms){
 
     // Executes while the animation is running...
     case ANIMATION_IS_RUNNING:
-      // if the animation change button is pressed, change the animation
-      if (animationButtPressed){
+      
+      if (primaryButtPressed){
         nextStripControllerAnimation();    
       }
-      // if the animation change button is held down
-      // put the strip in its transition state
-      else if (animationButtHeld){
+      else if (secondaryButtPressed){
+        nextStripControllerPalette();
+      }      
+      else if (primaryButtHeld){
         updateProgramState(TRANSITION_TO_CHANGE_BRIGHTNESS);
-        //programState = TRANSITION_TO_CHANGE_BRIGHTNESS;
-        //setStripControllerStates(programState);
       }
 
       break;
 
-    //This is a transition state where we need to wait for the operator to release the button, 
+    // This is a transition state where we need to wait for the operator to release the button, 
     // i.e. release the button from a long press, before moving to the CHANGE_BRIGHTNESS state.    
     case TRANSITION_TO_CHANGE_BRIGHTNESS:      
-      // if the animation change button is pressed, move to the CHANGE_BRIGHTNESS state
-      if (animationButtPressed){
+      // if the primary button is released (which appears as a press), move to the CHANGE_BRIGHTNESS state
+      if (primaryButtPressed){
         updateProgramState(CHANGE_BRIGHTNESS);
       }
       break;
 
-    //Watch for another long press which will cause us to
-    //put the strip into "TRANSITION_TO_ANIMATION_IS_RUNNING" which is the fast-blink state.
+    //Watch for button presses or another long press
     case CHANGE_SPEED:
     case CHANGE_BRIGHTNESS:
 
-      if (animationButtPressed){
-        (programState == CHANGE_BRIGHTNESS) ? nextStripControllerBrightness() : nextStripControllerSpeed();
+      if (primaryButtPressed){
+        (programState == CHANGE_BRIGHTNESS) ? nextStripControllerBrightness() : updateProgramState(CHANGE_BRIGHTNESS);
       }
-      else if (paletteButtPressed){
-        (programState == CHANGE_BRIGHTNESS) ? updateProgramState(CHANGE_SPEED) : updateProgramState(CHANGE_BRIGHTNESS);
-      }      
-      else if (animationButtHeld){
+      else if (secondaryButtPressed){
+        (programState == CHANGE_BRIGHTNESS) ? updateProgramState(CHANGE_SPEED) : nextStripControllerSpeed();
+      }
+      else if (primaryButtHeld){
         updateProgramState(TRANSITION_TO_ANIMATION_IS_RUNNING);
       }
 
@@ -219,17 +217,12 @@ void readAndRespondToButtonInput(uint32_t ms){
     //This is a transition state where we just wait for the operator to release the button
     //before moving back to the ANIMATION_IS_RUNNING state.
     case TRANSITION_TO_ANIMATION_IS_RUNNING:
-      if (animationButtPressed){
+      if (primaryButtPressed){
         updateProgramState(ANIMATION_IS_RUNNING);
       }
       break;
   }
 
-
-  //respond to the paletteButton state  
-  if (paletteButtPressed){
-    nextStripControllerPalette();
-  }
 
 }
 

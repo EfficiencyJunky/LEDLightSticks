@@ -73,10 +73,10 @@ enum LEDStripControllerState {
 #define WHITE_HUE   255
 
 // variables for changing brightness
-#define INITIAL_BRIGHTNESS  80  //set between 0 (off) to 255
-#define LOWEST_BRIGHTNESS  40  //set between 0 (off) to 255
+#define MIN_BRIGHTNESS  40  //set between 0 (off) to 255
 #define MAX_BRIGHTNESS   200
-#define BRIGHTNESS_INCREMENT    20 
+#define NUM_BRIGHTNESS_LEVELS    6 
+#define INITIAL_BRIGHTNESS_LEVEL  2
 
 
 //******* FIRE ANIMATION GLOBAL VARIABLES ********
@@ -93,6 +93,31 @@ enum LEDStripControllerState {
 // Higher chance = more roaring fire.  Lower chance = more flickery fire.
 // Default 120, suggested range 50-200.
 #define SPARKING 120
+
+
+//******* ANIMATIONS ********
+enum Animations {
+                    A_RAINBOW,
+                    A_RAINBOW_GLITTER,
+                    A_PALETTE,
+                    A_PALETTE_GLITTER,
+                    A_CONFETTI,
+                    A_SINELON,
+                    A_SINELON_DUAL,
+                    TOTAL_AVAILABLE_ANIMATIONS
+                };
+
+//******* ORDER OF ANIMATIONS ********
+const Animations animationsToUse[] = {
+                                        //A_RAINBOW,
+                                        A_PALETTE,
+                                        //A_RAINBOW_GLITTER,
+                                        A_PALETTE_GLITTER,
+                                        A_CONFETTI,
+                                        A_SINELON,
+                                        A_SINELON_DUAL
+                                     };
+
 
 //******* COLOR PALETTES ********
 const CRGBPalette16 DEFAULT_PALETTE = RainbowColors_p;
@@ -116,11 +141,28 @@ const uint8_t NUM_COLOR_PALETTES = ARRAY_SIZE(COLOR_PALETTES);
 //******* LED STRIP CONTROLLER TIMING VARIABLES ********
 // UPDATE INTERVALS: this is the time in ms between updates to the LEDStripController
 #define DEFAULT_UPDATE_INTERVAL 10
-#define GLOBAL_BPM   13
-#define SINELON_BPM   13
-#define PALETTE_BPM   25
-#define NUM_SPEEDS   10
-#define SPEED_INCREMENT   5
+
+
+
+// *********************************************************************************
+//    DONE SETTING THESE UP
+// *********************************************************************************
+#define NORMAL_HUE_INDEX_BPM 13
+#define NORMAL_HUE_INDEX_DIRECTION 1 // 1 means normal direction is forward (DONT CHANGE THIS!) if you want to invert a strip, use the INVERT_STRIP argument when calling the LEDStripController constructor
+
+#define NUM_SPEED_LEVELS   6
+
+#define RAINBOW_HUE_INDEX_BPM_MIN   13
+#define RAINBOW_HUE_INDEX_BPM_MAX   13 * NUM_SPEED_LEVELS
+
+#define PALETTE_HUE_INDEX_BPM_MIN   26
+#define PALETTE_HUE_INDEX_BPM_MAX   26 + 13 * NUM_SPEED_LEVELS
+
+#define SINELON_PIXEL_INDEX_BPM_MIN   13
+#define SINELON_PIXEL_INDEX_BPM_MAX   13 * NUM_SPEED_LEVELS
+
+
+
 
 
 
@@ -163,7 +205,7 @@ class LEDStripController
         uint8_t _hue;
         uint8_t _brightness;
         uint8_t _saturation;
-        uint8_t _paletteHue;
+        // uint8_t _hueIndex;
         CRGBPalette16 _colorPalette;   // the color palette being used
 
         // **********************************************************
@@ -177,19 +219,23 @@ class LEDStripController
 
         // **********************************************************
         //      ANIMATIOIN SPECIFIC VARIABLES
-        // **********************************************************
-        uint8_t _activeAnimationIndex;
-        uint8_t _numAnimations;
+        // **********************************************************                
         uint8_t _bpm;
+        uint8_t _minBPM;
+        uint8_t _maxBPM;
         uint32_t _bsTimebase; // used to reset beatsin() phase to 0
-        uint8_t _glitter;
+        uint8_t _speedIndex;
+
+
         uint8_t _forward;  // used to set which direction palette animations are going
         byte *_heat; // FIRE - Array of temperature readings at each simulation cell
 
 
-        typedef void (LEDStripController::*Animation)();
+        typedef void (LEDStripController::*AnimationFunction)();
+        
+        AnimationFunction *_animationFunctions;
+        Animations _activeAnimation;
 
-        Animation *_animations;
 
         // **********************************************************
         //      PRIVATE METHODS
@@ -201,14 +247,29 @@ class LEDStripController
         
         // **** Animation Methods ******        
         void rainbow();
-        void palette();
-        void addGlitter( fract8 chanceOfGlitter );
+        void palette();        
         void rainbowWithGlitter();
         void paletteWithGlitter();
         void confetti();
-        void confettiFromPalette();
         void sinelon();
         void sinelonDual();
+
+
+        // **** Animation Helper Methods ******
+        void initializeActiveAnimation();
+        void updateBPM();
+        void addGlitter( fract8 chanceOfGlitter );
+        uint8_t getHueIndex(uint8_t bpm = NORMAL_HUE_INDEX_BPM, uint8_t direction = NORMAL_HUE_INDEX_DIRECTION);
+
+
+
+        // **** OTHER Helper Methods ******
+
+
+
+
+
+
 
 
 /*

@@ -62,7 +62,7 @@ LEDStripController::LEDStripController( CRGB *leds,
     // ********************************************************** 
     _timeToUpdate = 0;
     _updateInterval = DEFAULT_UPDATE_INTERVAL;
-
+    _timeToCycleAnimations = 0;
 
     // **********************************************************
     //      PIXEL STATE VARIABLES
@@ -86,6 +86,12 @@ LEDStripController::LEDStripController( CRGB *leds,
     _bsTimebase = 0;
     _forward = true;
     _heat = new byte[stripLength];
+    _activeCycleAnimation = animationsToUse[0];
+
+    // a failsafe in case someone puts the A_CYCLE_ALL animation in position 0
+    if(_activeCycleAnimation == A_CYCLE_ALL){
+        _activeCycleAnimation = animationsToUse[1];
+    }
 
     // this is the entire available set of animations
     // not to be confused with the animations that we are actually using in our program
@@ -98,7 +104,11 @@ LEDStripController::LEDStripController( CRGB *leds,
     _animationFunctions[A_CONFETTI]         = &LEDStripController::confetti;
     _animationFunctions[A_SINELON]          = &LEDStripController::sinelon;
     _animationFunctions[A_SINELON_DUAL]     = &LEDStripController::sinelonDual;
-
+    _animationFunctions[A_JUGGLE]           = &LEDStripController::juggle;
+    _animationFunctions[A_BPM]              = &LEDStripController::bpm;
+    _animationFunctions[A_FIRE]             = &LEDStripController::fire2012WithPalette;
+    _animationFunctions[A_CYCLE_ALL]        = &LEDStripController::cycleThroughAllAnimations;
+    _animationFunctions[A_SOLID_COLOR]      = &LEDStripController::solidColor;
 
 
     // LOAD OUR SETTINGS SAVED IN EEPROM
@@ -110,14 +120,15 @@ LEDStripController::LEDStripController( CRGB *leds,
     _brightnessLevel = settings.brightnessLevel;
     _brightness = map(_brightnessLevel, 0, NUM_BRIGHTNESS_LEVELS - 1, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
     _colorPalette = COLOR_PALETTES[ settings.paletteIndex ];
-    _speedLevel = settings.speedLevel;
+    _solidColor = SOLID_COLORS[ settings.solidColorIndex ];
+    _speedLevel = settings.speedLevel;    
 
 
     // this function initializes all the animation specific parameters
     // _bpm
     // _minBPM
     // _maxBPM 
-    initializeActiveAnimation();
+    initializeAnimation(_activeAnimation);
 
 
 
@@ -155,7 +166,7 @@ void LEDStripController::update(uint32_t now_ms)
             }
             case SHOW_BRIGHTNESS_LEVEL:
             {
-                setStripCHSV(  CHSV( 90*2, FULL_SAT, _brightness)  );
+                setStripCHSV(  CHSV( 180, FULL_SAT, _brightness)  );
                 break;
             }
             case SHOW_SPEED_LEVEL:
@@ -190,13 +201,13 @@ void LEDStripController::nextAnimation(){
         
         if(animationsToUse[i] == _activeAnimation){
             _activeAnimation = animationsToUse[(i + 1) % ARRAY_SIZE(animationsToUse)];
+
             saveSettingsToEEPROM((i + 1) % ARRAY_SIZE(animationsToUse), EEPROM_ADDR_ANIMATION_INDEX);
             break; 
         }
     }
     
-
-    initializeActiveAnimation();
+    initializeAnimation(_activeAnimation);
 
     return;
 
@@ -204,6 +215,17 @@ void LEDStripController::nextAnimation(){
 
 
 void LEDStripController::nextPalette(){
+
+    if(_activeAnimation == A_SOLID_COLOR){
+        for(uint8_t i = 0; i < ARRAY_SIZE(SOLID_COLORS); i++){
+            
+            if(SOLID_COLORS[i] == _solidColor){
+                _solidColor = SOLID_COLORS[(i + 1) % ARRAY_SIZE(SOLID_COLORS)];
+                saveSettingsToEEPROM((i + 1) % ARRAY_SIZE(SOLID_COLORS), EEPROM_ADDR_SOLID_COLOR_INDEX);
+                return;
+            }
+        }
+    }
 
     // cycle through the array of available palettes.
     // figure out which index matches our current palette
@@ -295,8 +317,8 @@ void LEDStripController::setOperationState(LEDStripControllerState newState){
 //Used for button long press feedback
 // creates a sine wave at 60 bpm and then turns the strip on half the time
 void LEDStripController::fastBlink() {
-    static uint8_t bpm = 60;
-    uint8_t sin60bpm = beatsin8(bpm, 0, 255, _bsTimebase, 256 / 2 - 1);
+    static uint8_t blinkBPM = 60;
+    uint8_t sin60bpm = beatsin8(blinkBPM, 0, 255, _bsTimebase, 256 / 2 - 1);
     if (sin60bpm > 127) {
         fill_solid( _leds, _stripLength, CHSV( 255, 0, 80) );
     } 
@@ -371,11 +393,11 @@ void LEDStripController::confetti() {
         // this method that just cycles through the rainbow and     
         // uses qadd8 to clamp the addition of _brightness+40 to a max of 255
         // then converts the rgb value to CHSV
-        CHSV newHue = rgb2hsv_approximate( ColorFromPalette( _colorPalette, getHueIndex() + random8(32), qadd8(_brightness, 40 )) );// MAGIC NUMBER ALERT!!!
+        CHSV newColor = rgb2hsv_approximate( ColorFromPalette( _colorPalette, getHueIndex() + random8(32), qadd8(_brightness, 40 )) );// MAGIC NUMBER ALERT!!!
         // drop the saturation
-        newHue.saturation = 200; // MAGIC NUMBER ALERT!!!
+        newColor.saturation = 200; // MAGIC NUMBER ALERT!!!
         // add to the mix
-        _leds[pos] += newHue;
+        _leds[pos] += newColor;
         //   _leds[pos] += CHSV( getHueIndex() + random8(64), 200, brightness);
     }
 }
@@ -415,6 +437,138 @@ void LEDStripController::sinelonDual(){
 }
 
 
+void LEDStripController::juggle() {
+    // eight colored dots, weaving in and out of sync with each other
+    fadeToBlackBy( _leds, _stripLength, 20);
+
+    byte dothue = 0;
+
+    for( uint16_t i = 0; i < 8; i++) {
+
+        CHSV newColor = rgb2hsv_approximate( ColorFromPalette( _colorPalette, dothue, qadd8(_brightness, 40 )) );// MAGIC NUMBER ALERT!!!
+        newColor.saturation = 200;
+        _leds[beatsin16( i+_bpm, 0, _stripLength - 1 )] |= newColor;
+        
+        //_leds[beatsin16( i+7, 0, _stripLength - 1 )] |= CHSV(dothue, 200, qadd8(_brightness, 40 ));
+        
+        dothue += 32;
+    }
+}
+
+
+void LEDStripController::bpm(){
+    // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+    // uint8_t beatsPerMinute = 62;
+    uint8_t beatsPerMinute = _bpm + 50;
+
+    uint8_t beat = beatsin8( beatsPerMinute, 64, 255);
+    // uint8_t hue = getHueIndex();
+    uint8_t hue = getHueIndex(_bpm);
+    
+
+    for( uint16_t i = 0; i < _stripLength; i++) { //9948
+        _leds[i] = ColorFromPalette( _colorPalette, hue+(i*2), scale8_video(beat-hue+(i*10), _brightness) );
+    }
+}
+
+
+
+void LEDStripController::fire2012WithPalette() {
+    // Fourth, the most sophisticated: this one sets up a new palette every
+    // time through the loop, based on a hue that changes every time.
+    // The palette is a gradient from black, to a dark color based on the hue,
+    // to a light color based on the hue, to white.
+    //
+    //   static uint8_t hue = 0;
+    //   hue++;
+    //   CRGB darkcolor  = CHSV(hue,255,192); // pure hue, three-quarters brightness
+    //   CRGB lightcolor = CHSV(hue,128,255); // half 'whitened', full brightness
+    //   gPal = CRGBPalette16( CRGB::Black, darkcolor, lightcolor, CRGB::White);
+
+    // Array of temperature readings at each simulation cell
+    // Since this is in a class now, the heat array has been declared as a class member
+    //  static byte heat[_stripLength];
+
+    // Step 1.  Cool down every cell a little
+    for( uint16_t i = 0; i < _stripLength; i++) {
+        _heat[i] = qsub8( _heat[i],  random8(0, ((COOLING * 10) / _stripLength) + 2));
+    }
+
+    // Step 2.  Heat from each cell drifts 'up' and diffuses a little
+    for( uint16_t k= _stripLength - 1; k >= 2; k--) {
+        _heat[k] = (_heat[k - 1] + _heat[k - 2] + _heat[k - 2] ) / 3;
+    }
+    
+    // Step 3.  Randomly ignite new 'sparks' of heat near the bottom
+    if( random8() < SPARKING ) {
+        uint16_t y = random8(7);
+        _heat[y] = qadd8( _heat[y], random8(160,255) );
+    }
+
+    // Step 4.  Map from heat cells to LED colors
+    for( uint16_t j = 0; j < _stripLength; j++) {
+        // Scale the heat value from 0-255 down to 0-240
+        // for best results with color palettes.
+        byte colorindex = scale8( _heat[j], 240);
+        CRGB color = ColorFromPalette( _colorPalette, colorindex, _brightness); // qadd8(_brightness, 40 ));
+        uint16_t pixelIndex;
+        if( _invertStrip ) {
+            pixelIndex = (_stripLength-1) - j;
+        } else {
+            pixelIndex = j;
+        }
+        _leds[pixelIndex] = color;
+    
+    }
+
+
+}
+
+void LEDStripController::cycleThroughAllAnimations(){
+
+
+    (this->*(_animationFunctions[_activeCycleAnimation]))();
+
+
+    // every 10 seconds we switch the animation
+    if( millis() >= _timeToCycleAnimations ){
+
+        for(uint8_t i = 0; i < ARRAY_SIZE(animationsToUse); i++){
+            
+            if(animationsToUse[i] == _activeCycleAnimation){
+                _activeCycleAnimation = animationsToUse[(i + 1) % ARRAY_SIZE(animationsToUse)];   
+
+                // if the next _activeCycleAnimation is the cycel animation or solidColor then we don't want to use it
+                if(_activeCycleAnimation == A_CYCLE_ALL || _activeCycleAnimation == A_SOLID_COLOR){
+                    _activeCycleAnimation = animationsToUse[(i + 2) % ARRAY_SIZE(animationsToUse)];
+                }
+                if(_activeCycleAnimation == A_CYCLE_ALL || _activeCycleAnimation == A_SOLID_COLOR){
+                    _activeCycleAnimation = animationsToUse[(i + 3) % ARRAY_SIZE(animationsToUse)];
+                }
+                break;
+            }
+        }    
+
+        initializeAnimation(_activeCycleAnimation);
+
+        _timeToCycleAnimations = millis() + ANIMATION_CYCLE_INTERVAL;
+    }
+}
+
+
+void LEDStripController::solidColor() {
+
+    if(_solidColor == 255){
+        setStripCHSV(  CHSV( _solidColor, 0, scale8(_brightness, 210) ) );
+    }
+    else{
+        setStripCHSV(  CHSV( _solidColor, FULL_SAT, _brightness)  );
+    }
+
+    // turn off the strip in a "mysterious" way
+    //fadeToBlackBy( _leds, _stripLength, 10);
+}
+
 
 
 
@@ -423,11 +577,12 @@ void LEDStripController::sinelonDual(){
 // **********************************************************
 
 // _bpm, _minBPM, _maxBPM are all initialized here
-void LEDStripController::initializeActiveAnimation(){
+void LEDStripController::initializeAnimation(Animations animationToInitialize){
 
+    _updateInterval = DEFAULT_UPDATE_INTERVAL;
     
     // need to set the BPM according to the animation
-    switch(_activeAnimation){
+    switch(animationToInitialize){
         case A_RAINBOW:
         case A_RAINBOW_GLITTER:
         {
@@ -450,6 +605,27 @@ void LEDStripController::initializeActiveAnimation(){
             _maxBPM = SINELON_PIXEL_INDEX_BPM_MAX;            
             break;
         }        
+        case A_JUGGLE:
+        {
+            _minBPM = SINELON_PIXEL_INDEX_BPM_MIN + JUGGLE_PIXEL_INDEX_BPM_ADD;
+            _maxBPM = SINELON_PIXEL_INDEX_BPM_MAX + JUGGLE_PIXEL_INDEX_BPM_ADD;            
+            break;
+        }
+        case A_FIRE:
+        {
+            //_colorPalette = HeatColors_p;
+            _updateInterval = FIRE_UPDATE_INTERVAL;
+
+            for( uint16_t i = 0; i < _stripLength; i++) {
+                _heat[i] = 0;
+            }
+        }
+        case A_CYCLE_ALL:
+        {
+            _timeToCycleAnimations = millis() + ANIMATION_CYCLE_INTERVAL;
+        }
+        case A_BPM:        
+        case A_SOLID_COLOR:
         default:
         {
             _minBPM = NORMAL_HUE_INDEX_BPM;
@@ -482,7 +658,7 @@ void LEDStripController::updateBPM(){
 void LEDStripController::addGlitter( fract8 chanceOfGlitter ) {
     if( random8() < chanceOfGlitter) {
         // add white pops that are +40 greater than the current brightness level
-        _leds[ random16(_stripLength) ] += CHSV( 0, 0, qadd8(_brightness, 40 ));
+        _leds[ random16(_stripLength) ] += CHSV( 0, 0, qadd8(_brightness, 100 ));
         //_leds[ random16(_stripLength) ] += CRGB::White;
         //_leds[ random16(_stripLength) ] = CHSV( 0, 0, _brightness);
     }
@@ -490,13 +666,13 @@ void LEDStripController::addGlitter( fract8 chanceOfGlitter ) {
 
 
 // get the next hue based on the bpm and if the strip is inverted or not
-uint8_t LEDStripController::getHueIndex(uint8_t bpm, uint8_t direction){
+uint8_t LEDStripController::getHueIndex(uint8_t hueIndexBPM, uint8_t direction){
 
     if(direction == NORMAL_HUE_INDEX_DIRECTION){
-        return beat8(bpm);
+        return beat8(hueIndexBPM);
     }
     else {
-        return 255 - beat8(bpm);
+        return 255 - beat8(hueIndexBPM);
     }    
 }
 
@@ -517,6 +693,7 @@ void LEDStripController::loadSettingsFromEEPROM(){
     settings.animationIndex  = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_ANIMATION_INDEX);
     settings.brightnessLevel = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_BRIGHTNESS_INDEX);
     settings.paletteIndex    = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_PALETTE_INDEX);
+    settings.solidColorIndex = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SOLID_COLOR_INDEX);
     settings.speedLevel      = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SPEED_INDEX);
 
 
@@ -529,14 +706,21 @@ void LEDStripController::loadSettingsFromEEPROM(){
     if(settings.paletteIndex < 0 || settings.paletteIndex > ARRAY_SIZE(COLOR_PALETTES) - 1){
         settings.paletteIndex = 0;
     }
+    if(settings.solidColorIndex < 0 || settings.solidColorIndex > ARRAY_SIZE(SOLID_COLORS) - 1){
+        settings.solidColorIndex = 0;
+    }
     if(settings.speedLevel < 0 || settings.speedLevel > NUM_SPEED_LEVELS - 1){
         settings.speedLevel = 0;
-    }        
+    }
 
 }
 
 
 void LEDStripController::saveSettingsToEEPROM(uint8_t value, uint8_t addrIndex){
+
+    uint16_t numWrites = EEPROM.read(EEPROM_ADDR_BASE);
+    
+    EEPROM.write(EEPROM_ADDR_BASE, numWrites + 1 );
 
     EEPROM.write(EEPROM_ADDR_BASE + sizeof(uint16_t) + addrIndex, value);
 }

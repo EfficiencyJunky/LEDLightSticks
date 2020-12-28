@@ -89,11 +89,13 @@ enum LEDStripControllerState {
 // Less cooling = taller flames.  More cooling = shorter flames.
 // Default 55, suggested range 20-100 
 #define COOLING  55
+// #define COOLING  49
 
 // SPARKING: What chance (out of 255) is there that a new spark will be lit?
 // Higher chance = more roaring fire.  Lower chance = more flickery fire.
 // Default 120, suggested range 50-200.
 #define SPARKING 120
+// #define SPARKING 60
 
 
 //******* ANIMATIONS ********
@@ -105,18 +107,28 @@ enum Animations {
                     A_CONFETTI,
                     A_SINELON,
                     A_SINELON_DUAL,
+                    A_JUGGLE,
+                    A_BPM,
+                    A_FIRE,
+                    A_CYCLE_ALL,
+                    A_SOLID_COLOR,
                     TOTAL_AVAILABLE_ANIMATIONS
                 };
 
 //******* ORDER OF ANIMATIONS ********
 const Animations animationsToUse[] = {
-                                        //A_RAINBOW,
-                                        A_PALETTE,
-                                        //A_RAINBOW_GLITTER,
-                                        A_PALETTE_GLITTER,
+                                        A_RAINBOW,
+                                        A_RAINBOW_GLITTER,
                                         A_CONFETTI,
                                         A_SINELON,
-                                        A_SINELON_DUAL
+                                        A_SINELON_DUAL,
+                                        A_JUGGLE,
+                                        A_PALETTE,
+                                        A_PALETTE_GLITTER,
+                                        A_BPM,                                        
+                                        A_FIRE,
+                                        A_CYCLE_ALL,
+                                        A_SOLID_COLOR,
                                      };
 
 const uint8_t NUM_ANIMATIONS_TO_USE = ARRAY_SIZE(animationsToUse);
@@ -135,6 +147,21 @@ const CRGBPalette16 COLOR_PALETTES[] = {
                                             RainbowStripeColors_p,
                                         };
 
+
+const uint8_t SOLID_COLORS[] = {
+                                    0,    // red
+                                    32,   // orange
+                                    64,   // yellow
+                                    96,   // green
+                                    128,  // aqua
+                                    160,  // blue
+                                    192,  // purple
+                                    224,  // pink
+                                    255   // white
+                                };
+
+
+
 const uint8_t NUM_COLOR_PALETTES = ARRAY_SIZE(COLOR_PALETTES);
 
 // *********************************************************************************
@@ -143,6 +170,8 @@ const uint8_t NUM_COLOR_PALETTES = ARRAY_SIZE(COLOR_PALETTES);
 //******* LED STRIP CONTROLLER TIMING VARIABLES ********
 // UPDATE INTERVALS: this is the time in ms between updates to the LEDStripController
 #define DEFAULT_UPDATE_INTERVAL 10
+#define FIRE_UPDATE_INTERVAL 15
+#define ANIMATION_CYCLE_INTERVAL 10000
 
 
 
@@ -161,6 +190,7 @@ const uint8_t NUM_COLOR_PALETTES = ARRAY_SIZE(COLOR_PALETTES);
 
 #define SINELON_PIXEL_INDEX_BPM_MIN   13
 #define SINELON_PIXEL_INDEX_BPM_MAX   13 * NUM_SPEED_LEVELS
+#define JUGGLE_PIXEL_INDEX_BPM_ADD    -6
 
 
 
@@ -171,7 +201,8 @@ const uint8_t NUM_COLOR_PALETTES = ARRAY_SIZE(COLOR_PALETTES);
 #define EEPROM_ADDR_ANIMATION_INDEX 0
 #define EEPROM_ADDR_BRIGHTNESS_INDEX 1
 #define EEPROM_ADDR_PALETTE_INDEX 2
-#define EEPROM_ADDR_SPEED_INDEX 3
+#define EEPROM_ADDR_SOLID_COLOR_INDEX 3
+#define EEPROM_ADDR_SPEED_INDEX 4
 
 
 // *********************************************************************************
@@ -205,7 +236,7 @@ class LEDStripController
         // **********************************************************        
         uint32_t _timeToUpdate;       // time the .update() function should be called
         uint8_t _updateInterval;      // milliseconds between updates. Likely needs to be 5-10
-
+        uint32_t _timeToCycleAnimations;
 
         // **********************************************************
         //      PIXEL STATE VARIABLES
@@ -214,8 +245,9 @@ class LEDStripController
         uint8_t _brightness;
         uint8_t _brightnessLevel;
         uint8_t _saturation;
-        // uint8_t _hueIndex;
         CRGBPalette16 _colorPalette;   // the color palette being used
+        uint8_t _solidColor;
+
 
         // **********************************************************
         //      STRIP STATE VARIABLES
@@ -238,7 +270,7 @@ class LEDStripController
 
         uint8_t _forward;  // used to set which direction palette animations are going
         byte *_heat; // FIRE - Array of temperature readings at each simulation cell
-
+        uint8_t _cycleAnimationsIndex;  
 
         // **********************************************************
         //      VARIABLES FOR ANIMATION FUNCTIONS
@@ -247,6 +279,7 @@ class LEDStripController
         
         AnimationFunction *_animationFunctions;
         Animations _activeAnimation;
+        Animations _activeCycleAnimation;
 
 
         // **********************************************************
@@ -256,6 +289,7 @@ class LEDStripController
             uint8_t animationIndex;
             uint8_t brightnessLevel;
             uint8_t paletteIndex;
+            uint8_t solidColorIndex;
             uint8_t speedLevel;
         } settings;
 
@@ -276,58 +310,24 @@ class LEDStripController
         void confetti();
         void sinelon();
         void sinelonDual();
+        void juggle();
+        void bpm();
+        void fire2012WithPalette();
+        void cycleThroughAllAnimations();
+        void solidColor();
 
 
         // **** Animation Helper Methods ******
-        void initializeActiveAnimation();
+        void initializeAnimation(Animations animationToInitialize);
         void updateBPM();
         void addGlitter( fract8 chanceOfGlitter );
-        uint8_t getHueIndex(uint8_t bpm = NORMAL_HUE_INDEX_BPM, uint8_t direction = NORMAL_HUE_INDEX_DIRECTION);
+        uint8_t getHueIndex(uint8_t hueIndexBPM = NORMAL_HUE_INDEX_BPM, uint8_t direction = NORMAL_HUE_INDEX_DIRECTION);
 
 
 
         // **** OTHER Helper Methods ******
         void loadSettingsFromEEPROM();
         void saveSettingsToEEPROM(uint8_t value, uint8_t addrIndex);
-
-
-
-
-
-
-/*
-            
-        uint32_t long hueUpdateInterval = 10;
-        uint32_t long fireUpdateInterval = 15;
-        uint32_t long cycleUpdateInterval = 10000;
-        
-        typedef void (LEDStripSegment::*AnimationsList[13])(); // make sure to update the number (currently 13) when adding animations to the structure below
-    
-        AnimationsList gPatterns = { &LEDStripSegment::rainbow, 
-                                    &LEDStripSegment::rainbowWithGlitter,
-                                    &LEDStripSegment::confetti,
-                                    //&LEDStripSegment::patrioticConfetti,
-                                    &LEDStripSegment::paletteConfetti,
-                                    &LEDStripSegment::sinelon,
-                                    &LEDStripSegment::sinelon2,
-                                    &LEDStripSegment::juggle,
-                                    &LEDStripSegment::gearDots,
-                                    &LEDStripSegment::bpm, 
-                                    &LEDStripSegment::FillLEDsFromPaletteColors,
-                                    &LEDStripSegment::fire2012WithPalette, // always must be third to last
-                                    &LEDStripSegment::cycle, //this animation always must be second to last
-                                    &LEDStripSegment::fadeToBlack};
-        
-
-
-        uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
-        uint8_t gCurrentPaletteNumber = 0; // Index number of which palette is current
-        uint8_t gHue = 0; // rotating "base color" used by many of the patterns
-
-        uint8_t cycleFunctionPatternIndex = 0;
-
-*/
-
 
 
 };

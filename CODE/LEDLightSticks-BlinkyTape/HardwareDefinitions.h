@@ -52,7 +52,7 @@
 // *********************************************************************************
 
 #define LED_TYPE NEOPIXEL
-#define FRAMES_PER_SECOND  60
+#define FRAMES_PER_SECOND  120
 
 #define FAST_LED_MAX_BRIGHTNESS 255
 

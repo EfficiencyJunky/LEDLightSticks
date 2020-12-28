@@ -13,14 +13,14 @@
 
 const uint8_t display_saved_settings = true;
 
-const uint8_t overwrite_saved_settings = true;
+const uint8_t overwrite_saved_settings = false;
 uint8_t animationIndexVal = 0;
 uint8_t brightnessIndexVal = 0;
 uint8_t paletteIndexVal = 0;
+uint8_t solidColorIndexVal = 0;
 uint8_t speedIndexVal = 0;
 
-
-const uint8_t overwrite_numWrites = true;
+const uint8_t overwrite_numWrites = false;
 uint16_t numWrites = 0;
 
 
@@ -28,7 +28,8 @@ uint16_t numWrites = 0;
 #define EEPROM_ADDR_ANIMATION_INDEX 0
 #define EEPROM_ADDR_BRIGHTNESS_INDEX 1
 #define EEPROM_ADDR_PALETTE_INDEX 2
-#define EEPROM_ADDR_SPEED_INDEX 3
+#define EEPROM_ADDR_SOLID_COLOR_INDEX 3
+#define EEPROM_ADDR_SPEED_INDEX 4
 
 const int lastSettingsAddress = EEPROM_NUMWRITES_ADDR + sizeof(numWrites) + EEPROM_ADDR_SPEED_INDEX;
 
@@ -101,7 +102,7 @@ void loop() {
     ++address &= EEPROM.length() - 1;
   ***/
 
-  delay(100);
+  delay(250);
 }
 
 
@@ -170,6 +171,20 @@ void displaySavedSettings(int addr){
   Serial.print(val, DEC);
   Serial.println();
   Serial.println("*************");
+
+  addr++;
+  val = EEPROM.read(addr);
+  Serial.println("SOLID COLOR Index: ");
+  Serial.print("addr");  
+  Serial.print("\t");
+  Serial.print("val");
+  Serial.println();
+  Serial.print(addr);
+  Serial.print("\t");
+  Serial.print(val, DEC);
+  Serial.println();
+  Serial.println("*************");
+
   
   addr++;
   val = EEPROM.read(addr);
@@ -209,6 +224,7 @@ void overwriteSavedSettings(){
   int animationAddr   = EEPROM_NUMWRITES_ADDR + sizeof(numWrites) + EEPROM_ADDR_ANIMATION_INDEX;
   int brightnessAddr  = EEPROM_NUMWRITES_ADDR + sizeof(numWrites) + EEPROM_ADDR_BRIGHTNESS_INDEX;
   int paletteAddr     = EEPROM_NUMWRITES_ADDR + sizeof(numWrites) + EEPROM_ADDR_PALETTE_INDEX;
+  int solidColorAddr  = EEPROM_NUMWRITES_ADDR + sizeof(numWrites) + EEPROM_ADDR_SOLID_COLOR_INDEX;
   int speedAddr       = EEPROM_NUMWRITES_ADDR + sizeof(numWrites) + EEPROM_ADDR_SPEED_INDEX;
   
   // overwrite animation index
@@ -238,6 +254,15 @@ void overwriteSavedSettings(){
   Serial.print(paletteAddr);
   Serial.print("\t");
   Serial.print(paletteIndexVal);
+  Serial.println();
+
+  // overwrite palette index
+  EEPROM.write(solidColorAddr, solidColorIndexVal);
+  Serial.print("Palette - ");  
+  Serial.print("\t");
+  Serial.print(solidColorAddr);
+  Serial.print("\t");
+  Serial.print(solidColorIndexVal);
   Serial.println();
 
   

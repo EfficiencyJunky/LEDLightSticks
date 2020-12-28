@@ -58,6 +58,13 @@ enum LEDStripControllerState {
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 //#define ENUM_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
+#define EEPROM_ADDR_BASE 31
+#define EEPROM_ADDR_ANIMATION_INDEX 1
+#define EEPROM_ADDR_BRIGHTNESS_INDEX 2
+#define EEPROM_ADDR_PALETTE_INDEX 3
+#define EEPROM_ADDR_SPEED_INDEX 4
+
+
 // *******  Human readable definition for when we want to invert a strip ******* 
 // this will set whether or not the strip is inverted
 // meaning the beginning is the end and the end is the beginning

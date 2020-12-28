@@ -54,7 +54,7 @@ LEDStripController::LEDStripController( CRGB *leds,
 {
 
     _leds = &leds[stripStartIndex];
-    _stripLength = stripLength;    
+    _stripLength = stripLength;
     _invertStrip = invertStrip;
 
     // **********************************************************
@@ -68,9 +68,6 @@ LEDStripController::LEDStripController( CRGB *leds,
     //      PIXEL STATE VARIABLES
     // **********************************************************
     _hue = 0;
-    _colorPalette = colorPalette;
-    _brightnessLevel = NUM_BRIGHTNESS_LEVELS - 1;
-    _brightness = map(_brightnessLevel, 0, NUM_BRIGHTNESS_LEVELS - 1, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
     _saturation = FULL_SAT;    
 
 
@@ -87,7 +84,6 @@ LEDStripController::LEDStripController( CRGB *leds,
     //      ANIMATION SPECIFIC VARIABLES
     // **********************************************************
     _bsTimebase = 0;
-    _speedLevel = 0;
     _forward = true;
     _heat = new byte[stripLength];
 
@@ -103,10 +99,20 @@ LEDStripController::LEDStripController( CRGB *leds,
     _animationFunctions[A_SINELON]          = &LEDStripController::sinelon;
     _animationFunctions[A_SINELON_DUAL]     = &LEDStripController::sinelonDual;
 
-    // IMPORTANT: don't change this line!!!
-    // we set the "animationsToUse" array externally and that is how we order our animations not with the above array
-    _activeAnimation = animationsToUse[0];
-    
+
+
+    // LOAD OUR SETTINGS SAVED IN EEPROM
+    loadSettingsFromEEPROM();
+
+    // IMPORTANT: don't change these lines!!!
+    // this is where we use the settings to initialize our program 
+    _activeAnimation = animationsToUse[ settings.animationIndex ];    
+    _brightnessLevel = settings.brightnessLevel;
+    _brightness = map(_brightnessLevel, 0, NUM_BRIGHTNESS_LEVELS - 1, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
+    _colorPalette = COLOR_PALETTES[ settings.paletteIndex ];
+    _speedLevel = settings.speedLevel;
+
+
     // this function initializes all the animation specific parameters
     // _bpm
     // _minBPM
@@ -116,6 +122,7 @@ LEDStripController::LEDStripController( CRGB *leds,
 
 
 }
+
 
 
 
@@ -183,7 +190,8 @@ void LEDStripController::nextAnimation(){
         
         if(animationsToUse[i] == _activeAnimation){
             _activeAnimation = animationsToUse[(i + 1) % ARRAY_SIZE(animationsToUse)];
-           break; 
+            saveSettingsToEEPROM((i + 1) % ARRAY_SIZE(animationsToUse), EEPROM_ADDR_ANIMATION_INDEX);
+            break; 
         }
     }
     
@@ -201,10 +209,11 @@ void LEDStripController::nextPalette(){
     // figure out which index matches our current palette
     // increment the index and modulo with the size of the array
     // use that incremented index as the new index into our pallettes array
-    for(uint8_t i = 0; i < NUM_COLOR_PALETTES; i++){
+    for(uint8_t i = 0; i < ARRAY_SIZE(COLOR_PALETTES); i++){
         
         if(COLOR_PALETTES[i] == _colorPalette){
-            _colorPalette = COLOR_PALETTES[(i + 1) % NUM_COLOR_PALETTES];
+            _colorPalette = COLOR_PALETTES[(i + 1) % ARRAY_SIZE(COLOR_PALETTES)];
+            saveSettingsToEEPROM((i + 1) % ARRAY_SIZE(COLOR_PALETTES), EEPROM_ADDR_PALETTE_INDEX);
             return;
         }
     }
@@ -215,9 +224,11 @@ void LEDStripController::nextPalette(){
 
 void LEDStripController::nextBrightness(){
 
-    _brightnessLevel = (_brightnessLevel + 1) % NUM_BRIGHTNESS_LEVELS;
+    _brightnessLevel = (_brightnessLevel + 1) % NUM_BRIGHTNESS_LEVELS;    
 
     _brightness = map(_brightnessLevel, 0, NUM_BRIGHTNESS_LEVELS - 1, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
+
+    saveSettingsToEEPROM(_brightnessLevel, EEPROM_ADDR_BRIGHTNESS_INDEX);
 
 }
 
@@ -227,6 +238,8 @@ void LEDStripController::nextSpeed(){
     _speedLevel = (_speedLevel + 1) % NUM_SPEED_LEVELS;
 
     updateBPM();
+
+    saveSettingsToEEPROM(_speedLevel, EEPROM_ADDR_SPEED_INDEX);
 
 }
 
@@ -494,3 +507,36 @@ uint8_t LEDStripController::getHueIndex(uint8_t bpm, uint8_t direction){
 // **********************************************************
 //      OTHER HELPER METHODS
 // **********************************************************
+
+void LEDStripController::loadSettingsFromEEPROM(){
+    // settings.animationIndex = 2; // confetti
+    // settings.brightnessLevel = NUM_BRIGHTNESS_LEVELS - 1; // MAX_BRIGHTNESS
+    // settings.paletteIndex = 6; // HeatColors_p
+    // settings.speedLevel = NUM_SPEED_LEVELS - 1; // maximum speed
+
+    settings.animationIndex  = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_ANIMATION_INDEX);
+    settings.brightnessLevel = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_BRIGHTNESS_INDEX);
+    settings.paletteIndex    = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_PALETTE_INDEX);
+    settings.speedLevel      = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SPEED_INDEX);
+
+
+    if(settings.animationIndex < 0 || settings.animationIndex > ARRAY_SIZE(animationsToUse) - 1){
+        settings.animationIndex = 0;
+    }
+    if(settings.brightnessLevel < 0 || settings.brightnessLevel > NUM_BRIGHTNESS_LEVELS - 1){
+        settings.brightnessLevel = 0;
+    }
+    if(settings.paletteIndex < 0 || settings.paletteIndex > ARRAY_SIZE(COLOR_PALETTES) - 1){
+        settings.paletteIndex = 0;
+    }
+    if(settings.speedLevel < 0 || settings.speedLevel > NUM_SPEED_LEVELS - 1){
+        settings.speedLevel = 0;
+    }        
+
+}
+
+
+void LEDStripController::saveSettingsToEEPROM(uint8_t value, uint8_t addrIndex){
+
+    EEPROM.write(EEPROM_ADDR_BASE + sizeof(uint16_t) + addrIndex, value);
+}

@@ -31,7 +31,7 @@
 //            Includes and Defines - FastLED required
 // *********************************************************************************
 #include <FastLED.h>
-
+#include <EEPROM.h>
 
 // FASTLED_USING_NAMESPACE
 
@@ -57,12 +57,6 @@ enum LEDStripControllerState {
 // assuming all of the elements are the same size as the element in position 0
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 //#define ENUM_SIZE(A) (sizeof(A) / sizeof((A)[0]))
-
-#define EEPROM_ADDR_BASE 31
-#define EEPROM_ADDR_ANIMATION_INDEX 1
-#define EEPROM_ADDR_BRIGHTNESS_INDEX 2
-#define EEPROM_ADDR_PALETTE_INDEX 3
-#define EEPROM_ADDR_SPEED_INDEX 4
 
 
 // *******  Human readable definition for when we want to invert a strip ******* 
@@ -125,6 +119,7 @@ const Animations animationsToUse[] = {
                                         A_SINELON_DUAL
                                      };
 
+const uint8_t NUM_ANIMATIONS_TO_USE = ARRAY_SIZE(animationsToUse);
 
 //******* COLOR PALETTES ********
 const CRGBPalette16 DEFAULT_PALETTE = RainbowColors_p;
@@ -169,7 +164,14 @@ const uint8_t NUM_COLOR_PALETTES = ARRAY_SIZE(COLOR_PALETTES);
 
 
 
-
+// our base address is where we are starting our storage of settings
+// the first two bytes are used to store the total number of times 
+// we've written to EEPROM just in case it gets super high and we need to change addresses
+#define EEPROM_ADDR_BASE 31
+#define EEPROM_ADDR_ANIMATION_INDEX 0
+#define EEPROM_ADDR_BRIGHTNESS_INDEX 1
+#define EEPROM_ADDR_PALETTE_INDEX 2
+#define EEPROM_ADDR_SPEED_INDEX 3
 
 
 // *********************************************************************************
@@ -238,10 +240,24 @@ class LEDStripController
         byte *_heat; // FIRE - Array of temperature readings at each simulation cell
 
 
+        // **********************************************************
+        //      VARIABLES FOR ANIMATION FUNCTIONS
+        // **********************************************************   
         typedef void (LEDStripController::*AnimationFunction)();
         
         AnimationFunction *_animationFunctions;
         Animations _activeAnimation;
+
+
+        // **********************************************************
+        //      STRUCT TO SAVE SETTINGS
+        // **********************************************************   
+        struct Settings {
+            uint8_t animationIndex;
+            uint8_t brightnessLevel;
+            uint8_t paletteIndex;
+            uint8_t speedLevel;
+        } settings;
 
 
         // **********************************************************
@@ -271,8 +287,8 @@ class LEDStripController
 
 
         // **** OTHER Helper Methods ******
-
-
+        void loadSettingsFromEEPROM();
+        void saveSettingsToEEPROM(uint8_t value, uint8_t addrIndex);
 
 
 

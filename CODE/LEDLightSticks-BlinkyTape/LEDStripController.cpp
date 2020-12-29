@@ -33,6 +33,190 @@
 
 
 #include "LEDStripController.h"
+#include "GradientPalettes.h"
+
+// **********************************************************
+//      STATIC MEMBER DEFINITIONS
+// **********************************************************
+//******* ORDER OF ANIMATIONS ********
+// this is how we set the order in which animations actually appear
+const Animations LEDStripController::animationsToUse[] = {
+                                                            A_RAINBOW,
+                                                            A_RAINBOW_GLITTER,
+                                                            A_CONFETTI,
+                                                            A_SINELON,
+                                                            A_SINELON_DUAL,
+                                                            A_JUGGLE,
+                                                            A_PALETTE,
+                                                            A_PALETTE_GLITTER,
+                                                            A_BPM, 
+                                                            A_FIRE,
+                                                            A_CYCLE_ALL,
+                                                            A_SOLID_COLOR,
+                                                            A_COLORWAVES
+                                                        };
+
+//******* ORDER OF COLOR PALETTES ********
+const CRGBPalette16 LEDStripController::COLOR_PALETTES[] = {
+                                                                //RainbowColors_p, // YES
+                                                                tk_Party,
+                                                                ForestColors_p,  // OK+ green
+                                                                //CloudColors_p,   // not as good
+                                                                //LavaColors_p,   // YES
+                                                                //OceanColors_p,  // NO
+                                                                PartyColors_p, // YES!!
+                                                                //HeatColors_p, // fire yess
+                                                                //lava_gp,
+                                                                tk_Fire,
+                                                                //tk_Fire_Blue
+                                                                //RainbowStripeColors_p, // NOPE
+                                                            };
+
+
+
+// ORIGINAL FAVORITES
+// const TProgmemRGBGradientPalettePtr LEDStripController::FAVORITE_PALETTES[] = {
+//     Rainbow_gp,                 // classic FastLED
+//     rainbowsherbet_gp,          // YES!    // Unicorn colors (aka yummy)
+//     ib_jul01_gp,                // YES!!   // dragon colors - green and red fire orange
+//     Coral_reef_gp,              // WHOA    // cool blue to warm blue
+//     Sunset_Real_gp,             // NOICE   // purple, pink, and orange
+//     Analogous_1_gp,             // NOICE   // retro wave - purple and pink
+// }
+
+// *************** PINK PURPLE ***************************
+// FIRST ROUND -- KEEP
+// const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
+//     BlacK_Red_Magenta_Yellow_gp, // OK+    // Tropical - fruity - yellow, red, purple
+//     Sunset_Real_gp,             // NOICE    // purple, pink, and orange
+//     Analogous_1_gp,             // NOICE    // retro wave - purple and pink
+//     rgi_15_gp,                  // OK+dark  // magenta, and lavender with dark bands
+//     es_pinksplash_07_gp,        // NOICE+bright      // magenta, lavender, and almost white
+// };
+
+
+// const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
+//     bhw1_28_gp,                 // OK blue - basic       // light blue, light purple
+//     gr65_hult_gp,               // OK+blue - less basic      // bright blue, light purple, white
+//     Pink_Purple_gp,              // OK sofgurPurp   // soothing purple, blue, white
+//     ib15_gp,                    // OK+sofgirPink    // soft gurl Desaturated pink and blue    
+// };
+
+
+// PINK PURPLE -- DON'T KEEP
+// const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
+    //Magenta_Evening_gp,         // OK+plain      // magenta and purple (no white)
+    //es_pinksplash_08_gp,        // OK different      // pink, purple, white (dreamsicle) similar to below
+    //Fuschia_7_gp,               // OK+balanced (boring?)      // bright purple blue pink
+    //BlacK_Magenta_Red_gp,       // OK+      // magenta purple and black
+// }
+// *************** PINK PURPLE ***************************
+
+
+// *************** BLUE ***************************
+// none of these are great
+// const CRGBPalette16 LEDStripController::GRADIENT_PALETTES[] = {    
+//     es_ocean_breeze_036_gp,     // OK       // Sky blue, and white
+//     OceanColors_p,
+//     CloudColors_p
+// };
+// *************** BLUE ***************************
+
+
+
+
+
+
+// *************** GREEN ***************************
+
+//const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
+//    Colorfull_gp,               // OK    // desaturated green, purple blue white
+//    es_landscape_64_gp,         // MEH    // green, blue, white
+//     es_emerald_dragon_08_gp,    // OK    // Alien lime green
+//     es_rivendell_15_gp,         // MEH      // grey green, and white
+//}
+
+// *************** GREEN ***************************
+
+
+
+
+
+
+// const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
+const CRGBPalette16 LEDStripController::GRADIENT_PALETTES[] = {    
+    tk_Party,
+    // lava_gp,
+    //ForestColors_p,
+    // HeatColors_p,
+    PartyColors_p,
+    tk_Fire_Blue
+};
+
+
+
+
+// *************** ALL OPTIONS ***************************
+// const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
+//     rainbowsherbet_gp,          // YES!    // Unicorn colors (aka yummy)
+//     ib_jul01_gp,                // YES!!   // dragon colors - green and red fire orange
+//     Coral_reef_gp,              // WHOA    // cool blue to warm blue
+//     Sunset_Real_gp,             // NOICE   // purple, pink, and orange
+//     Analogous_1_gp,             // NOICE   // retro wave - purple and pink
+//     BlacK_Red_Magenta_Yellow_gp,// OK+    // Tropical - fruity - yellow, red, purple
+//     Blue_Cyan_Yellow_gp         // OK+    // Tropical - carribean - beach
+//     es_autumn_19_gp,            // OK+    // interesting redish orange yellow - fall colors
+//     rgi_15_gp,                  // OK+      // magenta, and lavender
+//     es_pinksplash_07_gp,        // OK+    // magenta, lavender, and almost white
+//     gr65_hult_gp,               // OK+    // bright blue, light purple, white
+//     ib15_gp,                    // OK+    // soft gurl Desaturated pink and blue
+//     Fuschia_7_gp,               // OK+    // bright purple blue pink
+//     BlacK_Magenta_Red_gp,       // OK+    // magenta purple and black
+//     bhw1_28_gp,                 // OK       // light blue, light purple
+//     es_ocean_breeze_036_gp,     // OK       // Sky blue, and white
+//     es_emerald_dragon_08_gp,    // OK    // Alien lime green
+//     lava_gp,                    // OK    // (test to see if it's the same as our other one)
+//     Colorfull_gp,               // OK    // desaturated green, purple blue white
+//     Pink_Purple_gp,             // OK    // soothing purple, blue, white
+//     BlacK_Blue_Magenta_White_gp,// OK    // like a desaturated american flag - not pleasing to cache
+//     Magenta_Evening_gp,         // OK+    // magenta and purple (no white)
+//     es_pinksplash_08_gp,        // OK      // pink, purple, white (dreamsicle) similar to below
+//     es_landscape_33_gp,         // OK    // blue and gold (I think piss)
+//     fire_gp,                    // OK-ish    // Candy corn colors
+//     gr64_hult_gp,               // MEH    // similar to above
+//     es_rivendell_15_gp,         // MEH      // grey green, and white
+//     es_landscape_64_gp,         // MEH    // green, blue, white
+//     // departure_gp,               // EW    // green with white and weird color
+//     //GMT_drywet_gp,              // MEH    // blue, yellowish
+//     // es_vintage_57_gp,           // NOPE    // Unhealthy piss (bloody piss)
+//     //es_ocean_breeze_068_gp,     // OK       // same as above but with white
+//     //retro2_16_gp,               // NOPE     // piss colors
+//     //es_vintage_01_gp,           // EWEWEW  // piss colors (chaplin)
+// };
+// *************** ALL OPTIONS ***************************
+
+
+
+
+
+
+
+
+
+//******* ORDER OF SOLID COLORS ********
+// based off of the FastLED specification for HSV colors in the "Rainbow" color space
+const uint8_t LEDStripController::SOLID_COLORS[] = {
+                                                        0,    // red
+                                                        32,   // orange
+                                                        64,   // yellow
+                                                        96,   // green
+                                                        128,  // aqua
+                                                        160,  // blue
+                                                        192,  // purple
+                                                        224,  // pink
+                                                        255   // white
+                                                    };
+
 
 
 /*--------------------------------------------------------------------------------------------------*
@@ -93,9 +277,11 @@ LEDStripController::LEDStripController( CRGB *leds,
         _activeCycleAnimation = animationsToUse[1];
     }
 
-    // this is the entire available set of animations
-    // not to be confused with the animations that we are actually using in our program
-    // that is set using the "animationsToUse" array which is a globally defined variable
+    // LOAD THE AnimationFunction ARRAY WITH THE ENTIRE SET OF AVAILABLE Animations
+    // !!!!! NOTE !!!!!
+    // THIS ARRAY IS NOT IN ANY SPECIFIC ORDER. 
+    // THE ORDER THE ANIMATIONS WILL APPEAR IS DEFINED BY THE "animationsToUse[]"" ARRAY
+    // which is a globally defined variable
     _animationFunctions = new AnimationFunction[TOTAL_AVAILABLE_ANIMATIONS];
     _animationFunctions[A_RAINBOW]          = &LEDStripController::rainbow;
     _animationFunctions[A_RAINBOW_GLITTER]  = &LEDStripController::rainbowWithGlitter;
@@ -109,10 +295,16 @@ LEDStripController::LEDStripController( CRGB *leds,
     _animationFunctions[A_FIRE]             = &LEDStripController::fire2012WithPalette;
     _animationFunctions[A_CYCLE_ALL]        = &LEDStripController::cycleThroughAllAnimations;
     _animationFunctions[A_SOLID_COLOR]      = &LEDStripController::solidColor;
+    _animationFunctions[A_COLORWAVES]       = &LEDStripController::colorwaves;
 
 
     // LOAD OUR SETTINGS SAVED IN EEPROM
-    loadSettingsFromEEPROM();
+    Settings settings;
+    loadSettingsFromEEPROM(&settings);
+
+    // THIS IS ANOTHER WAY TO DO THE ABOVE
+    // requires a function that returns a Settings struct
+    // Settings settings{ loadSettingsFromEEPROM() };
 
     // IMPORTANT: don't change these lines!!!
     // this is where we use the settings to initialize our program 
@@ -123,14 +315,14 @@ LEDStripController::LEDStripController( CRGB *leds,
     _solidColor = SOLID_COLORS[ settings.solidColorIndex ];
     _speedLevel = settings.speedLevel;    
 
+    _gradientPaletteIndex = 0;
+    _gradientPalette = GRADIENT_PALETTES[ _gradientPaletteIndex ];
 
     // this function initializes all the animation specific parameters
     // _bpm
     // _minBPM
     // _maxBPM 
     initializeAnimation(_activeAnimation);
-
-
 
 }
 
@@ -190,6 +382,8 @@ void LEDStripController::update(uint32_t now_ms)
  *                          NEXT PATTERN                                                            *
  *                                                                                                  *
  *--------------------------------------------------------------------------------------------------*/
+// the technique used here means we don't need to save an _animationIndex variable
+// and the reason we don't want to do that is....because I just didn't want one more freaking variable!!
 void LEDStripController::nextAnimation(){
 
     // cycle through the array of animationsToUse.
@@ -200,7 +394,7 @@ void LEDStripController::nextAnimation(){
     for(uint8_t i = 0; i < ARRAY_SIZE(animationsToUse); i++){
         
         if(animationsToUse[i] == _activeAnimation){
-            _activeAnimation = animationsToUse[(i + 1) % ARRAY_SIZE(animationsToUse)];
+            _activeAnimation = animationsToUse[ (i + 1) % ARRAY_SIZE(animationsToUse) ];
 
             saveSettingsToEEPROM((i + 1) % ARRAY_SIZE(animationsToUse), EEPROM_ADDR_ANIMATION_INDEX);
             break; 
@@ -213,7 +407,8 @@ void LEDStripController::nextAnimation(){
 
 }
 
-
+// the technique used here means we don't need to save a _paletteIndex variable
+// and the reason we don't want to do that is....because I just didn't want one more freaking variable!!
 void LEDStripController::nextPalette(){
 
     if(_activeAnimation == A_SOLID_COLOR){
@@ -225,6 +420,10 @@ void LEDStripController::nextPalette(){
                 return;
             }
         }
+    }
+    else if(_activeAnimation == A_COLORWAVES){
+        _gradientPaletteIndex = addmod8( _gradientPaletteIndex, 1, ARRAY_SIZE(GRADIENT_PALETTES));
+        _gradientPalette = GRADIENT_PALETTES[ _gradientPaletteIndex ];
     }
 
     // cycle through the array of available palettes.
@@ -275,7 +474,7 @@ void LEDStripController::setBrightness(uint8_t brightness){
 
 
 
-void LEDStripController::setOperationState(LEDStripControllerState newState){
+void LEDStripController::setOperationState(StripControllerStates newState){
 
     _state = newState;
 
@@ -356,7 +555,7 @@ void LEDStripController::setStripCRGB(CRGB newCRGB) {
  *--------------------------------------------------------------------------------------------------*/
 void LEDStripController::rainbow(){    
 
-    fill_palette( _leds, _stripLength, getHueIndex(_bpm, _invertStrip), 7, RainbowColors_p, _brightness, LINEARBLEND);
+    fill_palette( _leds, _stripLength, getHueIndex(_bpm, _invertStrip), (256 / _stripLength) + 1, RainbowColors_p, _brightness, LINEARBLEND);
 }
 
 
@@ -511,12 +710,15 @@ void LEDStripController::fire2012WithPalette() {
         // for best results with color palettes.
         byte colorindex = scale8( _heat[j], 240);
         CRGB color = ColorFromPalette( _colorPalette, colorindex, _brightness); // qadd8(_brightness, 40 ));
+        
         uint16_t pixelIndex;
+        
         if( _invertStrip ) {
             pixelIndex = (_stripLength-1) - j;
         } else {
             pixelIndex = j;
         }
+        
         _leds[pixelIndex] = color;
     
     }
@@ -538,7 +740,9 @@ void LEDStripController::cycleThroughAllAnimations(){
             if(animationsToUse[i] == _activeCycleAnimation){
                 _activeCycleAnimation = animationsToUse[(i + 1) % ARRAY_SIZE(animationsToUse)];   
 
-                // if the next _activeCycleAnimation is the cycel animation or solidColor then we don't want to use it
+                // if the next _activeCycleAnimation is the cycle animation this will break the program
+                // so we want to skip it. We also want to skip solidColor because it's not doing anything
+                // so that's why we have two if statements here. In case the two are right after eachother.
                 if(_activeCycleAnimation == A_CYCLE_ALL || _activeCycleAnimation == A_SOLID_COLOR){
                     _activeCycleAnimation = animationsToUse[(i + 2) % ARRAY_SIZE(animationsToUse)];
                 }
@@ -568,6 +772,117 @@ void LEDStripController::solidColor() {
     // turn off the strip in a "mysterious" way
     //fadeToBlackBy( _leds, _stripLength, 10);
 }
+
+
+// This function draws color waves with an ever-changing,
+// widely-varying set of parameters, using a color palette.
+void LEDStripController::colorwavesFinal() {
+// void colorwaves( CRGB* ledarray, uint16_t numleds, CRGBPalette16& palette) {
+
+    static CRGBPalette16 gCurrentPalette( CRGB::Black);
+    static CRGBPalette16 gTargetPalette( COLOR_PALETTES[0] );
+    static uint8_t gCurrentPaletteNumber = 0;
+
+
+    static uint16_t sPseudotime = 0;
+    static uint16_t sLastMillis = 0;
+    static uint16_t sHue16 = 0;
+
+    uint8_t sat8 = beatsin88( 87, 220, 250);
+    uint8_t brightdepth = beatsin88( 341, 96, 224);
+    uint16_t brightnessthetainc16 = beatsin88( 203, (25 * 256), (40 * 256));
+    uint8_t msmultiplier = beatsin88(147, 23, 60);
+
+    uint16_t hue16 = sHue16;//gHue * 256;
+    uint16_t hueinc16 = beatsin88(113, 300, 1500);
+
+    uint16_t ms = millis();
+    uint16_t deltams = ms - sLastMillis ;
+    sLastMillis  = ms;
+    sPseudotime += deltams * msmultiplier;
+    sHue16 += deltams * beatsin88( 400, 5,9);
+    uint16_t brightnesstheta16 = sPseudotime;
+
+    for( uint16_t i = 0 ; i < _stripLength; i++) {
+        hue16 += hueinc16;
+        uint8_t hue8 = hue16 / 256;
+        uint16_t h16_128 = hue16 >> 7;
+        if( h16_128 & 0x100) {
+            hue8 = 255 - (h16_128 >> 1);
+        } else {
+            hue8 = h16_128 >> 1;
+        }
+
+        brightnesstheta16  += brightnessthetainc16;
+        uint16_t b16 = sin16( brightnesstheta16  ) + 32768;
+
+        uint16_t bri16 = (uint32_t)((uint32_t)b16 * (uint32_t)b16) / 65536;
+        uint8_t bri8 = (uint32_t)(((uint32_t)bri16) * brightdepth) / 65536;
+        bri8 += (255 - brightdepth);
+
+        uint8_t index = hue8;
+        //index = triwave8( index);
+        index = scale8( index, 240);
+
+        //CRGB newcolor = ColorFromPalette( _palette, index, bri8);
+        CRGB newcolor = ColorFromPalette( gCurrentPalette, index, bri8);
+
+        // uint16_t pixelnumber = i;
+        // pixelnumber = (numleds-1) - pixelnumber;
+        
+        uint16_t pixelIndex;
+
+        if( _invertStrip ) {
+            pixelIndex = i;
+        } else {
+            pixelIndex = (_stripLength-1) - i;
+        }
+
+        nblend( _leds[pixelIndex], newcolor, 128);
+    }
+
+
+    
+    // ***** ADDITIONAL TIMING - PALETTE UPDATES **********
+    static uint32_t timeToSwitchPalettes = 0;
+    if( ms >= timeToSwitchPalettes ){
+        // EVERY_N_SECONDS( SECONDS_PER_PALETTE ) {
+        //     gCurrentPaletteNumber = addmod8( gCurrentPaletteNumber, 1, gGradientPaletteCount);
+        //     gTargetPalette = gGradientPalettes[ gCurrentPaletteNumber ];
+        // }
+        
+        gCurrentPaletteNumber = addmod8( gCurrentPaletteNumber, 1, ARRAY_SIZE(COLOR_PALETTES));
+        gTargetPalette = COLOR_PALETTES[ gCurrentPaletteNumber ];
+
+        timeToSwitchPalettes = ms + 20000; // add 20 seconds in ms
+    }
+
+    static uint32_t timeToBlendPalettes = 0;
+    if( ms >= timeToBlendPalettes ){
+        // EVERY_N_MILLISECONDS(40) {
+        //    nblendPaletteTowardPalette( gCurrentPalette, gTargetPalette, 16);
+        // }
+        nblendPaletteTowardPalette( gCurrentPalette, gTargetPalette, 16);
+
+        timeToBlendPalettes = ms + 40; // add 40 ms
+    }
+
+}
+
+
+
+// Alternate rendering function just scrolls the current palette 
+// across the defined LED strip.
+// void LEDStripController::palettetest(){
+void LEDStripController::colorwaves(){
+//   static uint8_t startindex = 0;
+//   startindex--;
+
+    fill_palette( _leds, _stripLength, getHueIndex(_bpm), pixelSpread, _gradientPalette, 255, LINEARBLEND);
+    //fill_palette( _leds, _stripLength, getHueIndex(_bpm), (256 / _stripLength) + 1, _gradientPalette, 255, LINEARBLEND);
+}
+
+
 
 
 
@@ -626,6 +941,7 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
         }
         case A_BPM:        
         case A_SOLID_COLOR:
+        case A_COLORWAVES:
         default:
         {
             _minBPM = NORMAL_HUE_INDEX_BPM;
@@ -683,37 +999,64 @@ uint8_t LEDStripController::getHueIndex(uint8_t hueIndexBPM, uint8_t direction){
 // **********************************************************
 //      OTHER HELPER METHODS
 // **********************************************************
+void LEDStripController::loadSettingsFromEEPROM(Settings *settings){
 
-void LEDStripController::loadSettingsFromEEPROM(){
-    // settings.animationIndex = 2; // confetti
-    // settings.brightnessLevel = NUM_BRIGHTNESS_LEVELS - 1; // MAX_BRIGHTNESS
-    // settings.paletteIndex = 6; // HeatColors_p
-    // settings.speedLevel = NUM_SPEED_LEVELS - 1; // maximum speed
-
-    settings.animationIndex  = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_ANIMATION_INDEX);
-    settings.brightnessLevel = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_BRIGHTNESS_INDEX);
-    settings.paletteIndex    = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_PALETTE_INDEX);
-    settings.solidColorIndex = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SOLID_COLOR_INDEX);
-    settings.speedLevel      = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SPEED_INDEX);
+    settings->animationIndex  = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_ANIMATION_INDEX);
+    settings->brightnessLevel = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_BRIGHTNESS_INDEX);
+    settings->paletteIndex    = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_PALETTE_INDEX);
+    settings->solidColorIndex = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SOLID_COLOR_INDEX);
+    settings->speedLevel      = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SPEED_INDEX);
 
 
-    if(settings.animationIndex < 0 || settings.animationIndex > ARRAY_SIZE(animationsToUse) - 1){
-        settings.animationIndex = 0;
+    if(settings->animationIndex < 0 || settings->animationIndex > ARRAY_SIZE(animationsToUse) - 1){
+        settings->animationIndex = 0;
     }
-    if(settings.brightnessLevel < 0 || settings.brightnessLevel > NUM_BRIGHTNESS_LEVELS - 1){
-        settings.brightnessLevel = 0;
+    if(settings->brightnessLevel < 0 || settings->brightnessLevel > NUM_BRIGHTNESS_LEVELS - 1){
+        settings->brightnessLevel = 0;
     }
-    if(settings.paletteIndex < 0 || settings.paletteIndex > ARRAY_SIZE(COLOR_PALETTES) - 1){
-        settings.paletteIndex = 0;
+    if(settings->paletteIndex < 0 || settings->paletteIndex > ARRAY_SIZE(COLOR_PALETTES) - 1){
+        settings->paletteIndex = 0;
     }
-    if(settings.solidColorIndex < 0 || settings.solidColorIndex > ARRAY_SIZE(SOLID_COLORS) - 1){
-        settings.solidColorIndex = 0;
+    if(settings->solidColorIndex < 0 || settings->solidColorIndex > ARRAY_SIZE(SOLID_COLORS) - 1){
+        settings->solidColorIndex = 0;
     }
-    if(settings.speedLevel < 0 || settings.speedLevel > NUM_SPEED_LEVELS - 1){
-        settings.speedLevel = 0;
+    if(settings->speedLevel < 0 || settings->speedLevel > NUM_SPEED_LEVELS - 1){
+        settings->speedLevel = 0;
     }
 
 }
+
+// // THIS IS ANOTHER WAY TO DO THE ABOVE
+// LEDStripController::Settings LEDStripController::loadSettingsFromEEPROM(){
+
+//     Settings settings;
+
+//     settings.animationIndex  = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_ANIMATION_INDEX);
+//     settings.brightnessLevel = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_BRIGHTNESS_INDEX);
+//     settings.paletteIndex    = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_PALETTE_INDEX);
+//     settings.solidColorIndex = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SOLID_COLOR_INDEX);
+//     settings.speedLevel      = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SPEED_INDEX);
+
+
+//     if(settings.animationIndex < 0 || settings.animationIndex > ARRAY_SIZE(animationsToUse) - 1){
+//         settings.animationIndex = 0;
+//     }
+//     if(settings.brightnessLevel < 0 || settings.brightnessLevel > NUM_BRIGHTNESS_LEVELS - 1){
+//         settings.brightnessLevel = 0;
+//     }
+//     if(settings.paletteIndex < 0 || settings.paletteIndex > ARRAY_SIZE(COLOR_PALETTES) - 1){
+//         settings.paletteIndex = 0;
+//     }
+//     if(settings.solidColorIndex < 0 || settings.solidColorIndex > ARRAY_SIZE(SOLID_COLORS) - 1){
+//         settings.solidColorIndex = 0;
+//     }
+//     if(settings.speedLevel < 0 || settings.speedLevel > NUM_SPEED_LEVELS - 1){
+//         settings.speedLevel = 0;
+//     }
+
+//     return settings;
+// }
+
 
 
 void LEDStripController::saveSettingsToEEPROM(uint8_t value, uint8_t addrIndex){

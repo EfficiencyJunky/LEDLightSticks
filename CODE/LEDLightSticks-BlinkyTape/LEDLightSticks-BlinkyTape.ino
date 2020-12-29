@@ -21,7 +21,7 @@ uint32_t timeToCallFastLEDShow = 0; // time of last call to FastLED.show()
 //    GLOBAL ENUM FOR MANAGING PROGRAM STATE
 // *********************************************************************************
 //The possible states for the button state machine
-enum ProgramState {
+enum ProgramStates {
         ANIMATION_IS_RUNNING, 
         TRANSITION_TO_CHANGE_BRIGHTNESS, 
         CHANGE_BRIGHTNESS,
@@ -30,13 +30,13 @@ enum ProgramState {
     };
 
 
-const LEDStripControllerState mapToLEDStripControllerState[5] = {
-                                                                    NORMAL_OPERATION,
-                                                                    STATE_TRANSITION,
-                                                                    SHOW_BRIGHTNESS_LEVEL,
-                                                                    SHOW_SPEED_LEVEL,
-                                                                    STATE_TRANSITION
-                                                                };
+const StripControllerStates mapProgramToStripControllerStates[5] =  {
+                                                                      NORMAL_OPERATION,
+                                                                      STATE_TRANSITION,
+                                                                      SHOW_BRIGHTNESS_LEVEL,
+                                                                      SHOW_SPEED_LEVEL,
+                                                                      STATE_TRANSITION
+                                                                    };
 
 
 
@@ -50,7 +50,7 @@ Button secondaryButton(SECONDARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
   Button primaryButton_blinkyTape(PRIMARY_BUTTON_PIN_BLINKYTAPE, PULLUP, INVERT, DEBOUNCE_MS);
 #endif
 
-ProgramState programState = ANIMATION_IS_RUNNING;
+ProgramStates programState = ANIMATION_IS_RUNNING;
 
 // *********************************************************************************
 //      LED STRIP CONTROLLER AND COLOR PALETTE DECLARATIONS
@@ -97,7 +97,7 @@ void setup() {
   // Serial.println("***********************");
 
   // Serial.print("Num Color Palettes: ");
-  // Serial.println(NUM_COLOR_PALETTES);
+  // Serial.println(ARRAY_SIZE(COLOR_PALETTES));
   // Serial.println("***********************");
 
   // THIS STEP SETS UP THE PHYSICAL REPRESENTATION OF OUR LED STRIPS
@@ -245,7 +245,7 @@ void updateStripControllers(uint32_t ms){
 // *********************************************************************************
 //      BUTTON HELPER FUNCTIONS
 // *********************************************************************************
-void updateProgramState(ProgramState newState){
+void updateProgramState(ProgramStates newState){
   programState = newState;
   setStripControllerStates(newState);
 }
@@ -255,10 +255,11 @@ void updateProgramState(ProgramState newState){
 // *********************************************************************************
 //      BUTTON -> LED STRIP CONTROLLER HELPER FUNCTIONS
 // *********************************************************************************
-void setStripControllerStates(ProgramState newState){
+void setStripControllerStates(ProgramStates newState){
 
-  // uint8_t stripControllerState = mapToLEDStripControllerState[newState];
-  LEDStripControllerState newStripControllerState = mapToLEDStripControllerState[newState];
+  // this is where we convert the newState (which is a ProgramStates type)
+  // to the StripControllerStates type using our map we built at the top of the program
+  StripControllerStates newStripControllerState = mapProgramToStripControllerStates[newState];
 
   for(uint8_t i = 0; i < NUM_STRIP_CONTROLLERS; i++){
     stripControllerArray[i]->setOperationState(newStripControllerState);

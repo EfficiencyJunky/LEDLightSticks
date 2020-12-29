@@ -31,7 +31,9 @@
 //            Includes and Defines - FastLED required
 // *********************************************************************************
 #include <FastLED.h>
+// FASTLED_USING_NAMESPACE
 #include <EEPROM.h>
+
 
 // FASTLED_USING_NAMESPACE
 
@@ -39,13 +41,14 @@
 // #warning "Requires FastLED 3.1 or later; check github for latest code."
 // #endif
 
+const uint8_t pixelSpread = (256 / 34) + 1;
 
 // *********************************************************************************
 //    Definitions for things that need to be used externally
 // *********************************************************************************
 //******* ENUM for managing strip controller states ********
 //The possible states for the button state machine
-enum LEDStripControllerState {
+enum StripControllerStates {
         NORMAL_OPERATION,
         STATE_TRANSITION,
         SHOW_BRIGHTNESS_LEVEL,
@@ -56,7 +59,7 @@ enum LEDStripControllerState {
 // creates a macro that computes the length of an array (number of elements)
 // assuming all of the elements are the same size as the element in position 0
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
-//#define ENUM_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+// #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 
 // *******  Human readable definition for when we want to invert a strip ******* 
@@ -77,7 +80,7 @@ enum LEDStripControllerState {
 #define MIN_BRIGHTNESS  40  //set between 0 (off) to 255
 #define MAX_BRIGHTNESS   200
 #define NUM_BRIGHTNESS_LEVELS    6 
-#define INITIAL_BRIGHTNESS_LEVEL  2
+// #define INITIAL_BRIGHTNESS_LEVEL  2 // this is now set by values saved in EEPROM
 
 
 //******* FIRE ANIMATION GLOBAL VARIABLES ********
@@ -89,16 +92,16 @@ enum LEDStripControllerState {
 // Less cooling = taller flames.  More cooling = shorter flames.
 // Default 55, suggested range 20-100 
 #define COOLING  55
-// #define COOLING  49
+
 
 // SPARKING: What chance (out of 255) is there that a new spark will be lit?
 // Higher chance = more roaring fire.  Lower chance = more flickery fire.
 // Default 120, suggested range 50-200.
 #define SPARKING 120
-// #define SPARKING 60
 
 
-//******* ANIMATIONS ********
+//******* ALL AVAILABLE ANIMATIONS ********
+// the actual animations being used are defined in the .CPP file "animationsToUse" array
 enum Animations {
                     A_RAINBOW,
                     A_RAINBOW_GLITTER,
@@ -112,57 +115,17 @@ enum Animations {
                     A_FIRE,
                     A_CYCLE_ALL,
                     A_SOLID_COLOR,
+                    A_COLORWAVES,
                     TOTAL_AVAILABLE_ANIMATIONS
                 };
 
-//******* ORDER OF ANIMATIONS ********
-const Animations animationsToUse[] = {
-                                        A_RAINBOW,
-                                        A_RAINBOW_GLITTER,
-                                        A_CONFETTI,
-                                        A_SINELON,
-                                        A_SINELON_DUAL,
-                                        A_JUGGLE,
-                                        A_PALETTE,
-                                        A_PALETTE_GLITTER,
-                                        A_BPM,                                        
-                                        A_FIRE,
-                                        A_CYCLE_ALL,
-                                        A_SOLID_COLOR,
-                                     };
-
-const uint8_t NUM_ANIMATIONS_TO_USE = ARRAY_SIZE(animationsToUse);
 
 //******* COLOR PALETTES ********
 const CRGBPalette16 DEFAULT_PALETTE = RainbowColors_p;
 
-const CRGBPalette16 COLOR_PALETTES[] = {
-                                            RainbowColors_p,
-                                            ForestColors_p,
-                                            CloudColors_p,
-                                            LavaColors_p,
-                                            OceanColors_p,
-                                            PartyColors_p,
-                                            HeatColors_p, // fire
-                                            RainbowStripeColors_p,
-                                        };
+// extern const TProgmemRGBGradientPalettePtr gGradientPalettes[];
+// extern const uint8_t gGradientPaletteCount;
 
-
-const uint8_t SOLID_COLORS[] = {
-                                    0,    // red
-                                    32,   // orange
-                                    64,   // yellow
-                                    96,   // green
-                                    128,  // aqua
-                                    160,  // blue
-                                    192,  // purple
-                                    224,  // pink
-                                    255   // white
-                                };
-
-
-
-const uint8_t NUM_COLOR_PALETTES = ARRAY_SIZE(COLOR_PALETTES);
 
 // *********************************************************************************
 //    Global settings for Animation Timings
@@ -205,6 +168,7 @@ const uint8_t NUM_COLOR_PALETTES = ARRAY_SIZE(COLOR_PALETTES);
 #define EEPROM_ADDR_SPEED_INDEX 4
 
 
+
 // *********************************************************************************
 //    MAIN CLASS DEFINITION
 // *********************************************************************************
@@ -223,7 +187,7 @@ class LEDStripController
         void nextBrightness();
         void nextSpeed();
         void setBrightness(uint8_t brightness);
-        void setOperationState(LEDStripControllerState newState);
+        void setOperationState(StripControllerStates newState);
 
 
     private:
@@ -246,13 +210,14 @@ class LEDStripController
         uint8_t _brightnessLevel;
         uint8_t _saturation;
         CRGBPalette16 _colorPalette;   // the color palette being used
+        CRGBPalette16 _gradientPalette;   // the color palette being used
         uint8_t _solidColor;
 
 
         // **********************************************************
         //      STRIP STATE VARIABLES
         // **********************************************************
-        LEDStripControllerState _state; // the state of the controller to be updated by external input        
+        StripControllerStates _state; // the state of the controller to be updated by external input        
         CRGB _showBrightnessColor;      // the color of the strip when in SHOW_BRIGHTNESS_LEVEL state        
         uint16_t _width;
         uint16_t _center;
@@ -283,7 +248,7 @@ class LEDStripController
 
 
         // **********************************************************
-        //      STRUCT TO SAVE SETTINGS
+        //      STRUCT TO LOAD SETTINGS FROM EEPROM AT STARTUP
         // **********************************************************   
         struct Settings {
             uint8_t animationIndex;
@@ -291,7 +256,19 @@ class LEDStripController
             uint8_t paletteIndex;
             uint8_t solidColorIndex;
             uint8_t speedLevel;
-        } settings;
+        };
+
+
+        // **********************************************************
+        //      STATIC MEMBERS TO SET FUNCTIONALITY OF CLASS
+        //          these are defined in the .CPP file
+        // **********************************************************   
+        static const Animations animationsToUse[];
+        static const CRGBPalette16 COLOR_PALETTES[];        
+        //static const TProgmemRGBGradientPalettePtr GRADIENT_PALETTES[];
+        static const CRGBPalette16 GRADIENT_PALETTES[];
+        uint8_t _gradientPaletteIndex;
+        static const uint8_t SOLID_COLORS[];
 
 
         // **********************************************************
@@ -315,6 +292,8 @@ class LEDStripController
         void fire2012WithPalette();
         void cycleThroughAllAnimations();
         void solidColor();
+        void colorwavesFinal();
+        void colorwaves();
 
 
         // **** Animation Helper Methods ******
@@ -326,7 +305,8 @@ class LEDStripController
 
 
         // **** OTHER Helper Methods ******
-        void loadSettingsFromEEPROM();
+        void loadSettingsFromEEPROM(Settings *settings);
+        // Settings loadSettingsFromEEPROM(); // THIS IS ANOTHER WAY TO DO THE ABOVE
         void saveSettingsToEEPROM(uint8_t value, uint8_t addrIndex);
 
 

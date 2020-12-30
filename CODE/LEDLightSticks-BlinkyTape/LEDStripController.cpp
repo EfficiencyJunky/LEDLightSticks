@@ -56,101 +56,37 @@ const Animations LEDStripController::animationsToUse[] = {
                                                             A_COLORWAVES
                                                         };
 
+
+  //   CRGB darkcolor  = CHSV(hue,255,192); // pure hue, three-quarters brightness
+  //   CRGB lightcolor = CHSV(hue,128,255); // half 'whitened', full brightness
+
 //******* ORDER OF COLOR PALETTES ********
-const CRGBPalette16 LEDStripController::COLOR_PALETTES[] = {
-                                                                //RainbowColors_p, // YES
-                                                                tk_Party,
-                                                                ForestColors_p,  // OK+ green
-                                                                //CloudColors_p,   // not as good
-                                                                //LavaColors_p,   // YES
-                                                                //OceanColors_p,  // NO
-                                                                PartyColors_p, // YES!!
-                                                                //HeatColors_p, // fire yess
-                                                                //lava_gp,
-                                                                tk_Fire,
-                                                                //tk_Fire_Blue
-                                                                //RainbowStripeColors_p, // NOPE
+//const CRGBPalette16 LEDStripController::COLOR_PALETTES[] = {
+const TProgmemRGBGradientPalettePtr LEDStripController::COLOR_PALETTES[] = {
+                                                                tk_Rainbow_gp,
+                                                                tk_Peacock_Colors_gp,
+                                                                BlacK_Red_Magenta_Yellow_gp,
+                                                                Sunset_Real_gp,
+                                                                tk_Party_gp,
+                                                                rainbowsherbet_gp,
+                                                                ib_jul01_gp
                                                             };
 
 
-
-// ORIGINAL FAVORITES
-// const TProgmemRGBGradientPalettePtr LEDStripController::FAVORITE_PALETTES[] = {
-//     Rainbow_gp,                 // classic FastLED
-//     rainbowsherbet_gp,          // YES!    // Unicorn colors (aka yummy)
-//     ib_jul01_gp,                // YES!!   // dragon colors - green and red fire orange
-//     Coral_reef_gp,              // WHOA    // cool blue to warm blue
-//     Sunset_Real_gp,             // NOICE   // purple, pink, and orange
-//     Analogous_1_gp,             // NOICE   // retro wave - purple and pink
-// }
-
-// *************** PINK PURPLE ***************************
-// FIRST ROUND -- KEEP
+// ABRACADABRA
 // const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
-//     BlacK_Red_Magenta_Yellow_gp, // OK+    // Tropical - fruity - yellow, red, purple
-//     Sunset_Real_gp,             // NOICE    // purple, pink, and orange
-//     Analogous_1_gp,             // NOICE    // retro wave - purple and pink
-//     rgi_15_gp,                  // OK+dark  // magenta, and lavender with dark bands
-//     es_pinksplash_07_gp,        // NOICE+bright      // magenta, lavender, and almost white
-// };
-
-
-// const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
-//     bhw1_28_gp,                 // OK blue - basic       // light blue, light purple
-//     gr65_hult_gp,               // OK+blue - less basic      // bright blue, light purple, white
-//     Pink_Purple_gp,              // OK sofgurPurp   // soothing purple, blue, white
-//     ib15_gp,                    // OK+sofgirPink    // soft gurl Desaturated pink and blue    
-// };
-
-
-// PINK PURPLE -- DON'T KEEP
-// const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
-    //Magenta_Evening_gp,         // OK+plain      // magenta and purple (no white)
-    //es_pinksplash_08_gp,        // OK different      // pink, purple, white (dreamsicle) similar to below
-    //Fuschia_7_gp,               // OK+balanced (boring?)      // bright purple blue pink
-    //BlacK_Magenta_Red_gp,       // OK+      // magenta purple and black
-// }
-// *************** PINK PURPLE ***************************
-
-
-// *************** BLUE ***************************
-// none of these are great
-// const CRGBPalette16 LEDStripController::GRADIENT_PALETTES[] = {    
-//     es_ocean_breeze_036_gp,     // OK       // Sky blue, and white
-//     OceanColors_p,
-//     CloudColors_p
-// };
-// *************** BLUE ***************************
-
-
-
-
-
-
-// *************** GREEN ***************************
-
-//const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
-//    Colorfull_gp,               // OK    // desaturated green, purple blue white
-//    es_landscape_64_gp,         // MEH    // green, blue, white
-//     es_emerald_dragon_08_gp,    // OK    // Alien lime green
-//     es_rivendell_15_gp,         // MEH      // grey green, and white
-//}
-
-// *************** GREEN ***************************
-
-
-
-
-
-
-// const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
-const CRGBPalette16 LEDStripController::GRADIENT_PALETTES[] = {    
-    tk_Party,
-    // lava_gp,
-    //ForestColors_p,
-    // HeatColors_p,
-    PartyColors_p,
-    tk_Fire_Blue
+const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {    
+    es_autumn_19_gp,
+    es_emerald_dragon_08_gp,
+    es_landscape_64_gp,
+    es_landscape_33_gp,
+    Blue_Cyan_Yellow_gp,
+    Coral_reef_gp,
+    gr65_hult_gp,
+    ib15_gp,
+    Analogous_1_gp,
+    es_pinksplash_07_gp,
+    rgi_15_gp
 };
 
 
@@ -172,6 +108,7 @@ const CRGBPalette16 LEDStripController::GRADIENT_PALETTES[] = {
 //     ib15_gp,                    // OK+    // soft gurl Desaturated pink and blue
 //     Fuschia_7_gp,               // OK+    // bright purple blue pink
 //     BlacK_Magenta_Red_gp,       // OK+    // magenta purple and black
+//     Magenta_Evening_gp,         // OK+    // magenta and purple (no white)
 //     bhw1_28_gp,                 // OK       // light blue, light purple
 //     es_ocean_breeze_036_gp,     // OK       // Sky blue, and white
 //     es_emerald_dragon_08_gp,    // OK    // Alien lime green
@@ -179,7 +116,6 @@ const CRGBPalette16 LEDStripController::GRADIENT_PALETTES[] = {
 //     Colorfull_gp,               // OK    // desaturated green, purple blue white
 //     Pink_Purple_gp,             // OK    // soothing purple, blue, white
 //     BlacK_Blue_Magenta_White_gp,// OK    // like a desaturated american flag - not pleasing to cache
-//     Magenta_Evening_gp,         // OK+    // magenta and purple (no white)
 //     es_pinksplash_08_gp,        // OK      // pink, purple, white (dreamsicle) similar to below
 //     es_landscape_33_gp,         // OK    // blue and gold (I think piss)
 //     fire_gp,                    // OK-ish    // Candy corn colors
@@ -432,7 +368,7 @@ void LEDStripController::nextPalette(){
     // use that incremented index as the new index into our pallettes array
     for(uint8_t i = 0; i < ARRAY_SIZE(COLOR_PALETTES); i++){
         
-        if(COLOR_PALETTES[i] == _colorPalette){
+        if((CRGBPalette16)(COLOR_PALETTES[i]) == _colorPalette){
             _colorPalette = COLOR_PALETTES[(i + 1) % ARRAY_SIZE(COLOR_PALETTES)];
             saveSettingsToEEPROM((i + 1) % ARRAY_SIZE(COLOR_PALETTES), EEPROM_ADDR_PALETTE_INDEX);
             return;
@@ -776,11 +712,12 @@ void LEDStripController::solidColor() {
 
 // This function draws color waves with an ever-changing,
 // widely-varying set of parameters, using a color palette.
-void LEDStripController::colorwavesFinal() {
+void LEDStripController::colorwaves() {
 // void colorwaves( CRGB* ledarray, uint16_t numleds, CRGBPalette16& palette) {
 
     static CRGBPalette16 gCurrentPalette( CRGB::Black);
-    static CRGBPalette16 gTargetPalette( COLOR_PALETTES[0] );
+    static CRGBPalette16 gTargetPalette( GRADIENT_PALETTES[0] );
+    // static CRGBPalette16 gTargetPalette( COLOR_PALETTES[0] );
     static uint8_t gCurrentPaletteNumber = 0;
 
 
@@ -851,10 +788,12 @@ void LEDStripController::colorwavesFinal() {
         //     gTargetPalette = gGradientPalettes[ gCurrentPaletteNumber ];
         // }
         
-        gCurrentPaletteNumber = addmod8( gCurrentPaletteNumber, 1, ARRAY_SIZE(COLOR_PALETTES));
-        gTargetPalette = COLOR_PALETTES[ gCurrentPaletteNumber ];
+        gCurrentPaletteNumber = addmod8( gCurrentPaletteNumber, 1, ARRAY_SIZE(GRADIENT_PALETTES));
+        gTargetPalette = GRADIENT_PALETTES[ gCurrentPaletteNumber ];
+        // gCurrentPaletteNumber = addmod8( gCurrentPaletteNumber, 1, ARRAY_SIZE(COLOR_PALETTES));
+        // gTargetPalette = COLOR_PALETTES[ gCurrentPaletteNumber ];
 
-        timeToSwitchPalettes = ms + 20000; // add 20 seconds in ms
+        timeToSwitchPalettes = ms + GRADIENT_PALETTE_UPDATE_INTERVAL; // add 20 seconds in ms
     }
 
     static uint32_t timeToBlendPalettes = 0;
@@ -870,11 +809,11 @@ void LEDStripController::colorwavesFinal() {
 }
 
 
-
+// ABRACADABRA
 // Alternate rendering function just scrolls the current palette 
 // across the defined LED strip.
 // void LEDStripController::palettetest(){
-void LEDStripController::colorwaves(){
+void LEDStripController::gradientPalettesTest(){
 //   static uint8_t startindex = 0;
 //   startindex--;
 

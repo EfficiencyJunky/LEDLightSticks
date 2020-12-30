@@ -546,9 +546,9 @@ DEFINE_GRADIENT_PALETTE( bhw1_28_gp ) {
 
 
 // **********************************************************
-//      TKS GRADIENT PALETTES
+//      BUILT-IN PALETTES (converted to gp)
 // **********************************************************
-DEFINE_GRADIENT_PALETTE( tk_Rainbow ) {
+DEFINE_GRADIENT_PALETTE( tk_Rainbow_gp ) {
       0,  255,    0,    0, // Red
      32,  171,   85,    0, // Orange
      64,  171,  171,    0, // Yellow
@@ -557,37 +557,37 @@ DEFINE_GRADIENT_PALETTE( tk_Rainbow ) {
     160,    0,    0,  255, // Blue
     192,   85,    0,  171, // Purple
     224,  171,    0,   85, // Pink
-    255,  255,    0,    0};// and back to Red
+    255,  255,    0,    0  // and back to Red
+};
 
 
-// DEFINE_GRADIENT_PALETTE( tk_Forest ) {
-//       0,    0,  100,    0, // DarkGreen       -- 0x006400
-//      15,    0,  100,    0, // DarkGreen       -- 0x006400
-//      31,   85,  107,   47, // DarkOliveGreen  -- 0x556B2F
-//      63,    0,  100,    0, // DarkGreen       -- 0x006400
 
+DEFINE_GRADIENT_PALETTE( tk_Forest_gp ) {
+      0,    0,  100,    0, // DarkGreen       -- 0x006400
+     16,    0,  100,    0, // DarkGreen       -- 0x006400
+     32,   85,  107,   47, // DarkOliveGreen  -- 0x556B2F
+     48,    0,  100,    0, // DarkGreen       -- 0x006400
 
-//      79,    0,  128,    0, // Green           -- 0x008000
-//      95,    0,    0,  255, // ForestGreen     -- 0x228B22
-//     111,   85,    0,  171, // OliveDrab       -- 0x6B8E23
-//     127,  171,    0,   85, // Green           -- 0x008000
+     64,    0,  128,    0, // Green           -- 0x008000
+     80,   34,  139,   34, // ForestGreen     -- 0x228B22
+     96,  107,  142,   35, // OliveDrab       -- 0x6B8E23
+    112,    0,  128,    0, // Green           -- 0x008000
     
-//     143,    0,  171,   85, // SeaGreen        -- 0x2E8B57
-//     159,    0,    0,  255, // MediumAquamarine-- 0x66CDAA
-//     175,   85,    0,  171, // LimeGreen       -- 0x32CD32
-//     191,  171,    0,   85, // YellowGreen     -- 0x9ACD32
+    128,   46,  139,   87, // SeaGreen        -- 0x2E8B57
+    144,  102,  205,  170, // MediumAquamarine-- 0x66CDAA
+    160,   50,  205,   50, // LimeGreen       -- 0x32CD32
+    176,  154,  205,   50, // YellowGreen     -- 0x9ACD32
     
-//     207,    0,  171,   85, // LightGreen      -- 0x90EE90
-//     223,    0,    0,  255, // LawnGreen       -- 0x7CFC00
-//     239,   85,    0,  171, // MediumAquamarine-- 0x66CDAA
-//     255,  171,    0,   85  // ForestGreen     -- 0x228B22
-// };// and back
+    192,  144,  238,  144, // LightGreen      -- 0x90EE90
+    208,  124,  252,    0, // LawnGreen       -- 0x7CFC00
+    224,  102,  205,  170, // MediumAquamarine-- 0x66CDAA
+    240,   34,  139,   34, // ForestGreen    -- 0x228B22
+    255,    0,  100,    0, // and back to the beginning
+};
 
 
 
-
-// check gradients here: https://cssgradient.io/
-DEFINE_GRADIENT_PALETTE( tk_Party ) {
+DEFINE_GRADIENT_PALETTE( tk_Party_gp ) {
       0,     85,    0,  171, // -- 0x 5500AB
      16,    132,    0,  124, // -- 0x 84007C
      32,    181,    0,   75, //  -- 0x B5004B
@@ -606,32 +606,124 @@ DEFINE_GRADIENT_PALETTE( tk_Party ) {
     192,    143,    0,  113, // -- 0x 8F0071
     208,     95,    0,  161, // -- 0x 5F00A1
     224,     47,    0,  208, // -- 0x 2F00D0
-    240,      0,    7,  249,  // -- 0x 0007F9
-    255,     85,    0,  171 // -- 0x 5500AB
-};// and back
+    240,      0,    7,  249, // -- 0x 0007F9
+    255,     85,    0,  171  // and back to the beginning
+};
 
 
 
-DEFINE_GRADIENT_PALETTE( tk_Fire ) {
+
+
+// **********************************************************
+//      TKS ORIGINAL GRADIENT PALETTES
+// **********************************************************
+DEFINE_GRADIENT_PALETTE( tk_Peacock_Colors_gp ) {
+    0,  146,    0,  110,
+//   16,  125,    0,  131,
+//   32,  103,    0,  153,
+//   48,   83,    0,  172,
+//   64,   61,    0,  194,
+   80,   40,    0,  215,
+//   96,   18,    0,  237,
+  112,    0,    6,  250,
+//  128,    0,   49,  207,
+//  144,    0,   91,  165,
+  160,    0,  134,  122,
+//  176,    0,  172,   83,
+//  192,    0,  194,   61,
+  208,    0,  215,   40,
+//  224,    0,  237,   18,
+  240,    0,  255,    0,
+  255,  146,    0,  110
+};
+
+
+DEFINE_GRADIENT_PALETTE( tk_Watermellon_Colors_gp ) {
+    0,  146,    0,  110,
+   64,  146,    0,  110,
+   96,   83,    0,  237,
+  128,    0,  194,   165,
+  144,    0,  255,    0,
+  240,    0,  255,    0,
+  255,  146,    0,  110
+};
+
+
+
+
+
+
+
+// **********************************************************
+//      TKS SPECIALTY PALETTES
+// **********************************************************
+// Gradient palette "fire_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/neota/elem/tn/fire.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 28 bytes of program space.
+
+DEFINE_GRADIENT_PALETTE( tk_Fire_Candle_gp ) {
+    0,   1,  1,  0,
+   76,  32,  5,  0,
+  146, 192, 24,  0,
+  197, 220,105,  5,
+  240, 252,255, 31,
+  250, 252,255,111,
+  255, 255,255,255
+};
+
+
+DEFINE_GRADIENT_PALETTE( tk_Fire_Red_gp ) {
     0,   0,     0,   0,   // black
-   63,  255,    0,   0,   // red
-  127, 171,  171,    0,   // yellow
-  255, 255,  255, 255};   // white
-  // 255, 0,  0,  0};
+   64,  204,    0,   0,   // red
+   80,  255,    51,   0,  // red + little green
+  144, 255,  255,    0,   // yellow
+  255, 255,  255,  255    // white
+};
 
 
-DEFINE_GRADIENT_PALETTE( tk_Fire_Blue ) {
+DEFINE_GRADIENT_PALETTE( tk_Fire_Blue_gp ) {
     0,   0,    0,    0,   // black
-   63,   0,    0,  255,   // blue
-  127,   0,  171,   85,   // Aqua
-  255, 255,  255, 255};   // white
-  // 255, 0,  0,  0};
+   64,   0,    0,  204,   // blue
+   80,   0,    51,  255,   // blue
+  144,   0,  255,   255,   // Aqua
+  255, 255,  255,  255    // white
+};   
+
+DEFINE_GRADIENT_PALETTE( tk_Fire_Green_gp ) {
+    0,   0,    0,    0,   // black
+   80,   0,  204,    0,   // green
+   96,   51,  255,   0,   // green
+  160,   255,  255,  0,   // yellow
+  255, 255,  255,  255    // white
+};  
+
+
+DEFINE_GRADIENT_PALETTE( tk_Fire_Pink_gp ) {
+    0,    0,    0,    0,
+   16,   24,    0,    4,
+   32,   48,    0,    9,
+   48,   72,    0,   13,
+   64,   96,    0,   18,
+   80,  121,    0,   23,
+   96,  130,   12,   35,
+  112,  140,   25,   47,
+  128,  150,   37,   59,
+  144,  160,   50,   71,
+  160,  170,   63,   84,
+  176,  187,  101,  118,
+  192,  204,  139,  152,
+  208,  221,  178,  186,
+  224,  238,  216,  220,
+  240,  255,  254,  254,
+  255,    0,    0,    0
+};
 
 
 // **********************************************************
-//      CACHE GRADIENT PALETTES
+//      OTHER GRADIENT PALETTE ATTEMPTS
 // **********************************************************
-// DEFINE_GRADIENT_PALETTE( cache_01 ) {
+// DEFINE_GRADIENT_PALETTE( cache_01_gp ) {
 //    0,   63, 255,  236,
 //   51,   58,  72,  116,
 //   102, 103, 101,  162,
@@ -639,7 +731,19 @@ DEFINE_GRADIENT_PALETTE( tk_Fire_Blue ) {
 //   204, 255, 154,  103,
 //   255, 255, 227,  183};
 
+// DEFINE_GRADIENT_PALETTE( tk_Fire_og_gp ) {
+//     0,   0,     0,    0,   // black
+//    64,  255,    0,    0,   // red
+//   128,  171,  171,    0,   // yellow
+//   255,  255,  255,  255};   // white
 
+
+// DEFINE_GRADIENT_PALETTE( tk_Fire_Blue_og_gp ) {
+//     0,   0,    0,    0,   // black
+//    64,   0,    0,  255,   // blue
+//   128,   0,  171,   85,   // Aqua
+//   255, 255,  255,  255    // white
+// };   
 
 
 

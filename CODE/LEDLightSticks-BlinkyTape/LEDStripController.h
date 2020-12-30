@@ -59,7 +59,7 @@ enum StripControllerStates {
 // creates a macro that computes the length of an array (number of elements)
 // assuming all of the elements are the same size as the element in position 0
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
-// #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+
 
 
 // *******  Human readable definition for when we want to invert a strip ******* 
@@ -135,6 +135,7 @@ const CRGBPalette16 DEFAULT_PALETTE = RainbowColors_p;
 #define DEFAULT_UPDATE_INTERVAL 10
 #define FIRE_UPDATE_INTERVAL 15
 #define ANIMATION_CYCLE_INTERVAL 10000
+#define GRADIENT_PALETTE_UPDATE_INTERVAL 20000
 
 
 
@@ -264,9 +265,10 @@ class LEDStripController
         //          these are defined in the .CPP file
         // **********************************************************   
         static const Animations animationsToUse[];
-        static const CRGBPalette16 COLOR_PALETTES[];        
-        //static const TProgmemRGBGradientPalettePtr GRADIENT_PALETTES[];
-        static const CRGBPalette16 GRADIENT_PALETTES[];
+        static const TProgmemRGBGradientPalettePtr COLOR_PALETTES[];        
+        // static const CRGBPalette16 COLOR_PALETTES[];        
+        static const TProgmemRGBGradientPalettePtr GRADIENT_PALETTES[];
+        // static const CRGBPalette16 GRADIENT_PALETTES[];
         uint8_t _gradientPaletteIndex;
         static const uint8_t SOLID_COLORS[];
 
@@ -292,8 +294,8 @@ class LEDStripController
         void fire2012WithPalette();
         void cycleThroughAllAnimations();
         void solidColor();
-        void colorwavesFinal();
         void colorwaves();
+        void gradientPalettesTest();
 
 
         // **** Animation Helper Methods ******

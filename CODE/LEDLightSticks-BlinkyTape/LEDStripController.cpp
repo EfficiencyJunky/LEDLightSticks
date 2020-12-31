@@ -69,7 +69,8 @@ const TProgmemRGBGradientPalettePtr LEDStripController::COLOR_PALETTES[] = {
                                                                 Sunset_Real_gp,
                                                                 tk_Party_gp,
                                                                 rainbowsherbet_gp,
-                                                                ib_jul01_gp
+                                                                ib_jul01_gp,
+                                                                
                                                             };
 
 
@@ -85,6 +86,7 @@ const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
     gr65_hult_gp,
     ib15_gp,
     Analogous_1_gp,
+    tricia_PurBlue_gp,
     es_pinksplash_07_gp,
     rgi_15_gp
 };
@@ -178,24 +180,20 @@ LEDStripController::LEDStripController( CRGB *leds,
     _invertStrip = invertStrip;
 
     // **********************************************************
-    //      TIME KEEPING VARIABLES
+    //      TIME KEEPING AND STATE VARIABLES
     // ********************************************************** 
+    _state = NORMAL_OPERATION;
     _timeToUpdate = 0;
     _updateInterval = DEFAULT_UPDATE_INTERVAL;
-    _timeToCycleAnimations = 0;
-
-    // **********************************************************
-    //      PIXEL STATE VARIABLES
-    // **********************************************************
-    _hue = 0;
-    _saturation = FULL_SAT;    
+    _timeToCycleAnimations = 0; // only used for the cycle animation
 
 
     // **********************************************************
     //      STRIP STATE VARIABLES
     // **********************************************************    
-    _state = NORMAL_OPERATION;
-    _showBrightnessColor = CRGB::Blue;
+    _hue = 0;
+    _saturation = FULL_SAT;    
+    _brightness = FULL_BRIGHT;  // this gets overwritten with our settings struct below
     _width = _stripLength;
     _center = stripLength / 2;
 
@@ -204,20 +202,52 @@ LEDStripController::LEDStripController( CRGB *leds,
     //      ANIMATION SPECIFIC VARIABLES
     // **********************************************************
     _bsTimebase = 0;
-    _forward = true;
     _heat = new byte[stripLength];
-    _activeCycleAnimation = animationsToUse[0];
 
-    // a failsafe in case someone puts the A_CYCLE_ALL animation in position 0
-    if(_activeCycleAnimation == A_CYCLE_ALL){
-        _activeCycleAnimation = animationsToUse[1];
+
+
+
+
+    // we don't care about saving the cycleAnimation index so we just always start at 0
+    _activeCycleAnimation = animationsToUse[ 0 ];
+
+    // but we don't want to start at 0 if that happens to be the cycle animation itself or solid color
+    if(_activeCycleAnimation == A_CYCLE_ALL || _activeCycleAnimation == A_SOLID_COLOR){
+        _activeCycleAnimation = animationsToUse[ 1 ];
     }
+    if(_activeCycleAnimation == A_CYCLE_ALL || _activeCycleAnimation == A_SOLID_COLOR){
+        _activeCycleAnimation = animationsToUse[ 2 ];
+    }    
 
+    // **********************************************************
+    //    IMPORTANT VARIABLES DEPENDENT ON SETTINGS IN EEPROM
+    // **********************************************************
+    // LOAD OUR SETTINGS SAVED IN EEPROM into the stg struct
+    loadAllSettingsFromEEPROM(&stg);
+
+    // IMPORTANT: don't change these lines!!!
+    // this is where we use the settings to initialize our program 
+    
+    _brightness = map(stg.brightnessLevel, 0, NUM_BRIGHTNESS_LEVELS - 1, MIN_BRIGHTNESS, MAX_BRIGHTNESS);        
+    _colorPalette = COLOR_PALETTES[ stg.paletteIndex ];
+    _solidColorHue = SOLID_COLORS[ stg.solidColorIndex ];
+
+    _gradientPaletteIndex = 0;
+    _gradientTestPalette = GRADIENT_PALETTES[ _gradientPaletteIndex ];
+
+    // this function initializes all the animation specific parameters
+    _activeAnimation = animationsToUse[ stg.animationIndex ];
+    initializeAnimation(_activeAnimation);
+
+
+    // **********************************************************
+    //    ARRAY OF ALL OUR ANIMATIONS -- DON'T TOUCH THIS!!!
+    // **********************************************************
     // LOAD THE AnimationFunction ARRAY WITH THE ENTIRE SET OF AVAILABLE Animations
     // !!!!! NOTE !!!!!
     // THIS ARRAY IS NOT IN ANY SPECIFIC ORDER. 
     // THE ORDER THE ANIMATIONS WILL APPEAR IS DEFINED BY THE "animationsToUse[]"" ARRAY
-    // which is a globally defined variable
+    // which is a static variable defined in the .cpp file
     _animationFunctions = new AnimationFunction[TOTAL_AVAILABLE_ANIMATIONS];
     _animationFunctions[A_RAINBOW]          = &LEDStripController::rainbow;
     _animationFunctions[A_RAINBOW_GLITTER]  = &LEDStripController::rainbowWithGlitter;
@@ -232,33 +262,6 @@ LEDStripController::LEDStripController( CRGB *leds,
     _animationFunctions[A_CYCLE_ALL]        = &LEDStripController::cycleThroughAllAnimations;
     _animationFunctions[A_SOLID_COLOR]      = &LEDStripController::solidColor;
     _animationFunctions[A_COLORWAVES]       = &LEDStripController::colorwaves;
-
-
-    // LOAD OUR SETTINGS SAVED IN EEPROM
-    Settings settings;
-    loadSettingsFromEEPROM(&settings);
-
-    // THIS IS ANOTHER WAY TO DO THE ABOVE
-    // requires a function that returns a Settings struct
-    // Settings settings{ loadSettingsFromEEPROM() };
-
-    // IMPORTANT: don't change these lines!!!
-    // this is where we use the settings to initialize our program 
-    _activeAnimation = animationsToUse[ settings.animationIndex ];    
-    _brightnessLevel = settings.brightnessLevel;
-    _brightness = map(_brightnessLevel, 0, NUM_BRIGHTNESS_LEVELS - 1, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
-    _colorPalette = COLOR_PALETTES[ settings.paletteIndex ];
-    _solidColor = SOLID_COLORS[ settings.solidColorIndex ];
-    _speedLevel = settings.speedLevel;    
-
-    _gradientPaletteIndex = 0;
-    _gradientPalette = GRADIENT_PALETTES[ _gradientPaletteIndex ];
-
-    // this function initializes all the animation specific parameters
-    // _bpm
-    // _minBPM
-    // _maxBPM 
-    initializeAnimation(_activeAnimation);
 
 }
 
@@ -318,60 +321,87 @@ void LEDStripController::update(uint32_t now_ms)
  *                          NEXT PATTERN                                                            *
  *                                                                                                  *
  *--------------------------------------------------------------------------------------------------*/
-// the technique used here means we don't need to save an _animationIndex variable
+// the technique used here means we don't need to save an animationIndex variable
 // and the reason we don't want to do that is....because I just didn't want one more freaking variable!!
 void LEDStripController::nextAnimation(){
 
-    // cycle through the array of animationsToUse.
-    // figure out which index matches our current _activeAnimation
-    // increment the index and modulo with the size of the array
-    // use that incremented index as the new index into our animationsToUse array
-    // set that as our new _activeAnimation
-    for(uint8_t i = 0; i < ARRAY_SIZE(animationsToUse); i++){
-        
-        if(animationsToUse[i] == _activeAnimation){
-            _activeAnimation = animationsToUse[ (i + 1) % ARRAY_SIZE(animationsToUse) ];
+    // increment the animation index and mod with the size of the animationsToUse array
+    stg.animationIndex = addmod8( stg.animationIndex, 1, ARRAY_SIZE(animationsToUse));
 
-            saveSettingsToEEPROM((i + 1) % ARRAY_SIZE(animationsToUse), EEPROM_ADDR_ANIMATION_INDEX);
-            break; 
-        }
-    }
+    // save setting to EEPROM
+    saveSettingToEEPROM("animationIndex");
+
+    // assign the new animation
+    _activeAnimation = animationsToUse[ stg.animationIndex ];
     
+    // Initialize new animation
     initializeAnimation(_activeAnimation);
+
+
+
+    // OLD WAY OF DOING IT WHEN I DIDN'T WANT TO KEEP A VARIABLE FOR THE ANIMATION INDEX
+    // // cycle through the array of animationsToUse.
+    // // figure out which index matches our current _activeAnimation
+    // // increment the index and modulo with the size of the array
+    // // use that incremented index as the new index into our animationsToUse array
+    // // set that as our new _activeAnimation
+    // for(uint8_t i = 0; i < ARRAY_SIZE(animationsToUse); i++){
+        
+    //     if(animationsToUse[i] == _activeAnimation){
+    //         _activeAnimation = animationsToUse[ (i + 1) % ARRAY_SIZE(animationsToUse) ];
+
+    //         saveSettingsToEEPROM((i + 1) % ARRAY_SIZE(animationsToUse), EEPROM_ADDR_ANIMATION_INDEX);
+    //         break; 
+    //     }
+    // }
+    
+    // initializeAnimation(_activeAnimation);
 
     return;
 
 }
 
-// the technique used here means we don't need to save a _paletteIndex variable
-// and the reason we don't want to do that is....because I just didn't want one more freaking variable!!
+
+
 void LEDStripController::nextPalette(){
 
-    if(_activeAnimation == A_SOLID_COLOR){
-        for(uint8_t i = 0; i < ARRAY_SIZE(SOLID_COLORS); i++){
-            
-            if(SOLID_COLORS[i] == _solidColor){
-                _solidColor = SOLID_COLORS[(i + 1) % ARRAY_SIZE(SOLID_COLORS)];
-                saveSettingsToEEPROM((i + 1) % ARRAY_SIZE(SOLID_COLORS), EEPROM_ADDR_SOLID_COLOR_INDEX);
-                return;
-            }
-        }
-    }
-    else if(_activeAnimation == A_COLORWAVES){
-        _gradientPaletteIndex = addmod8( _gradientPaletteIndex, 1, ARRAY_SIZE(GRADIENT_PALETTES));
-        _gradientPalette = GRADIENT_PALETTES[ _gradientPaletteIndex ];
-    }
 
-    // cycle through the array of available palettes.
-    // figure out which index matches our current palette
-    // increment the index and modulo with the size of the array
-    // use that incremented index as the new index into our pallettes array
-    for(uint8_t i = 0; i < ARRAY_SIZE(COLOR_PALETTES); i++){
-        
-        if((CRGBPalette16)(COLOR_PALETTES[i]) == _colorPalette){
-            _colorPalette = COLOR_PALETTES[(i + 1) % ARRAY_SIZE(COLOR_PALETTES)];
-            saveSettingsToEEPROM((i + 1) % ARRAY_SIZE(COLOR_PALETTES), EEPROM_ADDR_PALETTE_INDEX);
-            return;
+    switch(_activeAnimation){
+        case A_SOLID_COLOR:
+        {
+
+            // NEW WAY OF DOING IT
+            // increment the solid color index and mod with the size of the SOLID_COLORS array
+            stg.solidColorIndex = addmod8( stg.solidColorIndex, 1, ARRAY_SIZE(SOLID_COLORS));
+
+            // save setting to EEPROM
+            saveSettingToEEPROM("solidColorIndex");
+
+            // assign the new solid color
+            _solidColorHue = SOLID_COLORS[ stg.solidColorIndex ];
+       
+            break;
+        }
+        case A_COLORWAVES:
+        {
+            _gradientPaletteIndex = addmod8( _gradientPaletteIndex, 1, ARRAY_SIZE(GRADIENT_PALETTES));
+            _gradientTestPalette = GRADIENT_PALETTES[ _gradientPaletteIndex ];            
+            break;
+        }
+        default:
+        {
+
+            // NEW WAY OF DOING IT
+            // increment the palette index and mod with the size of the COLOR_PALETTES array
+            stg.paletteIndex = addmod8( stg.paletteIndex, 1, ARRAY_SIZE(COLOR_PALETTES));
+
+            // save setting to EEPROM
+            saveSettingToEEPROM("paletteIndex");
+
+            // assign the new solid color
+            _colorPalette = COLOR_PALETTES[stg.paletteIndex];
+     
+            break;
         }
     }
 
@@ -381,22 +411,22 @@ void LEDStripController::nextPalette(){
 
 void LEDStripController::nextBrightness(){
 
-    _brightnessLevel = (_brightnessLevel + 1) % NUM_BRIGHTNESS_LEVELS;    
+    stg.brightnessLevel = addmod8( stg.brightnessLevel, 1, NUM_BRIGHTNESS_LEVELS); 
 
-    _brightness = map(_brightnessLevel, 0, NUM_BRIGHTNESS_LEVELS - 1, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
+    _brightness = map(stg.brightnessLevel, 0, NUM_BRIGHTNESS_LEVELS - 1, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
 
-    saveSettingsToEEPROM(_brightnessLevel, EEPROM_ADDR_BRIGHTNESS_INDEX);
+    saveSettingToEEPROM("brightnessLevel");
 
 }
 
 
 void LEDStripController::nextSpeed(){
     
-    _speedLevel = (_speedLevel + 1) % NUM_SPEED_LEVELS;
+    stg.speedLevel = addmod8( stg.speedLevel, 1, NUM_SPEED_LEVELS);
 
     updateBPM();
 
-    saveSettingsToEEPROM(_speedLevel, EEPROM_ADDR_SPEED_INDEX);
+    saveSettingToEEPROM("speedLevel");
 
 }
 
@@ -668,9 +698,10 @@ void LEDStripController::cycleThroughAllAnimations(){
     (this->*(_animationFunctions[_activeCycleAnimation]))();
 
 
-    // every 10 seconds we switch the animation
+    // every 10 seconds we switch the animation    
     if( millis() >= _timeToCycleAnimations ){
 
+        // this method doesn't require us to save an index variable for the cycle animation
         for(uint8_t i = 0; i < ARRAY_SIZE(animationsToUse); i++){
             
             if(animationsToUse[i] == _activeCycleAnimation){
@@ -698,11 +729,11 @@ void LEDStripController::cycleThroughAllAnimations(){
 
 void LEDStripController::solidColor() {
 
-    if(_solidColor == 255){
-        setStripCHSV(  CHSV( _solidColor, 0, scale8(_brightness, 210) ) );
+    if(_solidColorHue == 255){
+        setStripCHSV(  CHSV( _solidColorHue, 0, scale8(_brightness, 210) ) );
     }
     else{
-        setStripCHSV(  CHSV( _solidColor, FULL_SAT, _brightness)  );
+        setStripCHSV(  CHSV( _solidColorHue, FULL_SAT, _brightness)  );
     }
 
     // turn off the strip in a "mysterious" way
@@ -817,8 +848,8 @@ void LEDStripController::gradientPalettesTest(){
 //   static uint8_t startindex = 0;
 //   startindex--;
 
-    fill_palette( _leds, _stripLength, getHueIndex(_bpm), pixelSpread, _gradientPalette, 255, LINEARBLEND);
-    //fill_palette( _leds, _stripLength, getHueIndex(_bpm), (256 / _stripLength) + 1, _gradientPalette, 255, LINEARBLEND);
+    fill_palette( _leds, _stripLength, getHueIndex(_bpm), pixelSpread, _gradientTestPalette, 255, LINEARBLEND);
+    //fill_palette( _leds, _stripLength, getHueIndex(_bpm), (256 / _stripLength) + 1, _gradientTestPalette, 255, LINEARBLEND);
 }
 
 
@@ -876,6 +907,7 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
         }
         case A_CYCLE_ALL:
         {
+            // _activeCycleAnimation = animationsToUse[ _cycleAnimationIndex ];  
             _timeToCycleAnimations = millis() + ANIMATION_CYCLE_INTERVAL;
         }
         case A_BPM:        
@@ -899,10 +931,10 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
 void LEDStripController::updateBPM(){
 
     // the Arduino map() function uses integer math
-    _bpm = map(_speedLevel, 0, NUM_SPEED_LEVELS - 1, _minBPM, _maxBPM);
+    _bpm = map(stg.speedLevel, 0, NUM_SPEED_LEVELS - 1, _minBPM, _maxBPM);
 
     // doing it manually but using floating points
-    // uint8_t _myBpm = _minBPM + (uint8_t)((_speedLevel / (float)(NUM_SPEED_LEVELS - 1)) * (_maxBPM - _minBPM));
+    // uint8_t _myBpm = _minBPM + (uint8_t)((stg.speedLevel / (float)(NUM_SPEED_LEVELS - 1)) * (_maxBPM - _minBPM));
 
 }
 
@@ -938,71 +970,113 @@ uint8_t LEDStripController::getHueIndex(uint8_t hueIndexBPM, uint8_t direction){
 // **********************************************************
 //      OTHER HELPER METHODS
 // **********************************************************
-void LEDStripController::loadSettingsFromEEPROM(Settings *settings){
+// void LEDStripController::loadSettingsFromEEPROM(Settings *settings){
 
-    settings->animationIndex  = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_ANIMATION_INDEX);
-    settings->brightnessLevel = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_BRIGHTNESS_INDEX);
-    settings->paletteIndex    = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_PALETTE_INDEX);
-    settings->solidColorIndex = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SOLID_COLOR_INDEX);
-    settings->speedLevel      = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SPEED_INDEX);
+//     settings->animationIndex  = EEPROM.read(EEPROM_STORAGE_START_ADDR + sizeof(uint16_t) + EEPROM_ADDR_ANIMATION_INDEX);
+//     settings->brightnessLevel = EEPROM.read(EEPROM_STORAGE_START_ADDR + sizeof(uint16_t) + EEPROM_ADDR_BRIGHTNESS_INDEX);
+//     settings->paletteIndex    = EEPROM.read(EEPROM_STORAGE_START_ADDR + sizeof(uint16_t) + EEPROM_ADDR_PALETTE_INDEX);
+//     settings->solidColorIndex = EEPROM.read(EEPROM_STORAGE_START_ADDR + sizeof(uint16_t) + EEPROM_ADDR_SOLID_COLOR_INDEX);
+//     settings->speedLevel      = EEPROM.read(EEPROM_STORAGE_START_ADDR + sizeof(uint16_t) + EEPROM_ADDR_SPEED_INDEX);
 
 
-    if(settings->animationIndex < 0 || settings->animationIndex > ARRAY_SIZE(animationsToUse) - 1){
+//     if(settings->animationIndex < 0 || settings->animationIndex > ARRAY_SIZE(animationsToUse) - 1){
+//         settings->animationIndex = 0;
+//     }
+//     if(settings->brightnessLevel < 0 || settings->brightnessLevel > NUM_BRIGHTNESS_LEVELS - 1){
+//         settings->brightnessLevel = 0;
+//     }
+//     if(settings->paletteIndex < 0 || settings->paletteIndex > ARRAY_SIZE(COLOR_PALETTES) - 1){
+//         settings->paletteIndex = 0;
+//     }
+//     if(settings->solidColorIndex < 0 || settings->solidColorIndex > ARRAY_SIZE(SOLID_COLORS) - 1){
+//         settings->solidColorIndex = 0;
+//     }
+//     if(settings->speedLevel < 0 || settings->speedLevel > NUM_SPEED_LEVELS - 1){
+//         settings->speedLevel = 0;
+//     }
+
+// }
+
+
+
+void LEDStripController::loadAllSettingsFromEEPROM(Settings *settings){
+
+    // get the address for our settings object which is our base address plus the size of our numWrites variable
+    uint16_t settingsAddress = EEPROM_STORAGE_START_ADDR + sizeof(uint16_t);
+
+    // get the data stored at the address for our settings variable
+    EEPROM.get(settingsAddress, *settings);
+
+    // make sure the data isn't out of range for any of our variables
+    if(settings->animationIndex < 0 || settings->animationIndex >= ARRAY_SIZE(animationsToUse)){
         settings->animationIndex = 0;
     }
-    if(settings->brightnessLevel < 0 || settings->brightnessLevel > NUM_BRIGHTNESS_LEVELS - 1){
+    if(settings->brightnessLevel < 0 || settings->brightnessLevel >= NUM_BRIGHTNESS_LEVELS){
         settings->brightnessLevel = 0;
     }
-    if(settings->paletteIndex < 0 || settings->paletteIndex > ARRAY_SIZE(COLOR_PALETTES) - 1){
+    if(settings->paletteIndex < 0 || settings->paletteIndex >= ARRAY_SIZE(COLOR_PALETTES)){
         settings->paletteIndex = 0;
     }
-    if(settings->solidColorIndex < 0 || settings->solidColorIndex > ARRAY_SIZE(SOLID_COLORS) - 1){
+    if(settings->solidColorIndex < 0 || settings->solidColorIndex >= ARRAY_SIZE(SOLID_COLORS)){
         settings->solidColorIndex = 0;
     }
-    if(settings->speedLevel < 0 || settings->speedLevel > NUM_SPEED_LEVELS - 1){
+    if(settings->speedLevel < 0 || settings->speedLevel >= NUM_SPEED_LEVELS){
         settings->speedLevel = 0;
     }
 
 }
 
-// // THIS IS ANOTHER WAY TO DO THE ABOVE
-// LEDStripController::Settings LEDStripController::loadSettingsFromEEPROM(){
-
-//     Settings settings;
-
-//     settings.animationIndex  = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_ANIMATION_INDEX);
-//     settings.brightnessLevel = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_BRIGHTNESS_INDEX);
-//     settings.paletteIndex    = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_PALETTE_INDEX);
-//     settings.solidColorIndex = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SOLID_COLOR_INDEX);
-//     settings.speedLevel      = EEPROM.read(EEPROM_ADDR_BASE + sizeof(uint16_t) + EEPROM_ADDR_SPEED_INDEX);
 
 
-//     if(settings.animationIndex < 0 || settings.animationIndex > ARRAY_SIZE(animationsToUse) - 1){
-//         settings.animationIndex = 0;
-//     }
-//     if(settings.brightnessLevel < 0 || settings.brightnessLevel > NUM_BRIGHTNESS_LEVELS - 1){
-//         settings.brightnessLevel = 0;
-//     }
-//     if(settings.paletteIndex < 0 || settings.paletteIndex > ARRAY_SIZE(COLOR_PALETTES) - 1){
-//         settings.paletteIndex = 0;
-//     }
-//     if(settings.solidColorIndex < 0 || settings.solidColorIndex > ARRAY_SIZE(SOLID_COLORS) - 1){
-//         settings.solidColorIndex = 0;
-//     }
-//     if(settings.speedLevel < 0 || settings.speedLevel > NUM_SPEED_LEVELS - 1){
-//         settings.speedLevel = 0;
-//     }
+void LEDStripController::saveSettingToEEPROM(String settingToSave){
 
-//     return settings;
-// }
+    uint16_t address = EEPROM_STORAGE_START_ADDR;
+
+    // update the number of writes
+    uint16_t numWrites;
+    EEPROM.get(address, numWrites);
+    numWrites++;
+    EEPROM.put(address, numWrites);
+
+    // increment the address to the next available location after numWrites
+    address = address + sizeof(numWrites);
+
+    // save our actual setting
+    if(settingToSave == "animationIndex"){
+        // set the address using the builtin offsetof() function
+        address = address + offsetof(Settings, animationIndex);
+
+        // write the variable to EEPROM
+        EEPROM.put(address, stg.animationIndex);
+    }
+    else if(settingToSave == "brightnessLevel"){
+        // set the address using the builtin offsetof() function
+        address = address + offsetof(Settings, brightnessLevel);
+
+        // write the variable to EEPROM
+        EEPROM.put(address, stg.brightnessLevel);
+    }
+    else if(settingToSave == "paletteIndex"){
+        // set the address using the builtin offsetof() function
+        address = address + offsetof(Settings, paletteIndex);
+
+        // write the variable to EEPROM
+        EEPROM.put(address, stg.paletteIndex);
+    }
+    else if(settingToSave == "solidColorIndex"){
+        // set the address using the builtin offsetof() function
+        address = address + offsetof(Settings, solidColorIndex);
+
+        // write the variable to EEPROM
+        EEPROM.put(address, stg.solidColorIndex);
+    }
+    else if(settingToSave == "speedLevel"){
+        // set the address using the builtin offsetof() function
+        address = address + offsetof(Settings, speedLevel);
+
+        // write the variable to EEPROM
+        EEPROM.put(address, stg.speedLevel);
+    }
 
 
-
-void LEDStripController::saveSettingsToEEPROM(uint8_t value, uint8_t addrIndex){
-
-    uint16_t numWrites = EEPROM.read(EEPROM_ADDR_BASE);
-    
-    EEPROM.write(EEPROM_ADDR_BASE, numWrites + 1 );
-
-    EEPROM.write(EEPROM_ADDR_BASE + sizeof(uint16_t) + addrIndex, value);
 }

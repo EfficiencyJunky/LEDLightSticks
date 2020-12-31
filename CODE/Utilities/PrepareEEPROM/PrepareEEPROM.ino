@@ -14,6 +14,17 @@
 const uint8_t display_saved_settings = true;
 
 const uint8_t overwrite_saved_settings = false;
+
+struct Settings {
+    uint8_t animationIndex;
+    uint8_t brightnessLevel;
+    uint8_t paletteIndex;
+    uint8_t solidColorIndex;
+    uint8_t speedLevel;
+};
+
+
+
 uint8_t animationIndexVal = 0;
 uint8_t brightnessIndexVal = 0;
 uint8_t paletteIndexVal = 0;
@@ -38,8 +49,34 @@ const int lastSettingsAddress = EEPROM_NUMWRITES_ADDR + sizeof(numWrites) + EEPR
 int address = 0;
 byte value;
 
+bool writeSettings = true;
+
+Settings testSettings = {
+  8,
+  4,
+  0,
+  1,
+  3
+};
+
+
+
+#define LEDS_01_PIN 13
+#define LEDS_01_NUM_LEDS 34
+
+// BUTTON DEFINITIONS
+#define PRIMARY_BUTTON_PIN  11
+#define SECONDARY_BUTTON_PIN  7
+
+
+
 
 void setup() {
+
+  pinMode(PRIMARY_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(SECONDARY_BUTTON_PIN, INPUT_PULLUP);
+
+  delay(100);
   // initialize serial and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
@@ -52,7 +89,8 @@ void loop() {
   // this will display and/or overwrite saved settings
   if( address == EEPROM_NUMWRITES_ADDR + sizeof(numWrites) ){
     if(display_saved_settings){
-      displaySavedSettings(address);     
+//      displaySavedSettings(address);  
+      displaySavedSettingsStruct(address);  
     }
     if(overwrite_saved_settings){
       overwriteSavedSettings();
@@ -76,6 +114,13 @@ void loop() {
     displayCurrentAddress();
   }
 
+
+
+  if(writeSettings){
+
+    writeSettingsTest(38);
+    writeSettings = false;
+  }
 
 
   /***
@@ -116,6 +161,121 @@ void displayCurrentAddress(){
   Serial.print(value, DEC);
   Serial.println();  
 }
+
+
+
+
+// WRITE SETTINGS STRUCT TEST
+void writeSettingsTest(int addr){
+
+  EEPROM.put(addr, testSettings);
+  
+}
+
+
+
+
+// *********************************************************************************
+//    DISPLAY SAVED SETTINGS STRUCT
+// *********************************************************************************
+//struct Settings {
+//    uint8_t animationIndex;
+//    uint8_t brightnessLevel;
+//    uint8_t paletteIndex;
+//    uint8_t solidColorIndex;
+//    uint8_t speedLevel;
+//};
+
+
+void displaySavedSettingsStruct(int addr){
+
+  byte val;
+  Settings settings;
+  
+  Serial.println("**********************");
+  Serial.println("READING SAVED SETTINGS");
+  Serial.println();
+  Serial.println("*************");
+
+  EEPROM.get(addr, settings);
+
+
+
+  //val = EEPROM.read(addr);
+
+  Serial.println("ANIMATION Index: ");
+  Serial.print("addr");  
+  Serial.print("\t");
+  Serial.print("val");
+  Serial.println();
+  Serial.print(addr);
+  Serial.print("\t");
+  Serial.print(settings.animationIndex, DEC);
+  Serial.println();
+  Serial.println("*************");
+
+  addr++;
+  //val = EEPROM.read(addr);
+  Serial.println("BRIGHTNESS Index: ");
+  Serial.print("addr");  
+  Serial.print("\t");
+  Serial.print("val");
+  Serial.println();
+  Serial.print(addr);
+  Serial.print("\t");
+  Serial.print(settings.brightnessLevel, DEC);
+  Serial.println();
+  Serial.println("*************");
+  
+  addr++;
+//  val = EEPROM.read(addr);
+  Serial.println("PALETTE Index: ");
+  Serial.print("addr");  
+  Serial.print("\t");
+  Serial.print("val");
+  Serial.println();
+  Serial.print(addr);
+  Serial.print("\t");
+  Serial.print(settings.paletteIndex, DEC);
+  Serial.println();
+  Serial.println("*************");
+
+  addr++;
+//  val = EEPROM.read(addr);
+  Serial.println("SOLID COLOR Index: ");
+  Serial.print("addr");  
+  Serial.print("\t");
+  Serial.print("val");
+  Serial.println();
+  Serial.print(addr);
+  Serial.print("\t");
+  Serial.print(settings.solidColorIndex, DEC);
+  Serial.println();
+  Serial.println("*************");
+
+  
+  addr++;
+//  val = EEPROM.read(addr);
+  Serial.println("SPEED Index: ");
+  Serial.print("addr");  
+  Serial.print("\t");
+  Serial.print("val");
+  Serial.println();
+  Serial.print(addr);
+  Serial.print("\t");
+  Serial.print(settings.speedLevel, DEC);
+  Serial.println();  
+  Serial.println("*************");
+
+  Serial.println("**********************");
+  Serial.println();
+}
+
+
+
+
+
+
 
 
 

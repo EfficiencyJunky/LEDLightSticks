@@ -161,13 +161,7 @@ const CRGBPalette16 DEFAULT_PALETTE = RainbowColors_p;
 // our base address is where we are starting our storage of settings
 // the first two bytes are used to store the total number of times 
 // we've written to EEPROM just in case it gets super high and we need to change addresses
-#define EEPROM_ADDR_BASE 31
-#define EEPROM_ADDR_ANIMATION_INDEX 0
-#define EEPROM_ADDR_BRIGHTNESS_INDEX 1
-#define EEPROM_ADDR_PALETTE_INDEX 2
-#define EEPROM_ADDR_SOLID_COLOR_INDEX 3
-#define EEPROM_ADDR_SPEED_INDEX 4
-
+#define EEPROM_STORAGE_START_ADDR 31
 
 
 // *********************************************************************************
@@ -175,6 +169,21 @@ const CRGBPalette16 DEFAULT_PALETTE = RainbowColors_p;
 // *********************************************************************************
 class LEDStripController
 {
+
+    // **********************************************************
+    //      STRUCT TO LOAD SETTINGS FROM EEPROM AT STARTUP
+    // **********************************************************   
+    struct Settings {
+        uint8_t animationIndex;
+        uint8_t brightnessLevel;
+        uint8_t paletteIndex;
+        uint8_t solidColorIndex;
+        uint8_t speedLevel;
+    };
+
+    // **********************************************************
+    //      PUBLIC METHODS
+    // **********************************************************   
     public:
         LEDStripController( CRGB *leds, 
                             uint16_t stripLength, 
@@ -191,6 +200,9 @@ class LEDStripController
         void setOperationState(StripControllerStates newState);
 
 
+    // **********************************************************
+    //      PRIVATE METHODS AND MEMBER VARIABLES
+    // **********************************************************  
     private:
         CRGB *_leds;                    // the array of LEDs
         uint16_t _stripLength;          // the number of LEDs in the strip
@@ -208,11 +220,9 @@ class LEDStripController
         // **********************************************************
         uint8_t _hue;
         uint8_t _brightness;
-        uint8_t _brightnessLevel;
         uint8_t _saturation;
         CRGBPalette16 _colorPalette;   // the color palette being used
-        CRGBPalette16 _gradientPalette;   // the color palette being used
-        uint8_t _solidColor;
+        uint8_t _solidColorHue;
 
 
         // **********************************************************
@@ -228,15 +238,11 @@ class LEDStripController
         //      ANIMATION SPECIFIC VARIABLES
         // **********************************************************                
         uint8_t _bpm;
-        uint8_t _speedLevel;
         uint8_t _minBPM;
         uint8_t _maxBPM;
         uint32_t _bsTimebase; // used to reset beatsin() phase to 0
-
-
-        uint8_t _forward;  // used to set which direction palette animations are going
         byte *_heat; // FIRE - Array of temperature readings at each simulation cell
-        uint8_t _cycleAnimationsIndex;  
+        
 
         // **********************************************************
         //      VARIABLES FOR ANIMATION FUNCTIONS
@@ -249,18 +255,6 @@ class LEDStripController
 
 
         // **********************************************************
-        //      STRUCT TO LOAD SETTINGS FROM EEPROM AT STARTUP
-        // **********************************************************   
-        struct Settings {
-            uint8_t animationIndex;
-            uint8_t brightnessLevel;
-            uint8_t paletteIndex;
-            uint8_t solidColorIndex;
-            uint8_t speedLevel;
-        };
-
-
-        // **********************************************************
         //      STATIC MEMBERS TO SET FUNCTIONALITY OF CLASS
         //          these are defined in the .CPP file
         // **********************************************************   
@@ -269,8 +263,27 @@ class LEDStripController
         // static const CRGBPalette16 COLOR_PALETTES[];        
         static const TProgmemRGBGradientPalettePtr GRADIENT_PALETTES[];
         // static const CRGBPalette16 GRADIENT_PALETTES[];
-        uint8_t _gradientPaletteIndex;
         static const uint8_t SOLID_COLORS[];
+
+        // **********************************************************
+        //      INDEX VARIABLES TO SAVE POSITION IN ABOVE ARRAYS
+        //          these are saved to EEPROM every time
+        //          we get a new animation or palette
+        //          from one of the above arrays
+        // **********************************************************
+        Settings stg;
+
+
+        // **********************************************************
+        //      TESTING VARIABLES
+        // **********************************************************
+        
+        // these are only used in the gradientPalettesTest() function
+        uint8_t _gradientPaletteIndex;
+        CRGBPalette16 _gradientTestPalette;
+
+
+
 
 
         // **********************************************************
@@ -307,10 +320,9 @@ class LEDStripController
 
 
         // **** OTHER Helper Methods ******
-        void loadSettingsFromEEPROM(Settings *settings);
-        // Settings loadSettingsFromEEPROM(); // THIS IS ANOTHER WAY TO DO THE ABOVE
-        void saveSettingsToEEPROM(uint8_t value, uint8_t addrIndex);
-
+        void loadAllSettingsFromEEPROM(Settings *settings);
+        // void loadSettingsFromEEPROM(Settings *settings);
+        void saveSettingToEEPROM(String settingToSave);
 
 };
 

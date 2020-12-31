@@ -328,22 +328,36 @@ void LEDStripController::nextPalette(){
     switch(_activeAnimation){
         case A_SOLID_COLOR:
         {
+            // if we're in SHOW_PALETTE mode, do the default behavior
+            if(_state == SHOW_PALETTE){
 
-            // NEW WAY OF DOING IT
-            // increment the solid color index and mod with the size of the SOLID_COLORS array
-            stg.solidColorIndex = addmod8( stg.solidColorIndex, 1, ARRAY_SIZE(SOLID_COLORS));
+                // increment the palette index and mod with the size of the COLOR_PALETTES array
+                stg.paletteIndex = addmod8( stg.paletteIndex, 1, ARRAY_SIZE(COLOR_PALETTES));
 
-            // save setting to EEPROM
-            saveSettingToEEPROM("solidColorIndex");
+                // save setting to EEPROM
+                saveSettingToEEPROM("paletteIndex");
 
-            // assign the new solid color
-            sc_Hue = SOLID_COLORS[ stg.solidColorIndex ];
+                // assign the new solid color
+                _colorPalette = COLOR_PALETTES[stg.paletteIndex];
+
+            }
+            else{
+                
+                // increment the solid color index and mod with the size of the SOLID_COLORS array
+                stg.solidColorIndex = addmod8( stg.solidColorIndex, 1, ARRAY_SIZE(SOLID_COLORS));
+
+                // save setting to EEPROM
+                saveSettingToEEPROM("solidColorIndex");
+
+                // assign the new solid color
+                sc_Hue = SOLID_COLORS[ stg.solidColorIndex ];
+            }
        
             break;
         }
         case A_FIRE:
         {
-            // NEW WAY OF DOING IT
+            
             // increment the palette index and mod with the size of the FIRE_PALETTES array
             stg.firePaletteIndex = addmod8( stg.firePaletteIndex, 1, ARRAY_SIZE(FIRE_PALETTES));
 
@@ -365,6 +379,7 @@ void LEDStripController::nextPalette(){
                 // // swap out the target palette
                 _colorPalette = CW_PALETTES[ cw_PaletteIndex ];       
 
+                // update the time we change to the next palette
                 cw_timeToChangePalette = millis() + CW_PALETTE_CHANGE_INTERVAL;
             }
             // otherwise we just want to set the time to change palettes to now
@@ -377,7 +392,7 @@ void LEDStripController::nextPalette(){
         }
         default:
         {
-            // NEW WAY OF DOING IT
+            
             // increment the palette index and mod with the size of the COLOR_PALETTES array
             stg.paletteIndex = addmod8( stg.paletteIndex, 1, ARRAY_SIZE(COLOR_PALETTES));
 

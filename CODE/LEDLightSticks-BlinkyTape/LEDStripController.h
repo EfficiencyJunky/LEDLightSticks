@@ -52,7 +52,8 @@ enum StripControllerStates {
         NORMAL_OPERATION,
         STATE_TRANSITION,
         SHOW_BRIGHTNESS_LEVEL,
-        SHOW_SPEED_LEVEL
+        SHOW_SPEED_LEVEL,
+        SHOW_PALETTE
     };
 
 // *******  Helper macro for calculating the length of an array ******* 
@@ -251,7 +252,9 @@ class LEDStripController
         // ******* FIRE ANIMATION ********
         byte *f_Heat; // FIRE - Array of temperature readings at each simulation cell
         
+
         // ******* COLORWAVES ANIMATION ********
+        // note that some of these timekeeping variables are uint16_t
         uint32_t cw_timeToChangePalette = 0;
         uint32_t cw_timeToBlendPalettes = 0;
         uint16_t cw_sPseudotime = 0;

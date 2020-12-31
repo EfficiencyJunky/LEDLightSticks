@@ -24,18 +24,25 @@ uint32_t timeToCallFastLEDShow = 0; // time of last call to FastLED.show()
 enum ProgramStates {
         ANIMATION_IS_RUNNING, 
         TRANSITION_TO_CHANGE_BRIGHTNESS, 
+        TRANSITION_TO_VIEW_PALETTES,
         CHANGE_BRIGHTNESS,
         CHANGE_SPEED,
-        TRANSITION_TO_ANIMATION_IS_RUNNING
+        VIEW_PALETTES,
+        TRANSITION_TO_ANIMATION_IS_RUNNING_PRIMARY,
+        TRANSITION_TO_ANIMATION_IS_RUNNING_SECONDARY,
+        TOTAL_NUM_PROGRAM_STATES
     };
 
 
-const StripControllerStates mapProgramToStripControllerStates[5] =  {
+const StripControllerStates mapProgramToStripControllerStates[TOTAL_NUM_PROGRAM_STATES] =  {
                                                                       NORMAL_OPERATION,
+                                                                      STATE_TRANSITION,
                                                                       STATE_TRANSITION,
                                                                       SHOW_BRIGHTNESS_LEVEL,
                                                                       SHOW_SPEED_LEVEL,
-                                                                      STATE_TRANSITION
+                                                                      SHOW_PALETTE,
+                                                                      STATE_TRANSITION,
+                                                                      STATE_TRANSITION,
                                                                     };
 
 
@@ -176,7 +183,7 @@ void readAndRespondToButtonInput(uint32_t ms){
 
     // Executes while the animation is running...
     case ANIMATION_IS_RUNNING:
-      
+    {
       if (primaryButtPressed){
         nextStripControllerAnimation();    
       }
@@ -186,22 +193,34 @@ void readAndRespondToButtonInput(uint32_t ms){
       else if (primaryButtHeld){
         updateProgramState(TRANSITION_TO_CHANGE_BRIGHTNESS);
       }
+      else if (secondaryButtHeld){
+        updateProgramState(TRANSITION_TO_VIEW_PALETTES);
+      }
 
       break;
-
+    }
     // This is a transition state where we need to wait for the operator to release the button, 
     // i.e. release the button from a long press, before moving to the CHANGE_BRIGHTNESS state.    
-    case TRANSITION_TO_CHANGE_BRIGHTNESS:      
+    case TRANSITION_TO_CHANGE_BRIGHTNESS:
+    {
       // if the primary button is released (which appears as a press), move to the CHANGE_BRIGHTNESS state
       if (primaryButtPressed){
         updateProgramState(CHANGE_BRIGHTNESS);
       }
       break;
-
+    }
+    case TRANSITION_TO_VIEW_PALETTES:
+    {
+      // if the primary button is released (which appears as a press), move to the CHANGE_BRIGHTNESS state
+      if (secondaryButtPressed){
+        updateProgramState(VIEW_PALETTES);
+      }
+      break;
+    }
     //Watch for button presses or another long press
     case CHANGE_SPEED:
     case CHANGE_BRIGHTNESS:
-
+    {
       if (primaryButtPressed){
         (programState == CHANGE_BRIGHTNESS) ? nextStripControllerBrightness() : updateProgramState(CHANGE_BRIGHTNESS);
       }
@@ -209,18 +228,41 @@ void readAndRespondToButtonInput(uint32_t ms){
         (programState == CHANGE_BRIGHTNESS) ? updateProgramState(CHANGE_SPEED) : nextStripControllerSpeed();
       }
       else if (primaryButtHeld){
-        updateProgramState(TRANSITION_TO_ANIMATION_IS_RUNNING);
+        updateProgramState(TRANSITION_TO_ANIMATION_IS_RUNNING_PRIMARY);
       }
 
       break;
+    }
+    case VIEW_PALETTES:
+    {
+      if (secondaryButtPressed){
+        nextStripControllerPalette();
+      }
+      // else if (primaryButtPressed){
+      //   // do something here;
+      // }
+      else if (secondaryButtHeld){
+        updateProgramState(TRANSITION_TO_ANIMATION_IS_RUNNING_SECONDARY);
+      }
 
+      break;
+    }
     //This is a transition state where we just wait for the operator to release the button
     //before moving back to the ANIMATION_IS_RUNNING state.
-    case TRANSITION_TO_ANIMATION_IS_RUNNING:
+    case TRANSITION_TO_ANIMATION_IS_RUNNING_PRIMARY:
+    {    
       if (primaryButtPressed){
         updateProgramState(ANIMATION_IS_RUNNING);
       }
       break;
+    }      
+    case TRANSITION_TO_ANIMATION_IS_RUNNING_SECONDARY:
+    {    
+      if (secondaryButtPressed){
+        updateProgramState(ANIMATION_IS_RUNNING);
+      }
+      break;
+    }      
   }
 
 
@@ -257,6 +299,8 @@ void updateProgramState(ProgramStates newState){
 // *********************************************************************************
 void setStripControllerStates(ProgramStates newState){
 
+  // uint8_t canSetState[NUM_STRIP_CONTROLLERS];
+
   // this is where we convert the newState (which is a ProgramStates type)
   // to the StripControllerStates type using our map we built at the top of the program
   StripControllerStates newStripControllerState = mapProgramToStripControllerStates[newState];
@@ -264,6 +308,7 @@ void setStripControllerStates(ProgramStates newState){
   for(uint8_t i = 0; i < NUM_STRIP_CONTROLLERS; i++){
     stripControllerArray[i]->setOperationState(newStripControllerState);
   }
+
 }
 
 

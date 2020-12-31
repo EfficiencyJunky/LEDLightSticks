@@ -62,6 +62,7 @@ const Animations LEDStripController::animationsToUse[] = {
 const TProgmemRGBGradientPalettePtr LEDStripController::COLOR_PALETTES[] = {
                                                                 tk_Rainbow_gp,
                                                                 tk_Peacock_Colors_gp,
+                                                                Analogous_1_gp,
                                                                 tk_Fire_Multi_Pink_gp,
                                                                 Sunset_Real_gp,
                                                                 tk_Party_gp,
@@ -86,7 +87,18 @@ const TProgmemRGBGradientPalettePtr LEDStripController::CW_PALETTES[] = {
     Analogous_1_gp,
     tricias_Fairy_Wings_gp,
     es_pinksplash_07_gp,
-    rgi_15_gp
+    rgi_15_gp,
+    
+    // here's all the color palettes from the normal COLOR_PALETTES array
+    // tk_Rainbow_gp,
+    tk_Peacock_Colors_gp,
+    tk_Fire_Multi_Pink_gp,
+    Sunset_Real_gp,
+    tk_Party_gp,
+    rainbowsherbet_gp,
+    ib_jul01_gp,
+    tricias_Fairy_Fire_gp,
+    tricias_Fairy_Wings_gp    
 };
 
 
@@ -265,6 +277,13 @@ void LEDStripController::update(uint32_t now_ms)
                 setStripCHSV(  CHSV( 0, FULL_SAT, beatsin8(_bpm, MIN_BRIGHTNESS, MAX_BRIGHTNESS))  );
                 break;
             }
+            case SHOW_PALETTE:
+            {
+                //ABRACADABRA
+                // show the entire palette across the entire length of the strip
+                fill_palette( _leds, _stripLength, 0, (256 / _stripLength) , _colorPalette, _brightness, LINEARBLEND);
+                break;
+            }
             default:
             {
                 break; 
@@ -296,26 +315,6 @@ void LEDStripController::nextAnimation(){
     
     // Initialize new animation
     initializeAnimation(_activeAnimation);
-
-
-
-    // OLD WAY OF DOING IT WHEN I DIDN'T WANT TO KEEP A VARIABLE FOR THE ANIMATION INDEX
-    // // cycle through the array of animationsToUse.
-    // // figure out which index matches our current _activeAnimation
-    // // increment the index and modulo with the size of the array
-    // // use that incremented index as the new index into our animationsToUse array
-    // // set that as our new _activeAnimation
-    // for(uint8_t i = 0; i < ARRAY_SIZE(animationsToUse); i++){
-        
-    //     if(animationsToUse[i] == _activeAnimation){
-    //         _activeAnimation = animationsToUse[ (i + 1) % ARRAY_SIZE(animationsToUse) ];
-
-    //         saveSettingsToEEPROM((i + 1) % ARRAY_SIZE(animationsToUse), EEPROM_ADDR_ANIMATION_INDEX);
-    //         break; 
-    //     }
-    // }
-    
-    // initializeAnimation(_activeAnimation);
 
     return;
 
@@ -358,19 +357,26 @@ void LEDStripController::nextPalette(){
         }
         case A_COLORWAVES:
         {
-            // increment the palette index
-            cw_PaletteIndex = addmod8( cw_PaletteIndex, 1, ARRAY_SIZE(CW_PALETTES));
+            // if we're in SHOW_PALETTE mode, we want to swap the palette now
+            if(_state == SHOW_PALETTE){
+                // increment the palette index
+                cw_PaletteIndex = addmod8( cw_PaletteIndex, 1, ARRAY_SIZE(CW_PALETTES));
             
-            // swap out the target palette
-            _colorPalette = CW_PALETTES[ cw_PaletteIndex ];       
+                // // swap out the target palette
+                _colorPalette = CW_PALETTES[ cw_PaletteIndex ];       
 
-            // reset the palette update interval
-            cw_timeToChangePalette = millis() + CW_PALETTE_CHANGE_INTERVAL;
+                cw_timeToChangePalette = millis() + CW_PALETTE_CHANGE_INTERVAL;
+            }
+            // otherwise we just want to set the time to change palettes to now
+            // and let the colorwaves animation function do the swapping
+            else{
+                cw_timeToChangePalette = millis();
+            }
+
             break;
         }
         default:
         {
-
             // NEW WAY OF DOING IT
             // increment the palette index and mod with the size of the COLOR_PALETTES array
             stg.paletteIndex = addmod8( stg.paletteIndex, 1, ARRAY_SIZE(COLOR_PALETTES));
@@ -439,6 +445,10 @@ void LEDStripController::setOperationState(StripControllerStates newState){
             break;
         }
         case SHOW_SPEED_LEVEL:
+        {
+            break;
+        }        
+        case SHOW_PALETTE:
         {
             break;
         }        
@@ -726,6 +736,7 @@ void LEDStripController::solidColor() {
 void LEDStripController::colorwaves() {
 // void colorwaves( CRGB* ledarray, uint16_t numleds, CRGBPalette16& palette) {
 
+    uint32_t ms_uint32 = millis();
     // static CRGBPalette16 gCurrentPalette( CRGB::Black);
 
     uint8_t sat8 = beatsin88( 87, 220, 250);
@@ -736,8 +747,10 @@ void LEDStripController::colorwaves() {
     uint16_t hue16 = cw_sHue16;//gHue * 256;
     uint16_t hueinc16 = beatsin88(113, 300, 1500);
 
-    uint16_t ms = millis();
-    uint16_t deltams = ms - cw_sLastMillis ;
+    // not sure why they did this here
+    // uint16_t ms = millis();
+    uint16_t ms = ms_uint32;
+    uint16_t deltams = ms - cw_sLastMillis;
     cw_sLastMillis  = ms;
     cw_sPseudotime += deltams * msmultiplier;
     cw_sHue16 += deltams * beatsin88( 400, 5,9);
@@ -765,7 +778,8 @@ void LEDStripController::colorwaves() {
         index = scale8( index, 240);
 
         // CRGB newcolor = ColorFromPalette( gCurrentPalette, index, bri8);
-        CRGB newcolor = ColorFromPalette( cw_Palette, index, bri8);
+        // CRGB newcolor = ColorFromPalette( cw_Palette, index, bri8);
+        CRGB newcolor = ColorFromPalette( cw_Palette, index, scale8_video(bri8, _brightness));
 
         
         uint16_t pixelIndex;
@@ -779,24 +793,23 @@ void LEDStripController::colorwaves() {
         nblend( _leds[pixelIndex], newcolor, 128);
     }
 
-
     
     // ***** ADDITIONAL TIMING - PALETTE UPDATES **********
-    if( ms >= cw_timeToChangePalette ){
+    // it was probably a bad idea to use the ms from this function since it is a uint16_t but oh well
+    if( ms_uint32 >= cw_timeToChangePalette ){
         
         cw_PaletteIndex = addmod8( cw_PaletteIndex, 1, ARRAY_SIZE(CW_PALETTES));
         
         _colorPalette = CW_PALETTES[ cw_PaletteIndex ];       
 
-        cw_timeToChangePalette = ms + CW_PALETTE_CHANGE_INTERVAL; // add 20 seconds in ms
+        cw_timeToChangePalette = ms_uint32 + CW_PALETTE_CHANGE_INTERVAL; // add 20 seconds in ms
     }
-
-    if( ms >= cw_timeToBlendPalettes ){
+    if( ms_uint32 >= cw_timeToBlendPalettes ){
 
         // nblendPaletteTowardPalette( gCurrentPalette, _colorPalette, CW_PALETTE_BLEND_INCREMENT);
         nblendPaletteTowardPalette( cw_Palette, _colorPalette, CW_PALETTE_BLEND_INCREMENT);
 
-        cw_timeToBlendPalettes = ms + 40; // add 40 ms
+        cw_timeToBlendPalettes = ms_uint32 + 40; // add 40 ms
     }
 
 }
@@ -887,9 +900,11 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
 
             // this is the palette we will use as a target palette
             _colorPalette = CW_PALETTES[ cw_PaletteIndex ];
-            
+
             // reset the time to swap palettes
+            // things get weird with this because the millis is cast to a uint16_t
             cw_timeToChangePalette = millis() + CW_PALETTE_CHANGE_INTERVAL;
+            cw_timeToBlendPalettes = millis() + 40;
             break;
         }
         case A_BPM:        

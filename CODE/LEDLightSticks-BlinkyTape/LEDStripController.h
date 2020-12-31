@@ -53,7 +53,8 @@ enum StripControllerStates {
         STATE_TRANSITION,
         SHOW_BRIGHTNESS_LEVEL,
         SHOW_SPEED_LEVEL,
-        SHOW_PALETTE
+        SHOW_PALETTE,
+        STRIP_OFF
     };
 
 // *******  Helper macro for calculating the length of an array ******* 
@@ -208,8 +209,9 @@ class LEDStripController
         void nextPalette();
         void nextBrightness();
         void nextSpeed();
-        void setBrightness(uint8_t brightness);
+        void setBrightness(uint8_t brightness);        
         void setOperationState(StripControllerStates newState);
+        // void lightsOut();
 
 
     // **********************************************************
@@ -239,7 +241,7 @@ class LEDStripController
         //      STRIP STATE VARIABLES
         // **********************************************************
         StripControllerStates _state; // the state of the controller to be updated by external input        
-        CRGB _showBrightnessColor;      // the color of the strip when in SHOW_BRIGHTNESS_LEVEL state        
+        CRGB _showBrightnessColor;      // the color of the strip when in SHOW_BRIGHTNESS_LEVEL state     
         uint16_t _width;
         uint16_t _center;
         
@@ -330,6 +332,8 @@ class LEDStripController
         void fastBlink();
         void setStripCHSV(CHSV newCHSV);
         void setStripCRGB(CRGB newCRGB);
+        void fadeToBlack();
+        
         
         
         // **** Animation Methods ******        

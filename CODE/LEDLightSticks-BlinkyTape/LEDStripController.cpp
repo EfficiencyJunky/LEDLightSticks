@@ -292,8 +292,14 @@ void LEDStripController::update(uint32_t now_ms)
                 fill_palette( _leds, _stripLength, 0, (256 / _stripLength) , _colorPalette, _brightness, LINEARBLEND);
                 break;
             }
+            case STRIP_OFF:
+            {
+                fadeToBlack();
+                break;
+            }
             default:
             {
+                //(this->*(_animationFunctions[_activeAnimation]))();
                 break; 
             }
         }
@@ -446,6 +452,12 @@ void LEDStripController::setBrightness(uint8_t brightness){
     _brightness = brightness;
 }
 
+// // turn off the strip and disable normal operation
+// void LEDStripController::lightsOut(){
+    
+
+// }
+
 
 
 
@@ -453,33 +465,54 @@ void LEDStripController::setOperationState(StripControllerStates newState){
 
     _state = newState;
 
+    String s_newState;
+
     switch(_state){
         case NORMAL_OPERATION:
         {
+            s_newState = "NORMAL_OPERATION";
             break;
         }
         case STATE_TRANSITION:
         {
+            s_newState = "STATE_TRANSITION";
             _bsTimebase = millis();
             break;
         }
         case SHOW_BRIGHTNESS_LEVEL:
         {
+            s_newState = "SHOW_BRIGHTNESS_LEVEL";
             break;
         }
         case SHOW_SPEED_LEVEL:
         {
+            s_newState = "SHOW_SPEED_LEVEL";
             break;
         }        
         case SHOW_PALETTE:
         {
+            s_newState = "SHOW_PALETTE";
             break;
-        }        
+        }
+        case STRIP_OFF:
+        {
+            s_newState = "STRIP_OFF";
+            break;
+        }                
         default:
         {
+            s_newState = "unknown_state";
             break;
         }
     }
+
+
+//  Serial.println("***********************");
+//  Serial.println("State Change: ");
+//  Serial.println(s_newState);
+//  Serial.println("***********************");
+
+
 
 }
 
@@ -521,6 +554,14 @@ void LEDStripController::setStripCHSV(CHSV newCHSV) {
 void LEDStripController::setStripCRGB(CRGB newCRGB) {
 
     fill_solid( _leds, _stripLength, newCRGB );
+}
+
+
+
+// set strip to color based on CRGB input
+void LEDStripController::fadeToBlack() {
+
+    fadeToBlackBy( _leds, _stripLength, 10); // MAGIC NUMBER ALERT!!!
 }
 
 

@@ -30,11 +30,13 @@ enum ProgramStates {
         VIEW_PALETTES,
         TRANSITION_TO_ANIMATION_IS_RUNNING_PRIMARY,
         TRANSITION_TO_ANIMATION_IS_RUNNING_SECONDARY,
-        TOTAL_NUM_PROGRAM_STATES
+        TURN_STRIP_OFF_WAIT_FOR_INPUT,
+        TOTAL_NUM_STRIP_CONTROLLER_STATES,
+        BOTH_BUTTONS_PRESSED
     };
 
 
-const StripControllerStates mapProgramToStripControllerStates[TOTAL_NUM_PROGRAM_STATES] =  {
+const StripControllerStates mapProgramToStripControllerStates[TOTAL_NUM_STRIP_CONTROLLER_STATES] =  {
                                                                       NORMAL_OPERATION,
                                                                       STATE_TRANSITION,
                                                                       STATE_TRANSITION,
@@ -43,6 +45,7 @@ const StripControllerStates mapProgramToStripControllerStates[TOTAL_NUM_PROGRAM_
                                                                       SHOW_PALETTE,
                                                                       STATE_TRANSITION,
                                                                       STATE_TRANSITION,
+                                                                      STRIP_OFF
                                                                     };
 
 
@@ -50,6 +53,8 @@ const StripControllerStates mapProgramToStripControllerStates[TOTAL_NUM_PROGRAM_
 // *********************************************************************************
 //      BUTTON DECLARATIONS
 // *********************************************************************************
+uint8_t stripHasOffSwitch = false;
+
 Button primaryButton(PRIMARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
 Button secondaryButton(SECONDARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
 
@@ -165,17 +170,19 @@ void readAndRespondToButtonInput(uint32_t ms){
   secondaryButton.read();
 
   //STORE THE BUTTON'S UPDATED STATES IN LOCAL VARIABLES
-  uint8_t primaryButtPressed = primaryButton.wasReleased();
+  uint8_t primaryButtTapped = primaryButton.wasReleased();
   uint8_t primaryButtHeld = primaryButton.pressedFor(LONG_PRESS);
+  uint8_t primaryButtIsPressed = primaryButton.isPressed();
 
   #if defined(__BLINKY_TAPE__)
     primaryButton_blinkyTape.read();
-    primaryButtPressed = ( primaryButtPressed || primaryButton_blinkyTape.wasReleased() );
+    primaryButtTapped = ( primaryButtTapped || primaryButton_blinkyTape.wasReleased() );
     primaryButtHeld = ( primaryButtHeld || primaryButton_blinkyTape.pressedFor(LONG_PRESS) );
   #endif
 
-  uint8_t secondaryButtPressed = secondaryButton.wasReleased();
+  uint8_t secondaryButtTapped = secondaryButton.wasReleased();
   uint8_t secondaryButtHeld = secondaryButton.pressedFor(LONG_PRESS);
+  uint8_t secondaryButtIsPressed = secondaryButton.isPressed();
 
 
   // TAKE ACTIONS BASED ON THE CURRENT STATE OF OUR PROGRAM AND THE UPDATED STATE OF THE BUTTONS
@@ -184,10 +191,10 @@ void readAndRespondToButtonInput(uint32_t ms){
     // Executes while the animation is running...
     case ANIMATION_IS_RUNNING:
     {
-      if (primaryButtPressed){
+      if (primaryButtTapped){
         nextStripControllerAnimation();    
       }
-      else if (secondaryButtPressed){
+      else if (secondaryButtTapped){
         nextStripControllerPalette();
       }      
       else if (primaryButtHeld){
@@ -204,7 +211,7 @@ void readAndRespondToButtonInput(uint32_t ms){
     case TRANSITION_TO_CHANGE_BRIGHTNESS:
     {
       // if the primary button is released (which appears as a press), move to the CHANGE_BRIGHTNESS state
-      if (primaryButtPressed){
+      if (primaryButtTapped){
         updateProgramState(CHANGE_BRIGHTNESS);
       }
       break;
@@ -212,7 +219,7 @@ void readAndRespondToButtonInput(uint32_t ms){
     case TRANSITION_TO_VIEW_PALETTES:
     {
       // if the primary button is released (which appears as a press), move to the CHANGE_BRIGHTNESS state
-      if (secondaryButtPressed){
+      if (secondaryButtTapped){
         updateProgramState(VIEW_PALETTES);
       }
       break;
@@ -221,10 +228,10 @@ void readAndRespondToButtonInput(uint32_t ms){
     case CHANGE_SPEED:
     case CHANGE_BRIGHTNESS:
     {
-      if (primaryButtPressed){
+      if (primaryButtTapped){
         (programState == CHANGE_BRIGHTNESS) ? nextStripControllerBrightness() : updateProgramState(CHANGE_BRIGHTNESS);
       }
-      else if (secondaryButtPressed){
+      else if (secondaryButtTapped){
         (programState == CHANGE_BRIGHTNESS) ? updateProgramState(CHANGE_SPEED) : nextStripControllerSpeed();
       }
       else if (primaryButtHeld){
@@ -235,10 +242,10 @@ void readAndRespondToButtonInput(uint32_t ms){
     }
     case VIEW_PALETTES:
     {
-      if (secondaryButtPressed){
+      if (secondaryButtTapped){
         nextStripControllerPalette();
       }
-      // else if (primaryButtPressed){
+      // else if (primaryButtTapped){
       //   // do something here;
       // }
       else if (secondaryButtHeld){
@@ -251,20 +258,44 @@ void readAndRespondToButtonInput(uint32_t ms){
     //before moving back to the ANIMATION_IS_RUNNING state.
     case TRANSITION_TO_ANIMATION_IS_RUNNING_PRIMARY:
     {    
-      if (primaryButtPressed){
+      if (primaryButtTapped){
         updateProgramState(ANIMATION_IS_RUNNING);
       }
       break;
     }      
     case TRANSITION_TO_ANIMATION_IS_RUNNING_SECONDARY:
     {    
-      if (secondaryButtPressed){
+      if (secondaryButtTapped){
         updateProgramState(ANIMATION_IS_RUNNING);
       }
       break;
     }      
   }
 
+
+  if(!stripHasOffSwitch){
+    // FAILSAFE METHOD FOR SETUPS WITHOUT OFF BUTTON
+    // Need to be able to press and hold  to turn off the strip
+    // first we identify if both buttons are pressed at the same time and don't update the strip controller states
+    if(programState != BOTH_BUTTONS_PRESSED && primaryButtIsPressed && secondaryButtIsPressed){
+      updateProgramState(BOTH_BUTTONS_PRESSED);
+    }
+    // then we identify if they are both HELD and turn off the strip and await next input
+    else if(programState == BOTH_BUTTONS_PRESSED && primaryButtHeld && secondaryButtHeld){
+      updateProgramState(TURN_STRIP_OFF_WAIT_FOR_INPUT);
+      delay(500);
+      primaryButton.read();
+      secondaryButton.read();
+    }
+    // then if any button is pressed go back to normal animation
+    else if(programState == TURN_STRIP_OFF_WAIT_FOR_INPUT){
+      
+      if(primaryButtTapped || secondaryButtTapped){
+      //if(primaryButtIsPressed || secondaryButtIsPressed){
+        updateProgramState(ANIMATION_IS_RUNNING);
+      }
+    }
+  }
 
 }
 
@@ -288,8 +319,13 @@ void updateStripControllers(uint32_t ms){
 //      BUTTON HELPER FUNCTIONS
 // *********************************************************************************
 void updateProgramState(ProgramStates newState){
+
   programState = newState;
-  setStripControllerStates(newState);
+
+  if(newState != BOTH_BUTTONS_PRESSED){
+    setStripControllerStates(newState);
+  }
+  
 }
 
 
@@ -337,3 +373,10 @@ void nextStripControllerSpeed() {
     stripControllerArray[i]->nextSpeed();
   }
 }
+
+
+//void turnOffLEDStrips() {
+//  for(uint8_t i = 0; i < NUM_STRIP_CONTROLLERS; i++){
+//    stripControllerArray[i]->lightsOut();
+//  }
+//}

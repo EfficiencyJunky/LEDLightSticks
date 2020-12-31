@@ -117,6 +117,7 @@ enum Animations {
                     A_CYCLE_ALL,
                     A_SOLID_COLOR,
                     A_COLORWAVES,
+                    A_DEVIN_ANIMATION,
                     TOTAL_AVAILABLE_ANIMATIONS
                 };
 
@@ -137,6 +138,7 @@ const CRGBPalette16 DEFAULT_PALETTE = RainbowColors_p;
 #define FIRE_UPDATE_INTERVAL 15
 #define CYCLE_ANIMATION_CHANGE_INTERVAL 10000
 #define CW_PALETTE_CHANGE_INTERVAL 20000
+#define DEVIN_PALETTE_CHANGE_INTERVAL 5000
 #define CW_PALETTE_BLEND_INCREMENT 12 // should be between 1 and 50 where 50 is fast
 
 
@@ -183,6 +185,13 @@ class LEDStripController
         uint8_t speedLevel;
         uint8_t firePaletteIndex;
     };
+
+    struct LFO {
+        uint8_t rate;
+        uint8_t minb;
+        uint8_t maxb;
+    };
+
 
     // **********************************************************
     //      PUBLIC METHODS
@@ -263,6 +272,11 @@ class LEDStripController
         uint8_t cw_PaletteIndex = 0;
         CRGBPalette16 cw_Palette;
 
+        // ***** DEVIN ANIMATION ********
+        LFO * d_lfos;
+        uint8_t d_lfoSpeedScalar = 1;
+        uint8_t d_PaletteIndex = 0;
+
         // **********************************************************
         //      VARIABLES FOR ANIMATION FUNCTIONS
         // **********************************************************   
@@ -271,7 +285,7 @@ class LEDStripController
         AnimationFunction *_animationFunctions;
         Animations _activeAnimation;
 
-        // ***** CYCLE SPECIFIC ********
+        // ***** CYCLE ********
         Animations cycle_activeAnimation;
 
 
@@ -301,7 +315,11 @@ class LEDStripController
         // these are only used in the gradientPalettesTest() function
         // uint8_t _gradientPaletteIndex;
         // CRGBPalette16 _gradientTestPalette;
-
+        LFO d_lfotest = {
+            random8(13, 40),
+            random8(2, 20),
+            random8(100, 255)
+        };
 
 
 
@@ -328,6 +346,7 @@ class LEDStripController
         void cycleThroughAllAnimations();
         void solidColor();
         void colorwaves();
+        void devinAnimation();
         void gradientPalettesTest();
 
 

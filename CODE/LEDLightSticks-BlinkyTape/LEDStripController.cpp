@@ -53,7 +53,8 @@ const Animations LEDStripController::animationsToUse[] = {
                                                             A_FIRE,
                                                             A_CYCLE_ALL,
                                                             A_SOLID_COLOR,
-                                                            A_COLORWAVES
+                                                            A_COLORWAVES,
+                                                            // A_DEVIN_ANIMATION,
                                                         };
 
 
@@ -184,7 +185,13 @@ LEDStripController::LEDStripController( CRGB *leds,
     // **********************************************************
     _bsTimebase = 0;
     f_Heat = new byte[stripLength];
+    d_lfos = new LFO[stripLength];
 
+    for(uint16_t i=0; i < stripLength; i++){
+        d_lfos[i].rate = random8(13, 40);
+        d_lfos[i].minb = random8(2, 20);
+        d_lfos[i].maxb = random8(100, 255);
+    }
 
     // we don't care about saving the cycleAnimation index so we just always start at 0
     cycle_activeAnimation = animationsToUse[ 0 ];
@@ -234,6 +241,7 @@ LEDStripController::LEDStripController( CRGB *leds,
     _animationFunctions[A_CYCLE_ALL]        = &LEDStripController::cycleThroughAllAnimations;
     _animationFunctions[A_SOLID_COLOR]      = &LEDStripController::solidColor;
     _animationFunctions[A_COLORWAVES]       = &LEDStripController::colorwaves;
+    _animationFunctions[A_DEVIN_ANIMATION]  = &LEDStripController::devinAnimation;
 
 }
 
@@ -734,6 +742,7 @@ void LEDStripController::cycleThroughAllAnimations(){
 
 void LEDStripController::solidColor() {
 
+    // if it's white, scale it down to max at 210
     if(sc_Hue == 255){
         setStripCHSV(  CHSV( sc_Hue, 0, scale8(_brightness, 210) ) );
     }
@@ -846,6 +855,60 @@ void LEDStripController::gradientPalettesTest(){
 
 
 
+// ABRACADABRA
+// a re-creation of Devin Smith's LFO animation
+void LEDStripController::devinAnimation(){
+
+    uint8_t brightness;
+
+    uint8_t hueIndex = (beatsin8(2, 1, 255) * beatsin8(2, 10, 50)) / 50;
+
+    for(uint16_t i=0; i < _stripLength; i++){
+        
+        brightness = beatsin8(d_lfos[i].rate * (stg.speedLevel+1), d_lfos[i].minb, d_lfos[i].maxb );
+        // brightness = beatsin8(d_lfotest.rate * (stg.speedLevel+1), d_lfotest.minb, d_lfotest.maxb );
+
+
+        // CRGB newcolor = ColorFromPalette( cw_Palette, i * (256 / _stripLength)+ hueIndex, scale8(brightness, _brightness));
+        // nblend( _leds[i], newcolor, 128);
+
+        // _leds[i] = CHSV( 95*2, FULL_SAT, brightness);
+        _leds[i] = ColorFromPalette( cw_Palette, i * (256 / _stripLength)+ hueIndex, scale8(brightness, _brightness));
+
+
+        // CRGB newcolor = CHSV( 95*2, FULL_SAT, brightness);
+        // ledStrip[i] = ColorFromPalette( _colorPalette, i * (256 / _stripLength), scale8(brightness, _brightness));
+        // _leds[i] = ColorFromPalette( _colorPalette, i * (256 / _stripLength), brightness);
+        // _leds[i] = CHSV( 95*2, FULL_SAT, brightness);
+    }
+
+    uint32_t ms_uint32 = millis();
+
+    // ***** ADDITIONAL TIMING - PALETTE UPDATES **********
+    // it was probably a bad idea to use the ms from this function since it is a uint16_t but oh well
+    if( ms_uint32 >= cw_timeToChangePalette ){
+        
+        d_PaletteIndex = addmod8( d_PaletteIndex, 1, ARRAY_SIZE(CW_PALETTES));
+        
+        _colorPalette = CW_PALETTES[ d_PaletteIndex ];       
+
+        cw_timeToChangePalette = ms_uint32 + DEVIN_PALETTE_CHANGE_INTERVAL; // add 20 seconds in ms
+    }
+    if( ms_uint32 >= cw_timeToBlendPalettes ){
+
+        // nblendPaletteTowardPalette( gCurrentPalette, _colorPalette, CW_PALETTE_BLEND_INCREMENT);
+        nblendPaletteTowardPalette( cw_Palette, _colorPalette, CW_PALETTE_BLEND_INCREMENT);
+
+        cw_timeToBlendPalettes = ms_uint32 + 40; // add 40 ms
+    }
+
+
+
+}
+
+
+
+
 // **********************************************************
 //      ANIMATION HELPER METHODS
 // **********************************************************
@@ -922,6 +985,16 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
             cw_timeToBlendPalettes = millis() + 40;
             break;
         }
+        case A_DEVIN_ANIMATION:
+        {
+
+            cw_Palette = CRGBPalette16( CRGB::Black );
+            _colorPalette = CW_PALETTES[ d_PaletteIndex ];
+            cw_timeToChangePalette = millis() + DEVIN_PALETTE_CHANGE_INTERVAL;
+            cw_timeToBlendPalettes = millis() + 40;            
+
+            // d_lfoSpeedScalar = stg.speedLevel;
+        }        
         case A_BPM:        
         default:
         {

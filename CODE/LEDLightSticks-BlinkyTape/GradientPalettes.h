@@ -443,19 +443,23 @@ DEFINE_GRADIENT_PALETTE( BlacK_Magenta_Red_gp ) {
   191, 255,  0, 45,
   255, 255,  0,  0};
 
+
+// RENAMED THIS ONE AND RELOCATED TO FIRE ANIMATIONS DOWN BELOW
 // Gradient palette "BlacK_Red_Magenta_Yellow_gp", originally from
 // http://soliton.vm.bytemark.co.uk/pub/cpt-city/nd/basic/tn/BlacK_Red_Magenta_Yellow.png.index.html
 // converted for FastLED with gammas (2.6, 2.2, 2.5)
 // Size: 28 bytes of program space.
 
-DEFINE_GRADIENT_PALETTE( BlacK_Red_Magenta_Yellow_gp ) {
-    0,   0,  0,  0,
-   42,  42,  0,  0,
-   84, 255,  0,  0,
-  127, 255,  0, 45,
-  170, 255,  0,255,
-  212, 255, 55, 45,
-  255, 255,255,  0};
+// DEFINE_GRADIENT_PALETTE( BlacK_Red_Magenta_Yellow_gp ) {
+//     0,   0,  0,  0,
+//    42,  42,  0,  0,
+//    84, 255,  0,  0,
+//   127, 255,  0, 45,
+//   170, 255,  0,255,
+//   212, 255, 55, 45,
+//   255, 255,255,  0};
+
+
 
 // Gradient palette "Blue_Cyan_Yellow_gp", originally from
 // http://soliton.vm.bytemark.co.uk/pub/cpt-city/nd/basic/tn/Blue_Cyan_Yellow.png.index.html
@@ -542,11 +546,57 @@ DEFINE_GRADIENT_PALETTE( bhw1_28_gp ) {
 
 
 
+// *************** ALL OPTIONS NOTES ***************************
+// const TProgmemRGBGradientPalettePtr LEDStripController::GRADIENT_PALETTES[] = {
+//     rainbowsherbet_gp,          // YES!    // Unicorn colors (aka yummy)
+//     ib_jul01_gp,                // YES!!   // dragon colors - green and red fire orange
+//     Coral_reef_gp,              // WHOA    // cool blue to warm blue
+//     Sunset_Real_gp,             // NOICE   // purple, pink, and orange
+//     Analogous_1_gp,             // NOICE   // retro wave - purple and pink
+//     BlacK_Red_Magenta_Yellow_gp,// OK+    // Tropical - fruity - yellow, red, purple
+//     Blue_Cyan_Yellow_gp         // OK+    // Tropical - carribean - beach
+//     es_autumn_19_gp,            // OK+    // interesting redish orange yellow - fall colors
+//     rgi_15_gp,                  // OK+      // magenta, and lavender
+//     es_pinksplash_07_gp,        // OK+    // magenta, lavender, and almost white
+//     gr65_hult_gp,               // OK+    // bright blue, light purple, white
+//     ib15_gp,                    // OK+    // soft gurl Desaturated pink and blue
+//     Fuschia_7_gp,               // OK+    // bright purple blue pink
+//     BlacK_Magenta_Red_gp,       // OK+    // magenta purple and black
+//     Magenta_Evening_gp,         // OK+    // magenta and purple (no white)
+//     bhw1_28_gp,                 // OK       // light blue, light purple
+//     es_ocean_breeze_036_gp,     // OK       // Sky blue, and white
+//     es_emerald_dragon_08_gp,    // OK    // Alien lime green
+//     lava_gp,                    // OK    // (test to see if it's the same as our other one)
+//     Colorfull_gp,               // OK    // desaturated green, purple blue white
+//     Pink_Purple_gp,             // OK    // soothing purple, blue, white
+//     BlacK_Blue_Magenta_White_gp,// OK    // like a desaturated american flag - not pleasing to cache
+//     es_pinksplash_08_gp,        // OK      // pink, purple, white (dreamsicle) similar to below
+//     es_landscape_33_gp,         // OK    // blue and gold (I think piss)
+//     fire_gp,                    // OK-ish    // Candy corn colors
+//     gr64_hult_gp,               // MEH    // similar to above
+//     es_rivendell_15_gp,         // MEH      // grey green, and white
+//     es_landscape_64_gp,         // MEH    // green, blue, white
+//     // departure_gp,               // EW    // green with white and weird color
+//     //GMT_drywet_gp,              // MEH    // blue, yellowish
+//     // es_vintage_57_gp,           // NOPE    // Unhealthy piss (bloody piss)
+//     //es_ocean_breeze_068_gp,     // OK       // same as above but with white
+//     //retro2_16_gp,               // NOPE     // piss colors
+//     //es_vintage_01_gp,           // EWEWEW  // piss colors (chaplin)
+// };
+// *************** ALL OPTIONS NOTES ***************************
 
 
 
+
+
+/*--------------------------------------------------------------------------------------------------*
+ *                          TURNER'S PALETTES                                                       *
+ * These are palettes that I created, adapted, or renamed to better fit with my own needs           *
+ *  I give credit where credit is due though :)                                                     *
+ *                                                                                                  *
+ *--------------------------------------------------------------------------------------------------*/
 // **********************************************************
-//      BUILT-IN PALETTES (converted to gp)
+//      BUILT-IN PALETTES (converted to gradient palettes)
 // **********************************************************
 DEFINE_GRADIENT_PALETTE( tk_Rainbow_gp ) {
       0,  255,    0,    0, // Red
@@ -648,7 +698,8 @@ DEFINE_GRADIENT_PALETTE( tk_Watermellon_Colors_gp ) {
   255,  146,    0,  110
 };
 
-DEFINE_GRADIENT_PALETTE( tricia_PurBlue_gp ) {
+
+DEFINE_GRADIENT_PALETTE( tricias_Fairy_Wings_gp ) {
   0,  247, 37, 133,
   24,  247, 37, 133,
   25,  181, 23, 158,
@@ -668,7 +719,8 @@ DEFINE_GRADIENT_PALETTE( tricia_PurBlue_gp ) {
   204,  72, 149, 239,
   229,  72, 149, 239,  
   230,  76, 201, 240,
-  255,  76, 201, 240
+  255,  247, 37, 133 // wrapping around
+  // 255,  76, 201, 240  // NOT wrapping around
 };
 
 
@@ -676,7 +728,8 @@ DEFINE_GRADIENT_PALETTE( tricia_PurBlue_gp ) {
 // **********************************************************
 //      TKS SPECIALTY PALETTES
 // **********************************************************
-// Gradient palette "fire_gp", originally from
+
+// RENAME OF Gradient palette "fire_gp", originally from
 // http://soliton.vm.bytemark.co.uk/pub/cpt-city/neota/elem/tn/fire.png.index.html
 // converted for FastLED with gammas (2.6, 2.2, 2.5)
 // Size: 28 bytes of program space.
@@ -690,6 +743,22 @@ DEFINE_GRADIENT_PALETTE( tk_Fire_Candle_gp ) {
   250, 252,255,111,
   255, 255,255,255
 };
+
+DEFINE_GRADIENT_PALETTE( tricias_Fairy_Fire_gp ) {
+  
+    0,    0,   0,   0,   // black  
+   64,  197,   7,  93,
+   90,  181,  23, 158,
+  127,  114,   9, 183,
+  153,   63,  55, 201,
+  210,   67,  97, 238,
+  230,   76, 201, 240,
+  255,  255, 255, 255
+};
+
+
+
+
 
 
 DEFINE_GRADIENT_PALETTE( tk_Fire_Red_gp ) {
@@ -737,6 +806,27 @@ DEFINE_GRADIENT_PALETTE( tk_Fire_Pink_gp ) {
   240,  255,  254,  254,
   255,    0,    0,    0
 };
+
+
+// RENAME OF Gradient palette "BlacK_Red_Magenta_Yellow_gp", originally from
+// http://soliton.vm.bytemark.co.uk/pub/cpt-city/nd/basic/tn/BlacK_Red_Magenta_Yellow.png.index.html
+// converted for FastLED with gammas (2.6, 2.2, 2.5)
+// Size: 28 bytes of program space.
+
+DEFINE_GRADIENT_PALETTE( tk_Fire_Multi_Pink_gp ) {
+    0,   0,  0,  0,
+   42,  42,  0,  0,
+   84, 255,  0,  0,
+  127, 255,  0, 45,
+  170, 255,  0,255,
+  212, 255, 55, 45,
+  255, 255,255,  0};
+
+
+
+
+
+
 
 
 // **********************************************************

@@ -134,8 +134,9 @@ const CRGBPalette16 DEFAULT_PALETTE = RainbowColors_p;
 // UPDATE INTERVALS: this is the time in ms between updates to the LEDStripController
 #define DEFAULT_UPDATE_INTERVAL 10
 #define FIRE_UPDATE_INTERVAL 15
-#define ANIMATION_CYCLE_INTERVAL 10000
-#define GRADIENT_PALETTE_UPDATE_INTERVAL 20000
+#define CYCLE_ANIMATION_CHANGE_INTERVAL 10000
+#define CW_PALETTE_CHANGE_INTERVAL 20000
+#define CW_PALETTE_BLEND_INCREMENT 12 // should be between 1 and 50 where 50 is fast
 
 
 
@@ -179,6 +180,7 @@ class LEDStripController
         uint8_t paletteIndex;
         uint8_t solidColorIndex;
         uint8_t speedLevel;
+        uint8_t firePaletteIndex;
     };
 
     // **********************************************************
@@ -221,8 +223,6 @@ class LEDStripController
         uint8_t _hue;
         uint8_t _brightness;
         uint8_t _saturation;
-        CRGBPalette16 _colorPalette;   // the color palette being used
-        uint8_t _solidColorHue;
 
 
         // **********************************************************
@@ -237,12 +237,28 @@ class LEDStripController
         // **********************************************************
         //      ANIMATION SPECIFIC VARIABLES
         // **********************************************************                
+        // ******* ALL ANIMATIONS ********
         uint8_t _bpm;
         uint8_t _minBPM;
-        uint8_t _maxBPM;
+        uint8_t _maxBPM;        
         uint32_t _bsTimebase; // used to reset beatsin() phase to 0
-        byte *_heat; // FIRE - Array of temperature readings at each simulation cell
+        CRGBPalette16 _colorPalette;   // the color palette being used
         
+        // ******* SOLID COLOR ANIMATION ********
+        uint8_t sc_Hue;
+
+
+        // ******* FIRE ANIMATION ********
+        byte *f_Heat; // FIRE - Array of temperature readings at each simulation cell
+        
+        // ******* COLORWAVES ANIMATION ********
+        uint32_t cw_timeToChangePalette = 0;
+        uint32_t cw_timeToBlendPalettes = 0;
+        uint16_t cw_sPseudotime = 0;
+        uint16_t cw_sLastMillis = 0;
+        uint16_t cw_sHue16 = 0;        
+        uint8_t cw_PaletteIndex = 0;
+        CRGBPalette16 cw_Palette;
 
         // **********************************************************
         //      VARIABLES FOR ANIMATION FUNCTIONS
@@ -251,7 +267,9 @@ class LEDStripController
         
         AnimationFunction *_animationFunctions;
         Animations _activeAnimation;
-        Animations _activeCycleAnimation;
+
+        // ***** CYCLE SPECIFIC ********
+        Animations cycle_activeAnimation;
 
 
         // **********************************************************
@@ -259,10 +277,9 @@ class LEDStripController
         //          these are defined in the .CPP file
         // **********************************************************   
         static const Animations animationsToUse[];
-        static const TProgmemRGBGradientPalettePtr COLOR_PALETTES[];        
-        // static const CRGBPalette16 COLOR_PALETTES[];        
-        static const TProgmemRGBGradientPalettePtr GRADIENT_PALETTES[];
-        // static const CRGBPalette16 GRADIENT_PALETTES[];
+        static const TProgmemRGBGradientPalettePtr COLOR_PALETTES[];
+        static const TProgmemRGBGradientPalettePtr CW_PALETTES[];
+        static const TProgmemRGBGradientPalettePtr FIRE_PALETTES[];
         static const uint8_t SOLID_COLORS[];
 
         // **********************************************************
@@ -279,8 +296,8 @@ class LEDStripController
         // **********************************************************
         
         // these are only used in the gradientPalettesTest() function
-        uint8_t _gradientPaletteIndex;
-        CRGBPalette16 _gradientTestPalette;
+        // uint8_t _gradientPaletteIndex;
+        // CRGBPalette16 _gradientTestPalette;
 
 
 
@@ -318,10 +335,8 @@ class LEDStripController
         uint8_t getHueIndex(uint8_t hueIndexBPM = NORMAL_HUE_INDEX_BPM, uint8_t direction = NORMAL_HUE_INDEX_DIRECTION);
 
 
-
-        // **** OTHER Helper Methods ******
+        // **** EEPROM Manipulation Methods ******
         void loadAllSettingsFromEEPROM(Settings *settings);
-        // void loadSettingsFromEEPROM(Settings *settings);
         void saveSettingToEEPROM(String settingToSave);
 
 };

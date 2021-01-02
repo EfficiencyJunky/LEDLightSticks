@@ -31,31 +31,12 @@
 //            Includes and Defines - FastLED required
 // *********************************************************************************
 #include <FastLED.h>
-// FASTLED_USING_NAMESPACE
 #include <EEPROM.h>
 
-
 // FASTLED_USING_NAMESPACE
-
 // #if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
 // #warning "Requires FastLED 3.1 or later; check github for latest code."
 // #endif
-
-const uint8_t pixelSpread = (256 / 34) + 1;
-
-// *********************************************************************************
-//    Definitions for things that need to be used externally
-// *********************************************************************************
-//******* ENUM for managing strip controller states ********
-//The possible states for the button state machine
-enum StripControllerStates {
-        NORMAL_OPERATION,
-        STATE_TRANSITION,
-        SHOW_BRIGHTNESS_LEVEL,
-        SHOW_SPEED_LEVEL,
-        SHOW_PALETTE,
-        STRIP_OFF
-    };
 
 // *******  Helper macro for calculating the length of an array ******* 
 // creates a macro that computes the length of an array (number of elements)
@@ -63,11 +44,26 @@ enum StripControllerStates {
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 
+// *********************************************************************************
+//    Definitions for things that need to be used externally
+// *********************************************************************************
+//******* ENUM for managing strip controller states ********
+//The possible states for the button state machine
+enum StripControllerStates {
+    NORMAL_OPERATION,
+    STATE_TRANSITION,
+    SHOW_BRIGHTNESS_LEVEL,
+    SHOW_SPEED_LEVEL,
+    SHOW_PALETTE,
+    STRIP_OFF
+};
+
 
 // *******  Human readable definition for when we want to invert a strip ******* 
 // this will set whether or not the strip is inverted
 // meaning the beginning is the end and the end is the beginning
 #define INVERT_STRIP true
+#define REVERSE_DIRECTION true
 
 
 // *********************************************************************************
@@ -77,12 +73,6 @@ enum StripControllerStates {
 #define FULL_BRIGHT 255
 #define FULL_SAT    255
 #define WHITE_HUE   255
-
-// variables for changing brightness
-#define MIN_BRIGHTNESS  40  //set between 0 (off) to 255
-#define MAX_BRIGHTNESS   200
-#define NUM_BRIGHTNESS_LEVELS    6 
-// #define INITIAL_BRIGHTNESS_LEVEL  2 // this is now set by values saved in EEPROM
 
 
 //******* FIRE ANIMATION GLOBAL VARIABLES ********
@@ -118,30 +108,31 @@ enum Animations {
                     A_CYCLE_ALL,
                     A_SOLID_COLOR,
                     A_COLORWAVES,
+                    A_PRIDE,
+                    A_PRIDE_GLITTER,
                     A_DEVIN_ANIMATION,
                     TOTAL_AVAILABLE_ANIMATIONS
                 };
 
 
-//******* COLOR PALETTES ********
-const CRGBPalette16 DEFAULT_PALETTE = RainbowColors_p;
-
-// extern const TProgmemRGBGradientPalettePtr gGradientPalettes[];
-// extern const uint8_t gGradientPaletteCount;
+// *********************************************************************************
+//    SETTINGS FOR GLOBAL BRIGHTNESS
+// *********************************************************************************
+// variables for changing brightness
+#define MIN_BRIGHTNESS  40
+#define MAX_BRIGHTNESS   200
+#define NUM_BRIGHTNESS_LEVELS    6 
 
 
 // *********************************************************************************
 //    Global settings for Animation Timings
 // *********************************************************************************
-//******* LED STRIP CONTROLLER TIMING VARIABLES ********
-// UPDATE INTERVALS: this is the time in ms between updates to the LEDStripController
 #define DEFAULT_UPDATE_INTERVAL 10
 #define FIRE_UPDATE_INTERVAL 15
 #define CYCLE_ANIMATION_CHANGE_INTERVAL 10000
 #define CW_PALETTE_CHANGE_INTERVAL 20000
 #define DEVIN_PALETTE_CHANGE_INTERVAL 5000
 #define CW_PALETTE_BLEND_INCREMENT 12 // should be between 1 and 50 where 50 is fast
-
 
 
 // *********************************************************************************
@@ -199,11 +190,10 @@ class LEDStripController
     // **********************************************************   
     public:
         LEDStripController( CRGB *leds, 
+                            uint16_t stripStartIndex,
                             uint16_t stripLength, 
-                            //CRGBPalette16 colorPalette = (CRGBPalette16)RainbowColors_p, 
-                            CRGBPalette16 colorPalette = DEFAULT_PALETTE, 
-                            uint8_t invertStrip = 0, 
-                            uint16_t stripStartIndex = 0 );
+                            uint8_t invertStrip = false
+                          );
         void update(uint32_t now_ms = 0);
         void nextAnimation();
         void nextPalette();
@@ -268,13 +258,25 @@ class LEDStripController
         // note that some of these timekeeping variables are uint16_t
         uint32_t cw_timeToChangePalette = 0;
         uint32_t cw_timeToBlendPalettes = 0;
-        uint16_t cw_sPseudotime = 0;
-        uint16_t cw_sLastMillis = 0;
-        uint16_t cw_sHue16 = 0;        
         uint8_t cw_PaletteIndex = 0;
         CRGBPalette16 cw_Palette;
 
+        // ******* PRIDE ANIMATION ********
+        uint8_t p_bri8 = 0;
+
+        // ******* COLORWAVES AND PRIDE ANIMATION ********
+        uint16_t cwp_sPseudotime = 0;
+        uint16_t cwp_sLastMillis = 0;
+        uint16_t cwp_sHue16 = 0;        
+
         // ***** DEVIN ANIMATION ********
+        // this is the LFO for devinAnimation()
+        // tweak these parameters to get the desired effect
+        LFO d_lfotest = {
+            random8(13, 40),
+            random8(2, 20),
+            random8(100, 255)
+        };                
         LFO * d_lfos;
         uint8_t d_lfoSpeedScalar = 1;
         uint8_t d_PaletteIndex = 0;
@@ -295,6 +297,7 @@ class LEDStripController
         //      STATIC MEMBERS TO SET FUNCTIONALITY OF CLASS
         //          these are defined in the .CPP file
         // **********************************************************   
+        static uint32_t ms_uint32; // stores call to millis() on a per-function basis
         static const Animations animationsToUse[];
         static const TProgmemRGBGradientPalettePtr COLOR_PALETTES[];
         static const TProgmemRGBGradientPalettePtr CW_PALETTES[];
@@ -313,16 +316,6 @@ class LEDStripController
         // **********************************************************
         //      TESTING VARIABLES
         // **********************************************************
-        
-        // these are only used in the gradientPalettesTest() function
-        // uint8_t _gradientPaletteIndex;
-        // CRGBPalette16 _gradientTestPalette;
-        LFO d_lfotest = {
-            random8(13, 40),
-            random8(2, 20),
-            random8(100, 255)
-        };
-
 
 
 
@@ -350,6 +343,8 @@ class LEDStripController
         void cycleThroughAllAnimations();
         void solidColor();
         void colorwaves();
+        void pride();
+        void prideWithGlitter();
         void devinAnimation();
         void gradientPalettesTest();
 
@@ -357,8 +352,8 @@ class LEDStripController
         // **** Animation Helper Methods ******
         void initializeAnimation(Animations animationToInitialize);
         void updateBPM();
-        void addGlitter( fract8 chanceOfGlitter );
-        uint8_t getHueIndex(uint8_t hueIndexBPM = NORMAL_HUE_INDEX_BPM, uint8_t direction = NORMAL_HUE_INDEX_DIRECTION);
+        void addGlitter( fract8 chanceOfGlitter, uint8_t gBrightness, uint8_t extraBrightness);
+        uint8_t getHueIndex(uint8_t hueIndexBPM, uint8_t reverseDirecton = false);
 
 
         // **** EEPROM Manipulation Methods ******

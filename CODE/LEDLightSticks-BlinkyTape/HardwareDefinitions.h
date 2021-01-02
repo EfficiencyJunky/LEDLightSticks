@@ -11,23 +11,45 @@
 //    ARDUINO HARDWARE SETTINGS -- Change these according to your hardware
 // *********************************************************************************
 
-#define __BLINKY_TAPE__
+#define __BLINKY_TAPE_TWO_BUTTON__
+// #define __BLINKY_TAPE_ONE_BUTTON__
 // #define __TEENSY__
 
-// ******* Blinky Tape Pins *******
-#if defined(__BLINKY_TAPE__)
+// ******* Blinky Tape With TWO External Button *******
+#if defined(__BLINKY_TAPE_TWO_BUTTON__)
+    
+    // IF IT HAS AN OFF SWITCH ON THE DEVICE (V2 doesn't have this)
+    #define HAS_ON_OFF_SWITCH true
     
     // LED STRIP DEFINITIONS
     #define LEDS_01_PIN 13
     #define LEDS_01_NUM_LEDS 34
 
     // BUTTON DEFINITIONS
-    #define PRIMARY_BUTTON_PIN  11
+    #define EXT_PRIMARY_BUTTON_PIN  11
 
     // this is the button sodered directly to the blinkytape
-    #define PRIMARY_BUTTON_PIN_BLINKYTAPE  10
+    #define ONBOARD_PRIMARY_BUTTON_PIN  10
 
-    #define SECONDARY_BUTTON_PIN  7
+    // this is the second button used mostly for color changes
+    #define EXT_SECONDARY_BUTTON_PIN  7
+
+
+// ******* Blinky Tape With ONE External Button *******
+#elif defined(__BLINKY_TAPE_ONE_BUTTON__)
+    
+    // IF IT HAS AN OFF SWITCH ON THE DEVICE (V2 doesn't have this)
+    #define HAS_ON_OFF_SWITCH true
+    
+    // LED STRIP DEFINITIONS
+    #define LEDS_01_PIN 13
+    #define LEDS_01_NUM_LEDS 34
+
+    // BUTTON DEFINITIONS
+    #define EXT_PRIMARY_BUTTON_PIN  11
+
+    // this is the button sodered directly to the blinkytape
+    #define ONBOARD_SECONDARY_BUTTON_PIN  10
 
 
 // ******* Teensy Pins *******
@@ -55,9 +77,6 @@
 #define FRAMES_PER_SECOND  120
 
 #define FAST_LED_MAX_BRIGHTNESS 255
-
-
-#define BRIGHTNESS_MAX_MODULO   180
 
 
 // *********************************************************************************

@@ -49,11 +49,13 @@ const Animations LEDStripController::animationsToUse[] = {
                                                             A_JUGGLE,
                                                             A_PALETTE,
                                                             A_PALETTE_GLITTER,
-                                                            A_BPM, 
+                                                            // A_BPM,
                                                             A_FIRE,
                                                             A_CYCLE_ALL,
                                                             A_SOLID_COLOR,
                                                             A_COLORWAVES,
+                                                            A_PRIDE,
+                                                            // A_PRIDE_GLITTER
                                                             // A_DEVIN_ANIMATION,
                                                         };
 
@@ -138,6 +140,11 @@ const uint8_t LEDStripController::SOLID_COLORS[] = {
                                                     };
 
 
+// using a static variable for saving the call to millis() in each of our functions
+// saves a small amount of space and makes writing animation functions more uniform to use the same variable
+uint32_t LEDStripController::ms_uint32 = 0;
+
+
 
 /*--------------------------------------------------------------------------------------------------*
  *                          CONSTRUCTOR                                                             *
@@ -151,10 +158,9 @@ const uint8_t LEDStripController::SOLID_COLORS[] = {
  *                  (the endIndex can be calculated by adding _stripLength)                         *
  *--------------------------------------------------------------------------------------------------*/
 LEDStripController::LEDStripController( CRGB *leds, 
+                                        uint16_t stripStartIndex,
                                         uint16_t stripLength, 
-                                        CRGBPalette16 colorPalette, 
-                                        uint8_t invertStrip, 
-                                        uint16_t stripStartIndex)
+                                        uint8_t invertStrip)
 {
 
     _leds = &leds[stripStartIndex];
@@ -220,7 +226,7 @@ LEDStripController::LEDStripController( CRGB *leds,
 
 
     // **********************************************************
-    //    ARRAY OF ALL OUR ANIMATIONS -- DON'T TOUCH THIS!!!
+    //    ARRAY OF ALL OUR ANIMATIONS -- !!! DON'T TOUCH THIS !!!
     // **********************************************************
     // LOAD THE AnimationFunction ARRAY WITH THE ENTIRE SET OF AVAILABLE Animations
     // !!!!! NOTE !!!!!
@@ -241,6 +247,8 @@ LEDStripController::LEDStripController( CRGB *leds,
     _animationFunctions[A_CYCLE_ALL]        = &LEDStripController::cycleThroughAllAnimations;
     _animationFunctions[A_SOLID_COLOR]      = &LEDStripController::solidColor;
     _animationFunctions[A_COLORWAVES]       = &LEDStripController::colorwaves;
+    _animationFunctions[A_PRIDE]            = &LEDStripController::pride;
+    _animationFunctions[A_PRIDE_GLITTER]    = &LEDStripController::prideWithGlitter;
     _animationFunctions[A_DEVIN_ANIMATION]  = &LEDStripController::devinAnimation;
 
 }
@@ -260,9 +268,10 @@ LEDStripController::LEDStripController( CRGB *leds,
 void LEDStripController::update(uint32_t now_ms) 
 {
 
-    if(now_ms == 0){ now_ms = millis(); }
+    if(now_ms == 0){ ms_uint32 = millis(); }
+    else{ ms_uint32 = now_ms; }
 
-    if( now_ms >= _timeToUpdate ){
+    if( ms_uint32 >= _timeToUpdate ){
         switch (_state) {
     
             case NORMAL_OPERATION:
@@ -287,7 +296,6 @@ void LEDStripController::update(uint32_t now_ms)
             }
             case SHOW_PALETTE:
             {
-                //ABRACADABRA
                 // show the entire palette across the entire length of the strip
                 fill_palette( _leds, _stripLength, 0, (256 / _stripLength) , _colorPalette, _brightness, LINEARBLEND);
                 break;
@@ -304,7 +312,7 @@ void LEDStripController::update(uint32_t now_ms)
             }
         }
 
-        _timeToUpdate = now_ms + _updateInterval;
+        _timeToUpdate = ms_uint32 + _updateInterval;
     }
 }
 
@@ -452,12 +460,6 @@ void LEDStripController::setBrightness(uint8_t brightness){
     _brightness = brightness;
 }
 
-// // turn off the strip and disable normal operation
-// void LEDStripController::lightsOut(){
-    
-
-// }
-
 
 
 
@@ -507,13 +509,6 @@ void LEDStripController::setOperationState(StripControllerStates newState){
     }
 
 
-//  Serial.println("***********************");
-//  Serial.println("State Change: ");
-//  Serial.println(s_newState);
-//  Serial.println("***********************");
-
-
-
 }
 
 
@@ -535,7 +530,6 @@ void LEDStripController::fastBlink() {
     } 
     else {
         fill_solid( _leds, _stripLength, CRGB::Black );
-        //fill_solid(&(_leds[_stripStartIndex]), _stripLength, CRGB::Black);    
     }
 }
 
@@ -543,9 +537,6 @@ void LEDStripController::fastBlink() {
 // set strip to color based on CHSV input
 void LEDStripController::setStripCHSV(CHSV newCHSV) {
 
-    // for( int i = 0; i < _stripLength; ++i) {
-    //     _leds[i] = newCHSV;
-    // }
     fill_solid( _leds, _stripLength, newCHSV );
 }
 
@@ -575,13 +566,13 @@ void LEDStripController::fadeToBlack() {
  *--------------------------------------------------------------------------------------------------*/
 void LEDStripController::rainbow(){    
 
-    fill_palette( _leds, _stripLength, getHueIndex(_bpm, _invertStrip), (256 / _stripLength) + 1, RainbowColors_p, _brightness, LINEARBLEND);
+    fill_palette( _leds, _stripLength, getHueIndex(_bpm), (256 / _stripLength) + 1, RainbowColors_p, _brightness, LINEARBLEND);
 }
 
 
 void LEDStripController::palette(){
 
-    fill_palette( _leds, _stripLength, getHueIndex(_bpm, _invertStrip), 3, _colorPalette, _brightness, LINEARBLEND);
+    fill_palette( _leds, _stripLength, getHueIndex(_bpm), 3, _colorPalette, _brightness, LINEARBLEND);
 }
 
 
@@ -589,14 +580,14 @@ void LEDStripController::palette(){
 void LEDStripController::rainbowWithGlitter() {
   // reference our rainbow function, plus some random sparkly glitter
   rainbow();
-  addGlitter(80); // MAGIC NUMBER ALERT!!!
+  addGlitter(80, _brightness, 100); // MAGIC NUMBER ALERT!!!
 }
 
 // same as the above palette function except this also ads glitter
 void LEDStripController::paletteWithGlitter() {
   // reference our palette function, plus some random sparkly glitter
   palette();
-  addGlitter(80); // MAGIC NUMBER ALERT!!!
+  addGlitter(80, _brightness, 100); // MAGIC NUMBER ALERT!!!
 }
 
 
@@ -612,12 +603,13 @@ void LEDStripController::confetti() {
         // this method that just cycles through the rainbow and     
         // uses qadd8 to clamp the addition of _brightness+40 to a max of 255
         // then converts the rgb value to CHSV
-        CHSV newColor = rgb2hsv_approximate( ColorFromPalette( _colorPalette, getHueIndex() + random8(32), qadd8(_brightness, 40 )) );// MAGIC NUMBER ALERT!!!
+        CHSV newColor = rgb2hsv_approximate( ColorFromPalette( _colorPalette, getHueIndex(NORMAL_HUE_INDEX_BPM) + random8(24), qadd8(_brightness, 40 )) );// MAGIC NUMBER ALERT!!!
+        
         // drop the saturation
         newColor.saturation = 200; // MAGIC NUMBER ALERT!!!
+        
         // add to the mix
         _leds[pos] += newColor;
-        //   _leds[pos] += CHSV( getHueIndex() + random8(64), 200, brightness);
     }
 }
 
@@ -632,9 +624,8 @@ void LEDStripController::sinelon(){
 
     uint16_t pos = beatsin16( _bpm, 0, _stripLength - 1 );
 
-    // _leds[pos] += ColorFromPalette( _colorPalette, getHueIndex(), qadd8(_brightness, 40 ));
-    _leds[pos] += ColorFromPalette( _colorPalette, getHueIndex(), qadd8(_brightness, 40 ));
-    // _leds[pos] += CHSV( getHueIndex(), 255, FULL_BRIGHT);
+    _leds[pos] += ColorFromPalette( _colorPalette, getHueIndex(NORMAL_HUE_INDEX_BPM), qadd8(_brightness, 40 ));
+    // _leds[pos] += CHSV( getHueIndex(NORMAL_HUE_INDEX_BPM), 255, FULL_BRIGHT);
 
 }
 
@@ -647,11 +638,11 @@ void LEDStripController::sinelonDual(){
     uint16_t pos1 = beatsin16( _bpm, 0, floor(_stripLength/2.0) - 1 );
     uint16_t pos2 = beatsin16( _bpm, ceil(_stripLength/2.0) - 1, _stripLength - 1 );
     
-    _leds[pos1] += ColorFromPalette( _colorPalette, getHueIndex(), qadd8(_brightness, 40 ));
-    _leds[pos2] += ColorFromPalette( _colorPalette, getHueIndex(), qadd8(_brightness, 40 ));
+    _leds[pos1] += ColorFromPalette( _colorPalette, getHueIndex(NORMAL_HUE_INDEX_BPM), qadd8(_brightness, 40 ));
+    _leds[pos2] += ColorFromPalette( _colorPalette, getHueIndex(NORMAL_HUE_INDEX_BPM), qadd8(_brightness, 40 ));
 
-    // _leds[pos1] += CHSV( getHueIndex(), 255, FULL_BRIGHT);
-    // _leds[pos2] += CHSV( getHueIndex(), 255, FULL_BRIGHT);
+    // _leds[pos1] += CHSV( getHueIndex(NORMAL_HUE_INDEX_BPM), 255, FULL_BRIGHT);
+    // _leds[pos2] += CHSV( getHueIndex(NORMAL_HUE_INDEX_BPM), 255, FULL_BRIGHT);
 
 }
 
@@ -665,9 +656,14 @@ void LEDStripController::juggle() {
     for( uint16_t i = 0; i < 8; i++) {
 
         CHSV newColor = rgb2hsv_approximate( ColorFromPalette( _colorPalette, dothue, qadd8(_brightness, 40 )) );// MAGIC NUMBER ALERT!!!
+
+        // drop the saturation
         newColor.saturation = 200;
+
+        // add to the mix
         _leds[beatsin16( i+_bpm, 0, _stripLength - 1 )] |= newColor;
         
+        // original way of doing it without dropping saturation
         //_leds[beatsin16( i+7, 0, _stripLength - 1 )] |= CHSV(dothue, 200, qadd8(_brightness, 40 ));
         
         dothue += 32;
@@ -681,8 +677,9 @@ void LEDStripController::bpm(){
     uint8_t beatsPerMinute = _bpm + 50;
 
     uint8_t beat = beatsin8( beatsPerMinute, 64, 255);
-    // uint8_t hue = getHueIndex();
+    
     uint8_t hue = getHueIndex(_bpm);
+    // uint8_t hue = getHueIndex(NORMAL_HUE_INDEX_BPM);
     
 
     for( uint16_t i = 0; i < _stripLength; i++) { //9948
@@ -751,9 +748,11 @@ void LEDStripController::cycleThroughAllAnimations(){
 
     (this->*(_animationFunctions[cycle_activeAnimation]))();
 
+    
+    ms_uint32 = millis();
 
     // every 10 seconds we switch the animation    
-    if( millis() >= _timeToCycleAnimations ){
+    if( ms_uint32 >= _timeToCycleAnimations ){
 
         // this method doesn't require us to save an index variable for the cycle animation
         for(uint8_t i = 0; i < ARRAY_SIZE(animationsToUse); i++){
@@ -776,7 +775,7 @@ void LEDStripController::cycleThroughAllAnimations(){
 
         initializeAnimation(cycle_activeAnimation);
 
-        _timeToCycleAnimations = millis() + CYCLE_ANIMATION_CHANGE_INTERVAL;
+        _timeToCycleAnimations = ms_uint32 + CYCLE_ANIMATION_CHANGE_INTERVAL;
     }
 }
 
@@ -791,35 +790,31 @@ void LEDStripController::solidColor() {
         setStripCHSV(  CHSV( sc_Hue, FULL_SAT, _brightness)  );
     }
 
-    // turn off the strip in a "mysterious" way
-    //fadeToBlackBy( _leds, _stripLength, 10);
 }
 
 
+// this animation adapted from the original by Mark Kriegsman
+// https://gist.github.com/kriegsman/8281905786e8b2632aeb
 // This function draws color waves with an ever-changing,
 // widely-varying set of parameters, using a color palette.
 void LEDStripController::colorwaves() {
-// void colorwaves( CRGB* ledarray, uint16_t numleds, CRGBPalette16& palette) {
 
-    uint32_t ms_uint32 = millis();
-    // static CRGBPalette16 gCurrentPalette( CRGB::Black);
+    ms_uint32 = millis();
 
-    uint8_t sat8 = beatsin88( 87, 220, 250);
     uint8_t brightdepth = beatsin88( 341, 96, 224);
     uint16_t brightnessthetainc16 = beatsin88( 203, (25 * 256), (40 * 256));
     uint8_t msmultiplier = beatsin88(147, 23, 60);
 
-    uint16_t hue16 = cw_sHue16;//gHue * 256;
+    uint16_t hue16 = cwp_sHue16;//gHue * 256;
     uint16_t hueinc16 = beatsin88(113, 300, 1500);
 
-    // not sure why they did this here
-    // uint16_t ms = millis();
+    // not sure why it was decided to use uint16_t variables but maybe to save space?
     uint16_t ms = ms_uint32;
-    uint16_t deltams = ms - cw_sLastMillis;
-    cw_sLastMillis  = ms;
-    cw_sPseudotime += deltams * msmultiplier;
-    cw_sHue16 += deltams * beatsin88( 400, 5,9);
-    uint16_t brightnesstheta16 = cw_sPseudotime;
+    uint16_t deltams = ms - cwp_sLastMillis;
+    cwp_sLastMillis  = ms;
+    cwp_sPseudotime += deltams * msmultiplier;
+    cwp_sHue16 += deltams * beatsin88( 400, 5,9);
+    uint16_t brightnesstheta16 = cwp_sPseudotime;
 
     for( uint16_t i = 0 ; i < _stripLength; i++) {
         hue16 += hueinc16;
@@ -842,10 +837,8 @@ void LEDStripController::colorwaves() {
         //index = triwave8( index);
         index = scale8( index, 240);
 
-        // CRGB newcolor = ColorFromPalette( gCurrentPalette, index, bri8);
-        // CRGB newcolor = ColorFromPalette( cw_Palette, index, bri8);
-        CRGB newcolor = ColorFromPalette( cw_Palette, index, scale8_video(bri8, _brightness));
-
+        // scale the brightness but maximize the high end potential
+        CRGB newcolor = ColorFromPalette( cw_Palette, index, scale8_video(bri8, qadd8(_brightness, 255 - MAX_BRIGHTNESS )) );
         
         uint16_t pixelIndex;
 
@@ -859,8 +852,7 @@ void LEDStripController::colorwaves() {
     }
 
     
-    // ***** ADDITIONAL TIMING - PALETTE UPDATES **********
-    // it was probably a bad idea to use the ms from this function since it is a uint16_t but oh well
+    // ***** ADDITIONAL TIMING - PALETTE UPDATES **********    
     if( ms_uint32 >= cw_timeToChangePalette ){
         
         cw_PaletteIndex = addmod8( cw_PaletteIndex, 1, ARRAY_SIZE(CW_PALETTES));
@@ -879,7 +871,86 @@ void LEDStripController::colorwaves() {
 
 }
 
+// this animation adapted from the original by Mark Kriegsman
+// https://gist.github.com/kriegsman/964de772d64c502760e5
+// This function draws rainbows with an ever-changing,
+// widely-varying set of parameters.
+void LEDStripController::pride() 
+{
 
+    ms_uint32 = millis();
+    
+    uint8_t sat8 = beatsin88( 87, 220, 250);
+    uint8_t brightdepth = beatsin88( 341, 96, 224);
+    uint16_t brightnessthetainc16 = beatsin88( 203, (25 * 256), (40 * 256));
+    uint8_t msmultiplier = beatsin88(147, 23, 60);
+
+    uint16_t hue16 = cwp_sHue16;//gHue * 256;
+    uint16_t hueinc16 = beatsin88(113, 1, 3000);
+    
+    uint16_t ms = ms_uint32;
+    uint16_t deltams = ms - cwp_sLastMillis ;
+    cwp_sLastMillis  = ms;
+    cwp_sPseudotime += deltams * msmultiplier;
+    cwp_sHue16 += deltams * beatsin88( 400, 5,9);
+    uint16_t brightnesstheta16 = cwp_sPseudotime;
+  
+    for( uint16_t i = 0 ; i < _stripLength; i++) {
+        hue16 += hueinc16;
+        uint8_t hue8 = hue16 / 256;
+
+        brightnesstheta16  += brightnessthetainc16;
+        uint16_t b16 = sin16( brightnesstheta16  ) + 32768;
+
+        uint16_t bri16 = (uint32_t)((uint32_t)b16 * (uint32_t)b16) / 65536;
+        uint8_t bri8 = (uint32_t)(((uint32_t)bri16) * brightdepth) / 65536;
+        bri8 += (255 - brightdepth);
+        
+        p_bri8 = scale8_video(bri8, qadd8(_brightness, 255 - MAX_BRIGHTNESS ));
+        
+        CRGB newcolor = CHSV( hue8, sat8, p_bri8);
+
+        uint16_t pixelIndex;
+
+        if( _invertStrip ) {
+            pixelIndex = i;
+        } else {
+            pixelIndex = (_stripLength-1) - i;
+        }        
+        
+        nblend( _leds[pixelIndex], newcolor, 64);
+    }
+    
+
+}
+
+
+// same as the above pride function except this also ads glitter
+void LEDStripController::prideWithGlitter() {
+    // reference our pride function, plus some random sparkly glitter
+    pride();
+    uint8_t brightnessToAdd = 0;
+    
+    if(_brightness < 100){
+        brightnessToAdd = 50;
+    }
+    if(_brightness < 150){
+        brightnessToAdd = 30;
+    }
+    addGlitter(30, _brightness, brightnessToAdd); // MAGIC NUMBER ALERT!!!
+    
+    // if(p_bri8 < 150){
+    //     brightnessToAdd = 50;
+    // }
+
+    // addGlitter(50, p_bri8, brightnessToAdd); // MAGIC NUMBER ALERT!!!
+}
+
+
+
+// **********************************************************
+//      TESTING NEW ANIMATIONS HERE
+// **********************************************************
 // ABRACADABRA
 // Alternate rendering function just scrolls the current palette 
 // across the defined LED strip.
@@ -888,8 +959,8 @@ void LEDStripController::gradientPalettesTest(){
 //   static uint8_t startindex = 0;
 //   startindex--;
 
-    fill_palette( _leds, _stripLength, getHueIndex(_bpm), pixelSpread, _colorPalette, 255, LINEARBLEND);
-    // fill_palette( _leds, _stripLength, getHueIndex(_bpm), pixelSpread, _gradientTestPalette, 255, LINEARBLEND);
+    fill_palette( _leds, _stripLength, getHueIndex(_bpm), (256 / _stripLength) + 1, _colorPalette, 255, LINEARBLEND);
+    // fill_palette( _leds, _stripLength, getHueIndex(_bpm), (256 / _stripLength) + 1, _gradientTestPalette, 255, LINEARBLEND);
     //fill_palette( _leds, _stripLength, getHueIndex(_bpm), (256 / _stripLength) + 1, _gradientTestPalette, 255, LINEARBLEND);
 }
 
@@ -899,6 +970,8 @@ void LEDStripController::gradientPalettesTest(){
 // ABRACADABRA
 // a re-creation of Devin Smith's LFO animation
 void LEDStripController::devinAnimation(){
+
+    ms_uint32 = millis();
 
     uint8_t brightness;
 
@@ -922,8 +995,6 @@ void LEDStripController::devinAnimation(){
         // _leds[i] = ColorFromPalette( _colorPalette, i * (256 / _stripLength), brightness);
         // _leds[i] = CHSV( 95*2, FULL_SAT, brightness);
     }
-
-    uint32_t ms_uint32 = millis();
 
     // ***** ADDITIONAL TIMING - PALETTE UPDATES **********
     // it was probably a bad idea to use the ms from this function since it is a uint16_t but oh well
@@ -956,6 +1027,8 @@ void LEDStripController::devinAnimation(){
 
 // _bpm, _minBPM, _maxBPM are all initialized here
 void LEDStripController::initializeAnimation(Animations animationToInitialize){
+
+    ms_uint32 = millis();
 
     // general settings used in most of our animations
     _updateInterval = DEFAULT_UPDATE_INTERVAL;
@@ -1003,7 +1076,7 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
         }
         case A_CYCLE_ALL:
         {
-            _timeToCycleAnimations = millis() + CYCLE_ANIMATION_CHANGE_INTERVAL;
+            _timeToCycleAnimations = ms_uint32 + CYCLE_ANIMATION_CHANGE_INTERVAL;
             break;
         }
         case A_SOLID_COLOR:
@@ -1022,8 +1095,22 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
 
             // reset the time to swap palettes
             // things get weird with this because the millis is cast to a uint16_t
-            cw_timeToChangePalette = millis() + CW_PALETTE_CHANGE_INTERVAL;
-            cw_timeToBlendPalettes = millis() + 40;
+            cw_timeToChangePalette = ms_uint32 + CW_PALETTE_CHANGE_INTERVAL;
+            cw_timeToBlendPalettes = ms_uint32 + 40;
+
+            cwp_sPseudotime = 0;
+            cwp_sLastMillis = 0;
+            cwp_sHue16 = 0;
+
+            break;
+        }
+        case A_PRIDE:
+        case A_PRIDE_GLITTER:
+        {   
+            cwp_sPseudotime = 0;
+            cwp_sLastMillis = 0;
+            cwp_sHue16 = 0;
+
             break;
         }
         case A_DEVIN_ANIMATION:
@@ -1031,10 +1118,9 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
 
             cw_Palette = CRGBPalette16( CRGB::Black );
             _colorPalette = CW_PALETTES[ d_PaletteIndex ];
-            cw_timeToChangePalette = millis() + DEVIN_PALETTE_CHANGE_INTERVAL;
-            cw_timeToBlendPalettes = millis() + 40;            
+            cw_timeToChangePalette = ms_uint32 + DEVIN_PALETTE_CHANGE_INTERVAL;
+            cw_timeToBlendPalettes = ms_uint32 + 40;            
 
-            // d_lfoSpeedScalar = stg.speedLevel;
         }        
         case A_BPM:        
         default:
@@ -1063,24 +1149,23 @@ void LEDStripController::updateBPM(){
 
 
 // the glitter function, randomly selects a pixel and sets it to white (aka glitter)
-void LEDStripController::addGlitter( fract8 chanceOfGlitter ) {
+void LEDStripController::addGlitter( fract8 chanceOfGlitter, uint8_t gBrightness, uint8_t extraBrightness) {
     if( random8() < chanceOfGlitter) {
-        // add white pops that are +40 greater than the current brightness level
-        _leds[ random16(_stripLength) ] += CHSV( 0, 0, qadd8(_brightness, 100 ));
-        //_leds[ random16(_stripLength) ] += CRGB::White;
-        //_leds[ random16(_stripLength) ] = CHSV( 0, 0, _brightness);
+        // add white pops that are +extraBrightness greater than the gBrightness level
+        _leds[ random16(_stripLength) ] += CHSV( 0, 0, qadd8(gBrightness, extraBrightness ));
     }
 }
 
 
 // get the next hue based on the bpm and if the strip is inverted or not
-uint8_t LEDStripController::getHueIndex(uint8_t hueIndexBPM, uint8_t direction){
+uint8_t LEDStripController::getHueIndex(uint8_t hueIndexBPM, uint8_t reverseDirecton){
 
-    if(direction == NORMAL_HUE_INDEX_DIRECTION){
-        return beat8(hueIndexBPM);
+    // XOR logic
+    if(reverseDirecton != _invertStrip){
+        return beat8(hueIndexBPM);  // leds appear to be moving reverse
     }
     else {
-        return 255 - beat8(hueIndexBPM);
+        return 255 - beat8(hueIndexBPM);  // leds appear to be moving forward
     }    
 }
 

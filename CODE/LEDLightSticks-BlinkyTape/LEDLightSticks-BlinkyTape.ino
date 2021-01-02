@@ -11,15 +11,18 @@
 #include "JC_Button_old.h"
 
 
+
+
+
 // *********************************************************************************
 //      GLOBAL MUTABLE VARIABLES
 // *********************************************************************************
-uint32_t timeToCallFastLEDShow = 0; // time of last call to FastLED.show()
+
+// ******* Timekeeping variable for managing when we should call FastLED.show() *******
+uint32_t timeToCallFastLEDShow = 0;
 
 
-// *********************************************************************************
-//    GLOBAL ENUM FOR MANAGING PROGRAM STATE
-// *********************************************************************************
+// ******* ENUM for managing Program State *******
 //The possible states for the button state machine
 enum ProgramStates {
         ANIMATION_IS_RUNNING, 
@@ -31,12 +34,13 @@ enum ProgramStates {
         TRANSITION_TO_ANIMATION_IS_RUNNING_PRIMARY,
         TRANSITION_TO_ANIMATION_IS_RUNNING_SECONDARY,
         TURN_STRIP_OFF_WAIT_FOR_INPUT,
-        TOTAL_NUM_STRIP_CONTROLLER_STATES,
+        TOTAL_NUM_POSSIBLE_STRIP_CONTROLLER_STATES,
         BOTH_BUTTONS_PRESSED
     };
 
 
-const StripControllerStates mapProgramToStripControllerStates[TOTAL_NUM_STRIP_CONTROLLER_STATES] =  {
+// ******* "Lookup Table" for mapping ProgramStates to LEDStripController States *******
+const StripControllerStates mapProgramToStripControllerStates[TOTAL_NUM_POSSIBLE_STRIP_CONTROLLER_STATES] =  {
                                                                       NORMAL_OPERATION,
                                                                       STATE_TRANSITION,
                                                                       STATE_TRANSITION,
@@ -49,43 +53,41 @@ const StripControllerStates mapProgramToStripControllerStates[TOTAL_NUM_STRIP_CO
                                                                     };
 
 
-
 // *********************************************************************************
 //      BUTTON DECLARATIONS
 // *********************************************************************************
-uint8_t stripHasOffSwitch = false;
+#if defined(__BLINKY_TAPE_TWO_BUTTON__)
+  Button primaryButton(EXT_PRIMARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
+  Button secondaryButton(EXT_SECONDARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
+  Button primaryButton_2(ONBOARD_PRIMARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
 
-Button primaryButton(PRIMARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
-Button secondaryButton(SECONDARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
+#elif defined(__BLINKY_TAPE_ONE_BUTTON__)
+  Button primaryButton(EXT_PRIMARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
+  Button secondaryButton(ONBOARD_SECONDARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
 
-#if defined(__BLINKY_TAPE__)
-  Button primaryButton_blinkyTape(PRIMARY_BUTTON_PIN_BLINKYTAPE, PULLUP, INVERT, DEBOUNCE_MS);
+#elif defined(__TEENSY__)
+  Button primaryButton(PRIMARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
+  Button secondaryButton(SECONDARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
+
 #endif
 
-ProgramStates programState = ANIMATION_IS_RUNNING;
+
 
 // *********************************************************************************
-//      LED STRIP CONTROLLER AND COLOR PALETTE DECLARATIONS
-//        This sets up the virtual representation of our LED Strips
-//        Best Color Palette Options:
-//            CRGBPalette16 colorPalette(LavaColors_p);
-//            CRGBPalette16 colorPalette(CloudColors_p);
-//            CRGBPalette16 colorPalette(PartyColors_p); //AKA Instagram colors
+//      LED DECLARATIONS -- CRGB ARRAYS AND STRIP CONTROLLERS
 // *********************************************************************************
-//CRGBPalette16 colorPalette(HeatColors_p);
-
 // CRGB Array for each strip.
 CRGB leds_01[LEDS_01_NUM_LEDS];
 // CRGB leds_02[LEDS_02_NUM_LEDS];
 
 // Controller for each led strip (to manage each led array's state without blocking main thread)
-LEDStripController stripController_01sA(leds_01, LEDS_01_NUM_LEDS, DEFAULT_PALETTE, INVERT_STRIP, 0);
-//LEDStripController stripController_01sB(leds_02, LEDS_02_NUM_LEDS, DEFAULT_PALETTE, INVERT_STRIP, 0);
+LEDStripController stripController_01sA(leds_01, 0, LEDS_01_NUM_LEDS, INVERT_STRIP);
+//LEDStripController stripController_01sB(leds_02, 0, LEDS_02_NUM_LEDS, INVERT_STRIP);
 
-// LEDStripController stripController_01sA(aLEDs, floor(ALEN * 1.0/3.0));
-// LEDStripController stripController_01sB(aLEDs, ceil(ALEN * 1.0/3.0), DEFAULT_PALETTE, !INVERT_STRIP, floor(ALEN * 1.0/3.0));
-// LEDStripController stripController_01sC(aLEDs, ceil(ALEN * 1.0/3.0), DEFAULT_PALETTE, INVERT_STRIP, floor(ALEN * 2.0/3.0));
-//LEDStripController stripController_01s2(leds_01, LEDS_01_NUM_LEDS-15, colorPalette, !INVERT_STRIP, 15);
+// LEDStripController stripController_01sA( aLEDs,                     0, floor(ALEN * 1.0/3.0) );
+// LEDStripController stripController_01sB( aLEDs, floor(ALEN * 1.0/3.0),  ceil(ALEN * 1.0/3.0), !INVERT_STRIP);
+// LEDStripController stripController_01sC( aLEDs, floor(ALEN * 2.0/3.0),  ceil(ALEN * 1.0/3.0),  INVERT_STRIP );
+// LEDStripController stripController_01s2( leds_01,                  15, LEDS_01_NUM_LEDS - 15, !INVERT_STRIP );
 
 // Array of pointers to our LEDStripController objects.
 // Makes updating them all at once more efficient
@@ -98,30 +100,30 @@ const uint8_t NUM_STRIP_CONTROLLERS = ARRAY_SIZE(stripControllerArray);
 
 
 // *********************************************************************************
+//      INITIAL PROGRAM STATE DECLARATIONS
+// *********************************************************************************
+ProgramStates programState = ANIMATION_IS_RUNNING;
+
+
+
+// *********************************************************************************
 //      SETUP FUNCTION
 // *********************************************************************************
 void setup() {
 
   // Serial.begin(9600);
 
-  // Serial.print("Num Strip Controllers: ");
-  // Serial.println(NUM_STRIP_CONTROLLERS);
-  // Serial.println("***********************");
-
-  // Serial.print("Num Color Palettes: ");
-  // Serial.println(ARRAY_SIZE(COLOR_PALETTES));
-  // Serial.println("***********************");
+  delay(200);
 
   // THIS STEP SETS UP THE PHYSICAL REPRESENTATION OF OUR LED STRIPS
   FastLED.addLeds<LED_TYPE, LEDS_01_PIN>(leds_01, LEDS_01_NUM_LEDS);
+  
+  // this is where we can set other global parameters for the FastLED library
   //FastLED.setCorrection(UncorrectedColor);
   //FastLED.setCorrection(TypicalPixelString);
-
-  // set master brightness control from our global variable
-  //FastLED.setBrightness(FAST_LED_MAX_BRIGHTNESS);
-  // FastLED.setBrightness(INITIAL_BRIGHTNESS);
-
-  delay(300);
+  
+  //FastLED.setDither(FAST_LED_MAX_BRIGHTNESS < 255);
+  //FastLED.setBrightness(FAST_LED_MAX_BRIGHTNESS);  
 }
 
 
@@ -152,7 +154,6 @@ void loop() {
      timeToCallFastLEDShow = ms + (1000/FRAMES_PER_SECOND);
   }
 
-
 }
 
 
@@ -174,10 +175,10 @@ void readAndRespondToButtonInput(uint32_t ms){
   uint8_t primaryButtHeld = primaryButton.pressedFor(LONG_PRESS);
   uint8_t primaryButtIsPressed = primaryButton.isPressed();
 
-  #if defined(__BLINKY_TAPE__)
-    primaryButton_blinkyTape.read();
-    primaryButtTapped = ( primaryButtTapped || primaryButton_blinkyTape.wasReleased() );
-    primaryButtHeld = ( primaryButtHeld || primaryButton_blinkyTape.pressedFor(LONG_PRESS) );
+  #if defined(__BLINKY_TAPE_TWO_BUTTON__)
+    primaryButton_2.read();
+    primaryButtTapped = ( primaryButtTapped || primaryButton_2.wasReleased() );
+    primaryButtHeld = ( primaryButtHeld || primaryButton_2.pressedFor(LONG_PRESS) );
   #endif
 
   uint8_t secondaryButtTapped = secondaryButton.wasReleased();
@@ -273,9 +274,10 @@ void readAndRespondToButtonInput(uint32_t ms){
   }
 
 
-  if(!stripHasOffSwitch){
+  // THIS CODE COULD BE BETTER BUT SINCE IT'S ONLY FOR LEGACY VERSIONS WITHOUT AN ON/OFF SWITCH, WE SHOULDN'T WORRY TO MUCH
+  if(!HAS_ON_OFF_SWITCH){
     // FAILSAFE METHOD FOR SETUPS WITHOUT OFF BUTTON
-    // Need to be able to press and hold  to turn off the strip
+    // Need to be able to press and hold to turn off the strip
     // first we identify if both buttons are pressed at the same time and don't update the strip controller states
     if(programState != BOTH_BUTTONS_PRESSED && primaryButtIsPressed && secondaryButtIsPressed){
       updateProgramState(BOTH_BUTTONS_PRESSED);
@@ -284,6 +286,7 @@ void readAndRespondToButtonInput(uint32_t ms){
     else if(programState == BOTH_BUTTONS_PRESSED && primaryButtHeld && secondaryButtHeld){
       updateProgramState(TURN_STRIP_OFF_WAIT_FOR_INPUT);
       delay(500);
+      // perform one read operation, which causes our program to skip this one read (otherwise when buttons are released from long press they will register the release as a press)
       primaryButton.read();
       secondaryButton.read();
     }
@@ -291,7 +294,6 @@ void readAndRespondToButtonInput(uint32_t ms){
     else if(programState == TURN_STRIP_OFF_WAIT_FOR_INPUT){
       
       if(primaryButtTapped || secondaryButtTapped){
-      //if(primaryButtIsPressed || secondaryButtIsPressed){
         updateProgramState(ANIMATION_IS_RUNNING);
       }
     }
@@ -335,8 +337,6 @@ void updateProgramState(ProgramStates newState){
 // *********************************************************************************
 void setStripControllerStates(ProgramStates newState){
 
-  // uint8_t canSetState[NUM_STRIP_CONTROLLERS];
-
   // this is where we convert the newState (which is a ProgramStates type)
   // to the StripControllerStates type using our map we built at the top of the program
   StripControllerStates newStripControllerState = mapProgramToStripControllerStates[newState];
@@ -373,10 +373,3 @@ void nextStripControllerSpeed() {
     stripControllerArray[i]->nextSpeed();
   }
 }
-
-
-//void turnOffLEDStrips() {
-//  for(uint8_t i = 0; i < NUM_STRIP_CONTROLLERS; i++){
-//    stripControllerArray[i]->lightsOut();
-//  }
-//}

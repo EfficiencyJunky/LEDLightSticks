@@ -113,7 +113,24 @@ void setup() {
 
   // Serial.begin(9600);
 
-  delay(200);
+  // generate random seed value to use for random math functions by reading analogPin a few times
+  uint16_t randomSeedVal = 0;
+
+  randomSeedVal = randomSeedVal + analogRead(ANALOG_PIN);
+  delay(100);
+  randomSeedVal = randomSeedVal + analogRead(ANALOG_PIN);
+  delay(50);
+  randomSeedVal = randomSeedVal + analogRead(ANALOG_PIN);
+  delay(75);
+  randomSeedVal = randomSeedVal + analogRead(ANALOG_PIN);
+  
+  // tell the Arduino random function to use this number as a randomSeed
+  randomSeed(randomSeedVal);
+  
+  // tell the strip controllers to initialize any parameters that rely on random numbers
+  initializeStripControllerRandomParameters();
+
+  // delay(200);
 
   // THIS STEP SETS UP THE PHYSICAL REPRESENTATION OF OUR LED STRIPS
   FastLED.addLeds<LED_TYPE, LEDS_01_PIN>(leds_01, LEDS_01_NUM_LEDS);
@@ -371,5 +388,13 @@ void nextStripControllerBrightness() {
 void nextStripControllerSpeed() {
   for(uint8_t i = 0; i < NUM_STRIP_CONTROLLERS; i++){
     stripControllerArray[i]->nextSpeed();
+  }
+}
+
+
+
+void initializeStripControllerRandomParameters() {
+  for(uint8_t i = 0; i < NUM_STRIP_CONTROLLERS; i++){
+    stripControllerArray[i]->initRandomParams();
   }
 }

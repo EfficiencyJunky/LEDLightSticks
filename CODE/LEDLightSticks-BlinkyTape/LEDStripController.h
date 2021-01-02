@@ -199,6 +199,7 @@ class LEDStripController
         void nextPalette();
         void nextBrightness();
         void nextSpeed();
+        void initRandomParams();
         void setBrightness(uint8_t brightness);        
         void setOperationState(StripControllerStates newState);
         // void lightsOut();

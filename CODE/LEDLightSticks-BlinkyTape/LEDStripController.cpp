@@ -208,7 +208,7 @@ LEDStripController::LEDStripController( CRGB *leds,
     }
     if(cycle_activeAnimation == A_CYCLE_ALL || cycle_activeAnimation == A_SOLID_COLOR){
         cycle_activeAnimation = animationsToUse[ 2 ];
-    }    
+    }
 
     // **********************************************************
     //    IMPORTANT VARIABLES DEPENDENT ON SETTINGS IN EEPROM
@@ -453,7 +453,14 @@ void LEDStripController::nextSpeed(){
 
 }
 
+// initializes any parameters that rely on random numbers to be set up correctly
+void LEDStripController::initRandomParams(){
+    cw_PaletteIndex = random( ARRAY_SIZE(CW_PALETTES) );
 
+    if(_activeAnimation == A_COLORWAVES){
+        initializeAnimation(_activeAnimation);
+    }
+}
 
 
 void LEDStripController::setBrightness(uint8_t brightness){

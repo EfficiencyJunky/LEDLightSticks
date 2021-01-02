@@ -41,20 +41,20 @@
 //******* ORDER OF ANIMATIONS ********
 // this is how we set the order in which animations actually appear
 const Animations LEDStripController::animationsToUse[] = {
-                                                            A_RAINBOW,
-                                                            A_RAINBOW_GLITTER,
+                                                            // A_RAINBOW,
+                                                            // A_RAINBOW_GLITTER,
+                                                            A_PALETTE,
+                                                            A_PALETTE_GLITTER,
+                                                            // A_BPM,
                                                             A_CONFETTI,
                                                             A_SINELON,
                                                             A_SINELON_DUAL,
                                                             A_JUGGLE,
-                                                            A_PALETTE,
-                                                            A_PALETTE_GLITTER,
-                                                            // A_BPM,
+                                                            A_PRIDE,
+                                                            A_COLORWAVES,
                                                             A_FIRE,
                                                             A_CYCLE_ALL,
                                                             A_SOLID_COLOR,
-                                                            A_COLORWAVES,
-                                                            A_PRIDE,
                                                             // A_PRIDE_GLITTER
                                                             // A_DEVIN_ANIMATION,
                                                         };
@@ -566,13 +566,29 @@ void LEDStripController::fadeToBlack() {
  *--------------------------------------------------------------------------------------------------*/
 void LEDStripController::rainbow(){    
 
+    // fill_palette( _leds, _stripLength, getHueIndex(_bpm), 7, RainbowColors_p, _brightness, LINEARBLEND);
     fill_palette( _leds, _stripLength, getHueIndex(_bpm), (256 / _stripLength) + 1, RainbowColors_p, _brightness, LINEARBLEND);
 }
 
 
 void LEDStripController::palette(){
 
-    fill_palette( _leds, _stripLength, getHueIndex(_bpm), 3, _colorPalette, _brightness, LINEARBLEND);
+    // this sets the number of colors in a color palette to skip between LED indexes
+    // essentially the width of the palette to be shown across the strip
+    // lower numbers have wider fill and higher numbers have tighter fill
+    static uint8_t incrementIndex = 1;
+
+    // if the color palette is rainbow, spread it evenly across the entire strip
+    if(_colorPalette == (CRGBPalette16)tk_Rainbow_gp){
+        incrementIndex = (256 / _stripLength) + 1;
+    }
+    // otherwise, lock our incrementIndex to 3 (this will spread the color palette wider than the strip if it's less than 85 LEDs)
+    else{
+        incrementIndex = 3;
+    }
+
+    // fill_palette( _leds, _stripLength, getHueIndex(_bpm), (256 / _stripLength) + 1, _colorPalette, _brightness, LINEARBLEND);
+    fill_palette( _leds, _stripLength, getHueIndex(_bpm), incrementIndex, _colorPalette, _brightness, LINEARBLEND);
 }
 
 
@@ -987,7 +1003,7 @@ void LEDStripController::devinAnimation(){
         // nblend( _leds[i], newcolor, 128);
 
         // _leds[i] = CHSV( 95*2, FULL_SAT, brightness);
-        _leds[i] = ColorFromPalette( cw_Palette, i * (256 / _stripLength)+ hueIndex, scale8(brightness, _brightness));
+        _leds[i] = ColorFromPalette( cw_Palette, i * (256 / _stripLength) + hueIndex, scale8(brightness, _brightness));
 
 
         // CRGB newcolor = CHSV( 95*2, FULL_SAT, brightness);
@@ -1025,13 +1041,16 @@ void LEDStripController::devinAnimation(){
 //      ANIMATION HELPER METHODS
 // **********************************************************
 
-// _bpm, _minBPM, _maxBPM are all initialized here
+// if an animation uses BPM, then we need to set _minBPM, _maxBPM here
+// and the call to "setBPM()" will initialize our _bpm
 void LEDStripController::initializeAnimation(Animations animationToInitialize){
 
     ms_uint32 = millis();
 
     // general settings used in most of our animations
     _updateInterval = DEFAULT_UPDATE_INTERVAL;
+    _minBPM = NORMAL_HUE_INDEX_BPM;
+    _maxBPM = NORMAL_HUE_INDEX_BPM * NUM_SPEED_LEVELS;    
     _colorPalette = COLOR_PALETTES[ stg.paletteIndex ];
     
     // need to set the BPM according to the animation
@@ -1076,7 +1095,9 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
         }
         case A_CYCLE_ALL:
         {
+            initializeAnimation(cycle_activeAnimation);
             _timeToCycleAnimations = ms_uint32 + CYCLE_ANIMATION_CHANGE_INTERVAL;
+            return;
             break;
         }
         case A_SOLID_COLOR:
@@ -1119,14 +1140,17 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
             cw_Palette = CRGBPalette16( CRGB::Black );
             _colorPalette = CW_PALETTES[ d_PaletteIndex ];
             cw_timeToChangePalette = ms_uint32 + DEVIN_PALETTE_CHANGE_INTERVAL;
-            cw_timeToBlendPalettes = ms_uint32 + 40;            
+            cw_timeToBlendPalettes = ms_uint32 + 40;
 
         }        
-        case A_BPM:        
-        default:
+        case A_BPM:
         {
             _minBPM = NORMAL_HUE_INDEX_BPM;
             _maxBPM = NORMAL_HUE_INDEX_BPM * NUM_SPEED_LEVELS;
+            break;
+        }
+        default:
+        {
             break;
         }
     }

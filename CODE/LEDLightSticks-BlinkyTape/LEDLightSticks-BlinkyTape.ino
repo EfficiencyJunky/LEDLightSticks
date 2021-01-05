@@ -78,11 +78,16 @@ const StripControllerStates mapProgramToStripControllerStates[TOTAL_NUM_POSSIBLE
 // *********************************************************************************
 // CRGB Array for each strip.
 CRGB leds_01[LEDS_01_NUM_LEDS];
-// CRGB leds_02[LEDS_02_NUM_LEDS];
+CRGB leds_02[LEDS_02_NUM_LEDS];
 
 // Controller for each led strip (to manage each led array's state without blocking main thread)
+// NOTE: ALL ARGUMENTS ARE REQUIRED!
+// If you don't want to invert the strip then send "!INVERT_STRIP" as the 4th argument
+// Always need to declare a single "source" strip first
+// all other strips must have the "REPLICA" argument passed in
+// this is necessary for animation functions that use static variables
 LEDStripController stripController_01sA(leds_01, 0, LEDS_01_NUM_LEDS, INVERT_STRIP);
-//LEDStripController stripController_01sB(leds_02, 0, LEDS_02_NUM_LEDS, INVERT_STRIP);
+LEDStripController stripController_01sB(leds_02, 0, LEDS_02_NUM_LEDS, INVERT_STRIP, REPLICA);
 
 // LEDStripController stripController_01sA( aLEDs,                     0, floor(ALEN * 1.0/3.0) );
 // LEDStripController stripController_01sB( aLEDs, floor(ALEN * 1.0/3.0),  ceil(ALEN * 1.0/3.0), !INVERT_STRIP);
@@ -92,8 +97,8 @@ LEDStripController stripController_01sA(leds_01, 0, LEDS_01_NUM_LEDS, INVERT_STR
 // Array of pointers to our LEDStripController objects.
 // Makes updating them all at once more efficient
 LEDStripController *stripControllerArray[] = {  
-                                                &stripController_01sA//,
-                                                //&stripController_01sB
+                                                &stripController_01sA,
+                                                &stripController_01sB
                                               };
 
 const uint8_t NUM_STRIP_CONTROLLERS = ARRAY_SIZE(stripControllerArray);
@@ -128,12 +133,16 @@ void setup() {
   randomSeed(randomSeedVal);
   
   // tell the strip controllers to initialize any parameters that rely on random numbers
-  initializeStripControllerRandomParameters();
+//  initializeStripControllerRandomParameters();
 
   // delay(200);
 
   // THIS STEP SETS UP THE PHYSICAL REPRESENTATION OF OUR LED STRIPS
   FastLED.addLeds<LED_TYPE, LEDS_01_PIN>(leds_01, LEDS_01_NUM_LEDS);
+  FastLED.addLeds<LED_TYPE, LEDS_02_PIN>(leds_02, LEDS_02_NUM_LEDS);
+
+  // if we just want to 100% replicate the first strip do this
+//  FastLED.addLeds<LED_TYPE, LEDS_02_PIN>(leds_01, LEDS_01_NUM_LEDS);
   
   // this is where we can set other global parameters for the FastLED library
   //FastLED.setCorrection(UncorrectedColor);

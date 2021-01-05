@@ -64,7 +64,8 @@ enum StripControllerStates {
 // meaning the beginning is the end and the end is the beginning
 #define INVERT_STRIP true
 #define REVERSE_DIRECTION true
-
+#define SOURCE true
+#define REPLICA false
 
 // *********************************************************************************
 //    Global defines for colors and animation related functions
@@ -192,7 +193,8 @@ class LEDStripController
         LEDStripController( CRGB *leds, 
                             uint16_t stripStartIndex,
                             uint16_t stripLength, 
-                            uint8_t invertStrip = false
+                            uint8_t invertStrip = false,
+                            uint8_t sourceStrip = true
                           );
         void update(uint32_t now_ms = 0);
         void nextAnimation();
@@ -209,10 +211,13 @@ class LEDStripController
     //      PRIVATE METHODS AND MEMBER VARIABLES
     // **********************************************************  
     private:
+        static uint8_t numLEDStripControllers;
+        uint8_t _sourceStrip;          // whether the strip is the source for animations that use static variables
+
         CRGB *_leds;                    // the array of LEDs
         uint16_t _stripLength;          // the number of LEDs in the strip
         uint8_t _invertStrip;          // whether the strip is regular orientation (0) or reversed (1)
-        
+
         // **********************************************************
         //      TIME KEEPING VARIABLES
         // **********************************************************        
@@ -252,8 +257,9 @@ class LEDStripController
 
 
         // ******* FIRE ANIMATION ********
-        byte *f_Heat; // FIRE - Array of temperature readings at each simulation cell
-        
+        //byte *f_Heat; // FIRE - Array of temperature readings at each simulation cell
+        static uint8_t f_createHeatArray;
+        static uint8_t f_initHeatArray;
 
         // ******* COLORWAVES ANIMATION ********
         // note that some of these timekeeping variables are uint16_t

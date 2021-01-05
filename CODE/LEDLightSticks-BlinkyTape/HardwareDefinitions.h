@@ -30,21 +30,24 @@
     #define HAS_ON_OFF_SWITCH true
     
     // LED STRIP DEFINITIONS
-    #define LEDS_01_PIN 13
+    #define LEDS_01_PIN 13          // has PWM
     #define LEDS_01_NUM_LEDS 34
+    #define LEDS_02_PIN 9         // same as A9 and has PWM
+    #define LEDS_02_NUM_LEDS 34
 
     // BUTTON DEFINITIONS
-    #define EXT_PRIMARY_BUTTON_PIN  11
+    #define EXT_PRIMARY_BUTTON_PIN  11   // has PWM
 
     // this is the button sodered directly to the blinkytape
-    #define ONBOARD_PRIMARY_BUTTON_PIN  10
+    #define ONBOARD_PRIMARY_BUTTON_PIN  10   // has PWM
 
     // this is the second button used mostly for color changes
-    #define EXT_SECONDARY_BUTTON_PIN  7
+    #define EXT_SECONDARY_BUTTON_PIN  7      // does NOT have PWM
     
     // analog pin used to generate a semi random seed for random number generation
     // example here: https://www.arduino.cc/reference/en/language/functions/random-numbers/random/
-    #define ANALOG_PIN  A9
+    #define ANALOG_PIN  A0
+//    #define ANALOG_PIN  A9 used to use A9 but if we're running a second strip then this won't work
 
 // ******* Blinky Tape With ONE External Button *******
 #elif defined(__BLINKY_TAPE_ONE_BUTTON__)

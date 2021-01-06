@@ -143,9 +143,10 @@ const uint8_t LEDStripController::SOLID_COLORS[] = {
 // using a static variable for saving the call to millis() in each of our functions
 // saves a small amount of space and makes writing animation functions more uniform to use the same variable
 uint8_t LEDStripController::numLEDStripControllers = 0;
+uint8_t LEDStripController::sourceControllerExists = false;
 uint32_t LEDStripController::ms_uint32 = 0;
-uint8_t LEDStripController::f_createHeatArray = false;
-uint8_t LEDStripController::f_initHeatArray = false;
+uint8_t LEDStripController::s_assignStaticHeatArray = false;
+
 
 
 
@@ -164,20 +165,32 @@ LEDStripController::LEDStripController( CRGB *leds,
                                         uint16_t stripStartIndex,
                                         uint16_t stripLength, 
                                         uint8_t invertStrip,
-                                        uint8_t sourceStrip)
+                                        StripControllerTypes stripType)
 {
 
+    // **********************************************************
+    //      STRIP TYPE VARIABLES
+    // **********************************************************    
     numLEDStripControllers++;
 
-    // if(numLEDStripControllers == 1){
-    //     _sourceStrip = true;
-    // }
-    // else{
-    //     _sourceStrip = false;
-    // }
+    // if this is the first SOURCE or REPLICA strip, and no SOURCE exists yet,
+    // we need to force this one to be SOURCE and update sourceControllerExists to = "true"
+    if( (stripType == SOURCE || stripType == REPLICA ) && sourceControllerExists == false ){
+        _stripType = SOURCE;
+        sourceControllerExists = true;
+    }
+    // otherwise if it is a source strip but one already exists, we set it to SOLO
+    else if( stripType == SOURCE && sourceControllerExists ){
+        _stripType = SOLO;
+    }
+    else{
+        _stripType = stripType;
+    }
 
-    _sourceStrip = sourceStrip;
 
+    // **********************************************************
+    //      STRIP DEFINITION VARIABLES
+    // **********************************************************    
     _leds = &leds[stripStartIndex];
     _stripLength = stripLength;
     _invertStrip = invertStrip;    
@@ -198,7 +211,7 @@ LEDStripController::LEDStripController( CRGB *leds,
     _saturation = FULL_SAT;    
     _brightness = FULL_BRIGHT;  // this gets overwritten with our settings struct below
     _width = _stripLength;
-    _center = stripLength / 2;
+    _center = _stripLength / 2;
 
 
     // **********************************************************
@@ -206,14 +219,20 @@ LEDStripController::LEDStripController( CRGB *leds,
     // **********************************************************
     _bsTimebase = 0;
 
-    if(_sourceStrip){
-        f_createHeatArray = true;
+    // if this a SOURCE strip or a SOLO strip, we need to allocate our f_Heat array    
+    if(_stripType == SOURCE || _stripType == SOLO){
+        f_Heat = new byte[_stripLength];
+    }    
+    // and then assign our static fire function s_Heat array to point to our newly allocated f_Heat
+    if(_stripType == SOURCE){
+        s_assignStaticHeatArray = true;
         fire2012WithPalette();
     }
-    // a_Heat = new byte[stripLength];
-    d_lfos = new LFO[stripLength];
 
-    for(uint16_t i=0; i < stripLength; i++){
+
+    d_lfos = new LFO[_stripLength];
+
+    for(uint16_t i=0; i < _stripLength; i++){
         d_lfos[i].rate = random8(13, 40);
         d_lfos[i].minb = random8(2, 20);
         d_lfos[i].maxb = random8(100, 255);
@@ -339,7 +358,7 @@ void LEDStripController::update(uint32_t now_ms)
 
 
 /*--------------------------------------------------------------------------------------------------*
- *                          NEXT PATTERN                                                            *
+ *                          NEXT ANIMATION (PATTERN)                                                *
  *                                                                                                  *
  *--------------------------------------------------------------------------------------------------*/
 // the technique used here means we don't need to save an animationIndex variable
@@ -350,7 +369,7 @@ void LEDStripController::nextAnimation(){
     stg.animationIndex = addmod8( stg.animationIndex, 1, ARRAY_SIZE(animationsToUse));
 
     // save setting to EEPROM
-    if(_sourceStrip){
+    if(_stripType == SOURCE){
         saveSettingToEEPROM("animationIndex");
     }
 
@@ -379,7 +398,7 @@ void LEDStripController::nextPalette(){
                 stg.paletteIndex = addmod8( stg.paletteIndex, 1, ARRAY_SIZE(COLOR_PALETTES));
 
                 // save setting to EEPROM
-                if(_sourceStrip){                
+                if(_stripType == SOURCE){                
                     saveSettingToEEPROM("paletteIndex");
                 }
 
@@ -392,7 +411,7 @@ void LEDStripController::nextPalette(){
                 // increment the solid color index and mod with the size of the SOLID_COLORS array
                 stg.solidColorIndex = addmod8( stg.solidColorIndex, 1, ARRAY_SIZE(SOLID_COLORS));
 
-                if(_sourceStrip){
+                if(_stripType == SOURCE){
                     // save setting to EEPROM
                     saveSettingToEEPROM("solidColorIndex");
                 }
@@ -404,9 +423,6 @@ void LEDStripController::nextPalette(){
                     sc_Hue = SOLID_COLORS[ random(ARRAY_SIZE(SOLID_COLORS)) ];
                     // sc_Hue = SOLID_COLORS[ stg.solidColorIndex ];
                 }
-
-                // assign the new solid color
-//                
                 
             }
        
@@ -419,7 +435,7 @@ void LEDStripController::nextPalette(){
             stg.firePaletteIndex = addmod8( stg.firePaletteIndex, 1, ARRAY_SIZE(FIRE_PALETTES));
 
             // save setting to EEPROM
-            if(_sourceStrip){
+            if(_stripType == SOURCE){
                 saveSettingToEEPROM("firePaletteIndex");
             }
 
@@ -456,7 +472,7 @@ void LEDStripController::nextPalette(){
             stg.paletteIndex = addmod8( stg.paletteIndex, 1, ARRAY_SIZE(COLOR_PALETTES));
 
             // save setting to EEPROM
-            if(_sourceStrip){
+            if(_stripType == SOURCE){
                 saveSettingToEEPROM("paletteIndex");
             }
 
@@ -477,7 +493,7 @@ void LEDStripController::nextBrightness(){
 
     _brightness = map(stg.brightnessLevel, 0, NUM_BRIGHTNESS_LEVELS - 1, MIN_BRIGHTNESS, MAX_BRIGHTNESS);
 
-    if(_sourceStrip){
+    if(_stripType == SOURCE){
         saveSettingToEEPROM("brightnessLevel");
     }
 
@@ -490,7 +506,7 @@ void LEDStripController::nextSpeed(){
 
     updateBPM();
 
-    if(_sourceStrip){
+    if(_stripType == SOURCE){
         saveSettingToEEPROM("speedLevel");
     }
 
@@ -775,28 +791,41 @@ void LEDStripController::bpm(){
 
 void LEDStripController::fire2012WithPalette() {
 
-    static byte *f_Heat;
-    
-    // if we are the source strip, we need to update the heat array
-    if(_sourceStrip){
-        // if the heat array hasn't been created yet, we need to create it and then return
-        // this is only called once during the constructor of the source strip
-        if(f_createHeatArray){
-            f_Heat = new byte[_stripLength];
-            f_createHeatArray = false;
-            return;
-        }
+    // *********** THIS HAPPENS ONCE  ***********
+    // -- setup our static function member s_Heat array
+    static byte *s_Heat;
 
-        // if the heat array needs to be initialized, we need to do that
-        // this is only called during the initializeAnimation() function of the source strip
-        if(f_initHeatArray){
-            for( uint16_t i = 0; i < _stripLength; i++) {
-                f_Heat[i] = 0;
-            }
-            f_initHeatArray = false;
-            return;
-        }
+    // this is where we initialize our static function member s_Heat array
+    // we only call this once during the constructor of the SOURCE strip
+    // all we are doing is setting the s_Heat pointer to point at the 
+    // SOURCE strip's instance member f_Heat array so that it can be used by other REPLICA strips
+    if(_stripType == SOURCE && s_assignStaticHeatArray){
+        s_Heat = f_Heat;
+        s_assignStaticHeatArray = false;
+        return;
+    }
+    else if(_stripType == REPLICA && s_assignStaticHeatArray){
+        return;
+    }
 
+
+    // *********** EVERYTHING BELOW THIS HAPPENS EACH TIME ***********
+    // we'll use a temporary pointer to perform the necessary updates to our strip
+    byte *heat;
+
+    // if this is a SOURCE or SOLO strip, assign our heat array to point to the instance member array
+    if(_stripType == SOURCE || _stripType == SOLO){
+        heat = f_Heat;
+    }
+    // if this is a REPLICA strip, assign our heat array to point to the static function array
+    else if(_stripType == REPLICA){        
+        heat = s_Heat;
+    }
+
+
+    // if we are the SOURCE or SOLO strip, we need to actually update the heat array
+    // otherwise we will just use the s_Heat array that's already been updated
+    if(_stripType == SOURCE || _stripType == SOLO){
 
         // Fourth, the most sophisticated: this one sets up a new palette every
         // time through the loop, based on a hue that changes every time.
@@ -815,32 +844,28 @@ void LEDStripController::fire2012WithPalette() {
 
         // Step 1.  Cool down every cell a little
         for( uint16_t i = 0; i < _stripLength; i++) {
-            f_Heat[i] = qsub8( f_Heat[i],  random8(0, ((COOLING * 10) / _stripLength) + 2));
+            heat[i] = qsub8( heat[i],  random8(0, ((COOLING * 10) / _stripLength) + 2));
         }
 
         // Step 2.  Heat from each cell drifts 'up' and diffuses a little
         for( uint16_t k= _stripLength - 1; k >= 2; k--) {
-            f_Heat[k] = (f_Heat[k - 1] + f_Heat[k - 2] + f_Heat[k - 2] ) / 3;
+            heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 2] ) / 3;
         }
         
         // Step 3.  Randomly ignite new 'sparks' of heat near the bottom
         if( random8() < SPARKING ) {
             uint16_t y = random8(7);
-            f_Heat[y] = qadd8( f_Heat[y], random8(160,255) );
+            heat[y] = qadd8( heat[y], random8(160,255) );
         }
 
     }
-    else{
-        if(f_createHeatArray || f_initHeatArray){
-            return;
-        }
-    }
+
 
     // Step 4.  Map from heat cells to LED colors
     for( uint16_t j = 0; j < _stripLength; j++) {
         // Scale the heat value from 0-255 down to 0-240
         // for best results with color palettes.
-        byte colorindex = scale8( f_Heat[j], 240);
+        byte colorindex = scale8( heat[j], 240);
         CRGB color = ColorFromPalette( _colorPalette, colorindex, _brightness); // qadd8(_brightness, 40 ));
         
         uint16_t pixelIndex;
@@ -897,21 +922,32 @@ void LEDStripController::cycleThroughAllAnimations(){
 
 void LEDStripController::solidColor() {
 
-    // if it's white, scale it down to max at 210
+    CRGB newColor;
+
+    // if it's white and we have more than one strip controller
+    // we want to set one strip controller to full white brightness and the other to black
+    // this will make the LED stick act as a semi directional flashlight
     if(sc_Hue == 255 && numLEDStripControllers > 1 && stg.solidColorIndex == ARRAY_SIZE(SOLID_COLORS) - 1){
-        if(_sourceStrip){
-            setStripCHSV(  CHSV( sc_Hue, 0, _brightness ) );
+        if(_stripType == SOURCE){
+            newColor = CHSV( sc_Hue, 0, _brightness );
         }
-        else{
-            setStripCRGB(  CRGB::Black );
+        else if(_stripType == REPLICA){
+            newColor = CRGB::Black;
+        }
+        else{ // if(_stripType == SOLO){
+            newColor = CHSV( sc_Hue, 0, scale8(_brightness, MAX_BRIGHTNESS * 0.85) );
+            // newColor = CHSV( 240, 255, _brightness ); // for testing
         }
     }
     else if(sc_Hue == 255){
-        setStripCHSV(  CHSV( sc_Hue, 0, scale8(_brightness, MAX_BRIGHTNESS * 0.85) ) );
+        newColor = CHSV( sc_Hue, 0, scale8(_brightness, MAX_BRIGHTNESS * 0.85) );
     }
     else{
-        setStripCHSV(  CHSV( sc_Hue, FULL_SAT, _brightness)  );
+        newColor = CHSV( sc_Hue, FULL_SAT, _brightness);
     }
+
+
+    setStripCRGB(newColor);
 
 }
 
@@ -1195,9 +1231,10 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
             _updateInterval = FIRE_UPDATE_INTERVAL;
             _colorPalette = FIRE_PALETTES[ stg.firePaletteIndex ];
 
-            if(_sourceStrip){
-                f_initHeatArray = true;
-                fire2012WithPalette();
+            if(_stripType == SOURCE || _stripType == SOLO){
+                for( uint16_t i = 0; i < _stripLength; i++) {
+                    f_Heat[i] = 0;
+                }
             }
 
             break;

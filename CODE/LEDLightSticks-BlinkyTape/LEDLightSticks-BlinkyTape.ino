@@ -84,9 +84,9 @@ CRGB leds_02[LEDS_02_NUM_LEDS];
 // NOTE: ALL ARGUMENTS ARE REQUIRED!
 // If you don't want to invert the strip then send "!INVERT_STRIP" as the 4th argument
 // Always need to declare a single "source" strip first
-// all other strips must have the "REPLICA" argument passed in
+// all other strips must have the "IS_REPLICA" argument passed in
 // this is necessary for animation functions that use static variables
-LEDStripController stripController_01sA(leds_01, 0, LEDS_01_NUM_LEDS, INVERT_STRIP);
+LEDStripController stripController_01sA(leds_01, 0, LEDS_01_NUM_LEDS, INVERT_STRIP, SOURCE);
 LEDStripController stripController_01sB(leds_02, 0, LEDS_02_NUM_LEDS, INVERT_STRIP, REPLICA);
 
 // LEDStripController stripController_01sA( aLEDs,                     0, floor(ALEN * 1.0/3.0) );

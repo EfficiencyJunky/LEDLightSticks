@@ -64,8 +64,14 @@ enum StripControllerStates {
 // meaning the beginning is the end and the end is the beginning
 #define INVERT_STRIP true
 #define REVERSE_DIRECTION true
-#define SOURCE true
-#define REPLICA false
+
+// this is howe we define behavior of the strip controllers if there are more than one
+enum StripControllerTypes {
+    SOURCE,
+    REPLICA,
+    SOLO
+};
+
 
 // *********************************************************************************
 //    Global defines for colors and animation related functions
@@ -194,7 +200,7 @@ class LEDStripController
                             uint16_t stripStartIndex,
                             uint16_t stripLength, 
                             uint8_t invertStrip = false,
-                            uint8_t sourceStrip = true
+                            StripControllerTypes stripType = SOLO
                           );
         void update(uint32_t now_ms = 0);
         void nextAnimation();
@@ -212,7 +218,8 @@ class LEDStripController
     // **********************************************************  
     private:
         static uint8_t numLEDStripControllers;
-        uint8_t _sourceStrip;          // whether the strip is the source for animations that use static variables
+        static uint8_t sourceControllerExists;
+        StripControllerTypes _stripType; // whether the strip is the source for animations that use static variables   
 
         CRGB *_leds;                    // the array of LEDs
         uint16_t _stripLength;          // the number of LEDs in the strip
@@ -257,9 +264,9 @@ class LEDStripController
 
 
         // ******* FIRE ANIMATION ********
-        //byte *f_Heat; // FIRE - Array of temperature readings at each simulation cell
-        static uint8_t f_createHeatArray;
-        static uint8_t f_initHeatArray;
+        byte *f_Heat; // FIRE - Array of temperature readings at each simulation cell
+        static uint8_t s_assignStaticHeatArray;
+
 
         // ******* COLORWAVES ANIMATION ********
         // note that some of these timekeeping variables are uint16_t

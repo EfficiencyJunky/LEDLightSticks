@@ -1,3 +1,15 @@
+/*-------------------------------------------------------------------------------------------------------*
+ *                          GRADIENT PALETTES                                                            *
+ * Below are a handful of Gradient Palettes that make it easier to apply a range of colors               *
+ *        to an animation without changing the animation itself                                          *
+ * A great resource on creating color palettes here: https://www.youtube.com/watch?v=Ukq0tH2Tnkc         *
+ * Here's a great website for creating palettes (multiply position by 2.55): https://cssgradient.io/     *
+ * Another great site for creating palettes: https://coolors.co/gradient-palette/f44369-3e3b92?number=7  *
+ * Or find a pallete someone else has made here: http://soliton.vm.bytemark.co.uk/pub/cpt-city/          *
+ * In order to use CPT-City you'll need to use the PaletteKnife Bookmarklet                              *
+ * Get the Bookmarklet here: http://fastled.io/tools/paletteknife/                                       *
+ *-------------------------------------------------------------------------------------------------------*/
+
 #ifndef GradientPalettes_h
 #define GradientPalettes_h
 

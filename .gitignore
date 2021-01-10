@@ -9,3 +9,5 @@ CODE/_REFERENCE/
 CODE/_TESTING/
 *.gcode
 *.stl
+*.dxf
+

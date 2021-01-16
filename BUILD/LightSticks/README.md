@@ -1,6 +1,10 @@
 # LED Light Sticks 2.0 - BUILD INFO
 
 
+**10-32 parts**
+* 3/16" PlastiDrill Bit for 10-32 Main Mounting Bolt Holes in Acrylic Tube
+* 7/32" Regular Drill Bit for hole in Flat Bar and D-rings
+* Phillips Screw Driver
 
 
 
@@ -14,7 +18,7 @@
 
 
 
-# BUILD ORDER
+# BUILD TOC - 3-4 hour build time
 1. Acrylic Tube, Flat Bar and 3D Printed Inserts 
 2. LED Assembly
 3. On/Off switch and PCB2
@@ -26,9 +30,11 @@
 9. 3D Printed bottom Cap
 
 
+</br>
+</br>
 
-
-## 1. Acrylic Tube, Flat Bar and 3D Printed Inserts
+---
+## 1. Acrylic Tube, Flat Bar and 3D Printed Inserts -- 30m
 ### PARTS
 1. 2" (50mm) outside diameter Acrylic Tube x 24" long
 2. 3D Printed top/bottom inserts
@@ -49,7 +55,7 @@
 2. Using a fine tip sharpie, mark the placements for the mounting bolt holes 
 3. Remove the Jig and use the 5/16" or M4 PlastiDrill Bit to drill the holes in the acrylic tube
 4. Place one of the 3D Printed inserts into the tube and make sure the M4 bolt goes all the way through
-5. Measure 12mm from one end of the Flat Bar and make a mark halfway between the outer edges
+5. Measure 12mm from one end of the Flat Bar and make a mark halfway between the outer edges. Then make a second mark 10mm below that (this mark will be used in step 2)
 6. Use the 3/16" Regular Drill Bit to drill a hole in the middle of the flat bar at the 12mm mark
 7. With the 3D Printed insert still seated in the tube, slide the flat bar in the slot of the insert so that the hole in the flatbar aligns with the holes for the insert. **IMPORTANT:** Make sure not to knick the insides of the acrylic tube when sliding the flatbar into it. 
 8. Secure the insert and flat bar in place with the M4 bolt and nut. Don't tighten too tight.
@@ -57,15 +63,18 @@
 10. Twist the jig slightly to make it so the flat bar doesn't jiggle if the tube is shaken. This will make the flat bar twist ever so slightly from one end of the tube to the other. This is necessary to prevent it from rattling.
 11. Mark the hole placements for the mounting bolt on the outside of the acrylic tube and on the flat bar
 12. Remove the jig, the mounting bolt and insert on the other end and pull out the flat bar. Again make sure not to scrape the insides of the acrylic tube.
-13. Use the 5/16" or M4 PlastiDrill Bit to drill the holes in the acrylic tube
-14. Use the 3/16" Regular Drill Bit to drill a hole in the flat bar at the mark
-15. Now place both 3D printed inserts into the ends of the tube and slide the flat bar back into place. Test to make sure the M4 bolts are able to secure the inserts and flat bar on both ends of the tube.
+13. Make a second mark 10mm below the one that was just made on the flat bar (this mark will be used in step 2)
+14. Use the 5/16" or M4 PlastiDrill Bit to drill the holes in the acrylic tube
+15. Use the 3/16" Regular Drill Bit to drill a hole in the flat bar at the mark
+16. Now place both 3D printed inserts into the ends of the tube and slide the flat bar back into place. Test to make sure the M4 bolts are able to secure the inserts and flat bar on both ends of the tube.
 
 
 
+</br>
+</br>
 
-
-## 2. LED assembly
+---
+## 2. LED assembly -- 45m
 ### PARTS
 1. Flat bar from previoius section
 2. 2x -- LED strip (60 LEDs per meter) cut to 34 LEDs each
@@ -104,10 +113,11 @@
 16. Secure the foam wrap in place with one long strip of packaging tape. Take care not to get any bubbles or creases in the tape.
 
 
+</br>
+</br>
 
-
-
-## Bottom Insert, On/Off switch and PCB2
+---
+## 3. Bottom Insert, On/Off switch and PCB2 - 45m
 ### PARTS
 1. Bottom Insert
 2. 3x -- M4 Thin Square Nut
@@ -123,6 +133,7 @@
 
 
 ### TOOLS
+* **4M Allen Wrench**
 * **Wire Stripper**
 * **Soldering Iron**
 * **Heat Gun (for heat shrink)**
@@ -148,8 +159,11 @@
 
 
 
+</br>
+</br>
 
-## Assemble Acrylic Tube, Top/Bottom Inserts and Flat Bar/LED assembly
+---
+## 4. Assemble Acrylic Tube, Top/Bottom Inserts and Flat Bar/LED assembly - 10m
 ### PARTS
 1. Acrylic Tube
 2. Top Insert
@@ -173,12 +187,72 @@
 8. Secure the acrylic tube, top insert, and flat bar with the mounting bolt. Again be careful not to stab the wires of the JST assembly.
 
 
+</br>
+</br>
+
+---
+
+## 5. PCB3 and Handle assembly -- 20m
+### PARTS
+1. Acrylic Tube with LEDs Assembly and M4 x 55mm bolt from Step 4
+2. 1x -- M4 Hex Nut
+3. D-Ring
+4. M4 x 55mm Bolt 
+5. 3x -- M4 x 16mm bolts from step 3
+6. PCB3
+   1. 1x - Molex Vertical Male with BMI
+7. 3x - No6 x 1/4" thread cutting screws
+
+
+### TOOLS
+* **Phillips Screw Driver**
+* **Locktight or threadlocker (if using it on the screws)**
+* **M4 Screw Driver with long extension**
+* **Soldering Iron**
+
+### BUILD INSTRUCTIONS
+1. Thread the 2 conductor wire coming off PCB2 through the wire passthrough hole in the handle
+2. Lightly tug on the wire and move the handle and acrylic tube closer together
+3. Once they are nearly touching, seat the M4 Hex nut into the nut holder of the handle and slide the handle over the bottom insert and acrylic tube. press the parts together slowly, pulling on the wire as necessary so it doesn't bunch up on the inside next to PCB2
+4. Once the two parts are seated together, put the D-Ring in its place and screw the M4 x 55mm bolt back through the D-Ring, and then screw all the way in until it's just starting to get tight. Back off a few turns so it's not engaged at all.
+5. Now put a small amount of the locktight/threadlocker on one of the M4 x 16mm screws and screw it most of the way down. repeat this step with the other 2 screws
+6. Once all screws are in place, give a couple more turns to each to make sure the assembly is snug
+7. Finally gently tighten the M4 x 55mm bolt. It just needs to engage a few threads as it's likely pretty well stuck in place by all the components it is going through. Overtightening could crack the acrylic tube.
+8. Now assemble PCB3 and cut the 2 conductor wire coming out of the end of the handle to a length that is just barely protruding from the end. It will have to feed back into the handle once soldered to PCB3
+9. Strip the ends of the wires and solder them into their place on the backside of PCB3
+10. Secure PCB3 in place with the No6 x 1/4" thread cutting screws
 
 
 
 
+</br>
+</br>
 
-## PCB1 and Blinky Tape
+---
+## 6. PCB4 and Power Shim Case assembly - 10m
+### PARTS
+1. PCB4
+   1. USB Plug
+   2. MicroFit R/A 2x2 Female Header
+2. 2x 3D Printed Power Shim Case Pieces
+
+### TOOLS
+* **Soldering Iron**
+* **Plastic Glue**
+
+### BUILD INSTRUCTIONS
+1. Solder the components to PCB4
+2. Prep the surfaces on both pieces of the Power Shim Case
+3. Apply Plastic Glue to one piece, make sure PCB4 is seated correctly in the first Case piece and then press the top piece on and hold for a minute
+4. Let sit as long as necessary to cure
+
+
+
+</br>
+</br>
+
+---
+## 7. PCB1 and Blinky Tape - 20m
 ### PARTS
 1. PCB1
    1. 2x - Buttons
@@ -190,6 +264,7 @@
    1. 3x - straight male pin headers
    2. 1x - R/A male pin headers
    3. 2x - R/A male pin headers
+3. 2x - No6 x 1/4" Thread Cutting Screws
 
 ### TOOLS
 * **Soldering Iron**
@@ -204,53 +279,42 @@
 
 
 ## Test to make sure everything works before proceeding
-1. Connect a 5V power source to the bare wire coming off of PCB2
-2. Measure with a volt meter the voltage across the Yellow and Blue wires on the 3Pin JST Connector assemblies on the other end of the tube to make sure that the polarity is correct.
-3. Remove the power source.
+1. Slide the battery into the handle, connect the power shim and turn the switch on
+2. Measure with a volt meter the voltage across the Yellow and Blue wires on the 3Pin JST Connector assemblies on the other end of the tube to make sure that the polarity is correct. You should se +5V
+3. Turn the switch off
 4. Plug the 3Pin JST connector assemblies into PCB1
 5. Verify that the colors of the wires correspond correctly to the labels on PCB1 for the R/A JST Headers
-6. Connect the power source again and the LED strips should light up
+6. Turn the switch on again and the LED strips should light up
 7. Press the buttons on PCB1 to make sure everything functions correctly
-8. Remove the power source
-9. Disconnect PCB1 from the JST Connector Assemblies and place safely asside for later
+8. Turn the switch off
+9. Attach PCB1 to the top insert with the No6 Thread cutting screws
 
 
 
 
-## Section Name
+</br>
+</br>
+
+---
+## 8. Top PCB Cover final assembly - 5m
 ### PARTS
-1. Part 1
+1. Top Cover (and cap if it has one)
+2. 1x - 4M Hex Nut
+3. 1x - 4M x 55mm Bolt
+4. 1x - D-Ring
 
 ### TOOLS
-* **Tool 1**
+* **Soldering Iron**
+* **Micro USB cable**
 
 ### BUILD INSTRUCTIONS
-1. Instruction 1
+1. Insert the 4M Hex Nut into its seat in the top cover
+2. Slide the top cover over PCB1 and snugly seat onto the acrylic tube
+3. Be careful of the wires from the 3Pin JST connector assemblies. Make sure they don't stick out so far that they stop from being able to slide the top cover on
+4. Once the top cover is in place, put the D-Ring in its place and thread the 4M x 55mm bolt through the hole.
+5. Tighten the bolt but don't overtighten or you ma crack the acrylic tube
 
 
 
 
-
-
-
-
-## Section Name
-### PARTS
-1. Part 1
-
-### TOOLS
-* **Tool 1**
-
-### BUILD INSTRUCTIONS
-1. Instruction 1
-
-
-
-
-
-
-
-
-
-7. 1x -- Heat shrink -- 3/8" 3:1 ratio black -- cut to 4cm
-8. 6. 2x -- D Rings
+THAT'S ALL FOLKS!

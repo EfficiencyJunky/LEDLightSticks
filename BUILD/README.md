@@ -2,14 +2,18 @@
 ## Light Sticks
 1. [Jig for hole placement](../ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP0-Jig) - 1:48
 2. [Top/Bottom Inserts](../ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP1-Inserts) - 3:08
-   * Top Insert STL
-   * Bottom Insert STL
+   * Top Insert
+   * Bottom Insert
 3. [Bottom Handle](../ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP2-Handle) - 8:44
 4. [Small Components](../ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP3-SmallComponents) - 0:35
-   * Bottom Cap STL
-   * Battery Clip 3mf
-   * Power Shim Case STL
+   * Bottom Cap
+   * Battery Clip
+   * Power Shim Case Bottom
+   * Power Shim Case Top
 5. [Top Cover](../ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP4-TopCover) - 0:31
+
+[Instructions on Converting to 10_32 hardware](https://github.com/EfficiencyJunky/LEDLightSticks/issues/37)
+
 
 <br><br><br>
 

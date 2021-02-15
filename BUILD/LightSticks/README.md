@@ -46,14 +46,14 @@
 <!-- * **3/16" PlastiDrill Bit** for 10-32 Main Mounting Bolt Holes in Acrylic Tube -->
 * **3D Printed Hole Placement Jig**
 * **Fine Tip Sharpie**
-* **5/16" or M4 PlastiDrill Bit** for M4 Main Mounting Bolt Holes in Acrylic Tube
+* **5/32" or M4 PlastiDrill Bit** for M4 Main Mounting Bolt Holes in Acrylic Tube
 * **3/16" Regular Drill Bit** for hole in Flat Bar and D-rings
 * **Phillips Screw Driver**
 
 ### BUILD INSTRUCTIONS
 1. Slide the Acrylic Tube Hole Placement Jig snugly over one end of the acrylic tube. Make sure there are no gaps between the tube and the seat of the jig
 2. Using a fine tip sharpie, mark the placements for the mounting bolt holes 
-3. Remove the Jig and use the 5/16" or M4 PlastiDrill Bit to drill the holes in the acrylic tube
+3. Remove the Jig and use the 5/32" or M4 PlastiDrill Bit to drill the holes in the acrylic tube
 4. Place one of the 3D Printed inserts into the tube and make sure the M4 bolt goes all the way through
 5. Measure 12mm from one end of the Flat Bar and make a mark halfway between the outer edges. Then make a second mark 10mm below that (this mark will be used in step 2)
 6. Use the 3/16" Regular Drill Bit to drill a hole in the middle of the flat bar at the 12mm mark
@@ -64,7 +64,7 @@
 11. Mark the hole placements for the mounting bolt on the outside of the acrylic tube and on the flat bar
 12. Remove the jig, the mounting bolt and insert on the other end and pull out the flat bar. Again make sure not to scrape the insides of the acrylic tube.
 13. Make a second mark 10mm below the one that was just made on the flat bar (this mark will be used in step 2)
-14. Use the 5/16" or M4 PlastiDrill Bit to drill the holes in the acrylic tube
+14. Use the 5/32" or M4 PlastiDrill Bit to drill the holes in the acrylic tube
 15. Use the 3/16" Regular Drill Bit to drill a hole in the flat bar at the mark
 16. Now place both 3D printed inserts into the ends of the tube and slide the flat bar back into place. Test to make sure the M4 bolts are able to secure the inserts and flat bar on both ends of the tube.
 

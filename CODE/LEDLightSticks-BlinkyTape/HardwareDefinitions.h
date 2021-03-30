@@ -19,9 +19,9 @@
 // Usecase examples in the official Github Repo can be found here: https://github.com/Blinkinlabs/BlinkyTape_Arduino/blob/2.1.0/examples/ColorSwirl/ColorSwirl.ino
 
 
-#define __BLINKY_TAPE_TWO_BUTTON__
+//#define __BLINKY_TAPE_TWO_BUTTON__
 // #define __BLINKY_TAPE_ONE_BUTTON__
-// #define __TEENSY__
+#define __TEENSY__
 
 // ******* Blinky Tape With TWO External Button *******
 #if defined(__BLINKY_TAPE_TWO_BUTTON__)
@@ -72,6 +72,9 @@
 
 // ******* Teensy Pins *******
 #elif defined(__TEENSY__)
+
+    // IF IT HAS AN OFF SWITCH ON THE DEVICE (V2 doesn't have this)
+    #define HAS_ON_OFF_SWITCH false
 
     // LED STRIP DEFINITIONS
     #define LEDS_01_PIN 3

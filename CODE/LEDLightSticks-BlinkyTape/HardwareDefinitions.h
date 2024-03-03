@@ -19,9 +19,10 @@
 // Usecase examples in the official Github Repo can be found here: https://github.com/Blinkinlabs/BlinkyTape_Arduino/blob/2.1.0/examples/ColorSwirl/ColorSwirl.ino
 
 
-//#define __BLINKY_TAPE_TWO_BUTTON__
+// #define __BLINKY_TAPE_TWO_BUTTON__
 // #define __BLINKY_TAPE_ONE_BUTTON__
-#define __TEENSY__
+// #define __TEENSY__
+#define __TRINKET_PRO_ONE_BUTTON__
 
 // ******* Blinky Tape With TWO External Button *******
 #if defined(__BLINKY_TAPE_TWO_BUTTON__)
@@ -57,7 +58,7 @@
     
     // LED STRIP DEFINITIONS
     #define LEDS_01_PIN 13
-    #define LEDS_01_NUM_LEDS 34
+    #define LEDS_01_NUM_LEDS 96
 
     // BUTTON DEFINITIONS
     #define EXT_PRIMARY_BUTTON_PIN  11
@@ -87,6 +88,24 @@
     #define SECONDARY_BUTTON_PIN    2
 
     #define ANALOG_PIN A9
+
+
+// ******* Trinket Pro 5V Pins *******
+// Pinout diagram: https://learn.adafruit.com/introducing-pro-trinket/pinouts
+#elif defined(__TRINKET_PRO_ONE_BUTTON__)
+
+    // IF IT HAS AN OFF SWITCH ON THE DEVICE (V2 doesn't have this)
+    #define HAS_ON_OFF_SWITCH false
+
+    // LED STRIP DEFINITIONS
+    #define LEDS_01_PIN 3
+    #define LEDS_01_NUM_LEDS 80
+
+    // BUTTON DEFINITIONS
+    #define PRIMARY_BUTTON_PIN 4
+    #define SECONDARY_BUTTON_PIN 8
+
+    #define ANALOG_PIN A0
 
 #endif
 

@@ -69,6 +69,9 @@ const StripControllerStates mapProgramToStripControllerStates[TOTAL_NUM_POSSIBLE
   Button primaryButton(PRIMARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
   Button secondaryButton(SECONDARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
 
+#elif defined(__TRINKET_PRO_ONE_BUTTON__)
+  Button primaryButton(PRIMARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
+  Button secondaryButton(SECONDARY_BUTTON_PIN, PULLUP, INVERT, DEBOUNCE_MS);
 #endif
 
 
@@ -76,30 +79,47 @@ const StripControllerStates mapProgramToStripControllerStates[TOTAL_NUM_POSSIBLE
 // *********************************************************************************
 //      LED DECLARATIONS -- CRGB ARRAYS AND STRIP CONTROLLERS
 // *********************************************************************************
-// CRGB Array for each strip.
-CRGB leds_01[LEDS_01_NUM_LEDS];
-CRGB leds_02[LEDS_02_NUM_LEDS];
 
-// Controller for each led strip (to manage each led array's state without blocking main thread)
-// NOTE: ALL ARGUMENTS ARE REQUIRED!
-// If you don't want to invert the strip then send "!INVERT_STRIP" as the 4th argument
-// Always need to declare a single "source" strip first
-// all other strips must have the "IS_REPLICA" argument passed in
-// this is necessary for animation functions that use static variables
-LEDStripController stripController_01sA(leds_01, 0, LEDS_01_NUM_LEDS, INVERT_STRIP, SOURCE);
-LEDStripController stripController_01sB(leds_02, 0, LEDS_02_NUM_LEDS, INVERT_STRIP, REPLICA);
+#if defined(__TRINKET_PRO_ONE_BUTTON__) || defined(__BLINKY_TAPE_ONE_BUTTON__)
+  // CRGB Array for each strip.
+  CRGB leds_01[LEDS_01_NUM_LEDS];
+  // CRGB leds_02[LEDS_02_NUM_LEDS];
 
-// LEDStripController stripController_01sA( aLEDs,                     0, floor(ALEN * 1.0/3.0) );
-// LEDStripController stripController_01sB( aLEDs, floor(ALEN * 1.0/3.0),  ceil(ALEN * 1.0/3.0), !INVERT_STRIP);
-// LEDStripController stripController_01sC( aLEDs, floor(ALEN * 2.0/3.0),  ceil(ALEN * 1.0/3.0),  INVERT_STRIP );
-// LEDStripController stripController_01s2( leds_01,                  15, LEDS_01_NUM_LEDS - 15, !INVERT_STRIP );
+  // Controller for each led strip (to manage each led array's state without blocking main thread)
+  LEDStripController stripController_01sA(leds_01, 0, LEDS_01_NUM_LEDS, !INVERT_STRIP, SOURCE);
+  // LEDStripController stripController_01sB(leds_02, 0, LEDS_02_NUM_LEDS, !INVERT_STRIP, REPLICA);
 
-// Array of pointers to our LEDStripController objects.
-// Makes updating them all at once more efficient
-LEDStripController *stripControllerArray[] = {  
-                                                &stripController_01sA,
-                                                &stripController_01sB
-                                              };
+  // Array of pointers to our LEDStripController objects.
+  // Makes updating them all at once more efficient
+  LEDStripController *stripControllerArray[] = {  
+                                                  &stripController_01sA
+                                                };
+#else
+  // CRGB Array for each strip.
+  CRGB leds_01[LEDS_01_NUM_LEDS];
+  CRGB leds_02[LEDS_02_NUM_LEDS];
+
+  // Controller for each led strip (to manage each led array's state without blocking main thread)
+  // NOTE: ALL ARGUMENTS ARE REQUIRED!
+  // If you don't want to invert the strip then send "!INVERT_STRIP" as the 4th argument
+  // Always need to declare a single "source" strip first
+  // all other strips must have the "IS_REPLICA" argument passed in
+  // this is necessary for animation functions that use static variables
+  LEDStripController stripController_01sA(leds_01, 0, LEDS_01_NUM_LEDS, INVERT_STRIP, SOURCE);
+  LEDStripController stripController_01sB(leds_02, 0, LEDS_02_NUM_LEDS, INVERT_STRIP, REPLICA);
+
+  // LEDStripController stripController_01sA( aLEDs,                     0, floor(ALEN * 1.0/3.0) );
+  // LEDStripController stripController_01sB( aLEDs, floor(ALEN * 1.0/3.0),  ceil(ALEN * 1.0/3.0), !INVERT_STRIP);
+  // LEDStripController stripController_01sC( aLEDs, floor(ALEN * 2.0/3.0),  ceil(ALEN * 1.0/3.0),  INVERT_STRIP );
+  // LEDStripController stripController_01s2( leds_01,                  15, LEDS_01_NUM_LEDS - 15, !INVERT_STRIP );
+
+  // Array of pointers to our LEDStripController objects.
+  // Makes updating them all at once more efficient
+  LEDStripController *stripControllerArray[] = {  
+                                                  &stripController_01sA,
+                                                  &stripController_01sB
+                                                };
+#endif
 
 const uint8_t NUM_STRIP_CONTROLLERS = ARRAY_SIZE(stripControllerArray);
 
@@ -138,8 +158,12 @@ void setup() {
   // delay(200);
 
   // THIS STEP SETS UP THE PHYSICAL REPRESENTATION OF OUR LED STRIPS
+#if defined(__TRINKET_PRO_ONE_BUTTON__) || defined(__BLINKY_TAPE_ONE_BUTTON__)
+  FastLED.addLeds<LED_TYPE, LEDS_01_PIN>(leds_01, LEDS_01_NUM_LEDS);
+#else
   FastLED.addLeds<LED_TYPE, LEDS_01_PIN>(leds_01, LEDS_01_NUM_LEDS);
   FastLED.addLeds<LED_TYPE, LEDS_02_PIN>(leds_02, LEDS_02_NUM_LEDS);
+#endif
 
   // if we just want to 100% replicate the first strip do this
 //  FastLED.addLeds<LED_TYPE, LEDS_02_PIN>(leds_01, LEDS_01_NUM_LEDS);

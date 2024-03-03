@@ -302,6 +302,7 @@
 2. 1x - 4M Hex Nut
 3. 1x - 4M x 55mm Bolt
 4. 1x - D-Ring
+5. 2x - No6 x 1/4" Thread Cutting Screws from Step 7
 
 ### TOOLS
 * **Soldering Iron**

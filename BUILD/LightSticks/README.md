@@ -1,21 +1,8 @@
 # LED Light Sticks 2.0 - BUILD INFO
 
 
-**10-32 parts**
-* 3/16" PlastiDrill Bit for 10-32 Main Mounting Bolt Holes in Acrylic Tube
-* 7/32" Regular Drill Bit for hole in Flat Bar and D-rings
-* Phillips Screw Driver
-
-
-
-**Jigs**
-* **Acrylic Tube Hole Placement Jig**
-
-
 ## BOM
 * [GDrive Link](https://docs.google.com/spreadsheets/d/1XgmDQo2DfhCwQfmSnIjqbdjcX9vWRjDVB-0DTwXrrGI/edit#gid=0)
-
-
 
 
 # BUILD TOC - 3-4 hour build time
@@ -28,7 +15,6 @@
 7. Insert battery and test
 8. 3D Printed Top Cover
 9. 3D Printed bottom Cap
-
 
 </br>
 </br>

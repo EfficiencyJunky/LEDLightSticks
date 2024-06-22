@@ -8,13 +8,13 @@
 # BUILD TOC - 3-4 hour build time
 1. [Acrylic Tube, Flat Bar and 3D Printed Inserts](#step-1)
 2. [LED Assembly](#step-2)
-3. On/Off switch and PCB2
-4. 3D Printed Handle, run wire from PCB2 through it and attach to bottom insert
-5. PCBs 3, 4 and 3D Printed Battery clip
-6. PCB 1
-7. Insert battery and test
-8. 3D Printed Top Cover
-9. 3D Printed bottom Cap
+3. [Bottom Insert, On/Off switch and PCB2](#step-3)
+4. [Assemble Acrylic Tube, Top/Bottom Inserts and Flat Bar/LED assembly](#step-4)
+5. [PCB3 and Handle assembly](#step-5)
+6. [PCB4 and Power Shim Case assembly](#step-6)
+7. [PCB1 and Blinky Tape -- BRAIN BOARD](#step-7)
+8. [Top Cover and PCB1 final assembly](#step-8)
+9. [Insert battery and test](#step-9)
 
 </br>
 </br>
@@ -107,7 +107,10 @@
 </br>
 
 ---
-## 3. Bottom Insert, On/Off switch and PCB2 - 45m
+## STEP 3
+### Bottom Insert, On/Off switch and PCB2
+#### Estimated Build Time: 45 minutes
+
 ### PARTS
 1. Bottom Insert
 2. 3x -- M4 Thin Square Nut
@@ -153,7 +156,10 @@
 </br>
 
 ---
-## 4. Assemble Acrylic Tube, Top/Bottom Inserts and Flat Bar/LED assembly - 10m
+## STEP 4
+### Assemble Acrylic Tube, Top/Bottom Inserts and Flat Bar/LED assembly
+#### Estimated Build Time: 10 minutes
+
 ### PARTS
 1. Acrylic Tube
 2. Top Insert
@@ -181,8 +187,10 @@
 </br>
 
 ---
+## STEP 5
+### PCB3 and Handle assembly
+#### Estimated Build Time: 20 minutes
 
-## 5. PCB3 and Handle assembly -- 20m
 ### PARTS
 1. Acrylic Tube with LEDs Assembly and M4 x 55mm bolt from Step 4
 2. 1x -- M4 Hex Nut
@@ -219,7 +227,10 @@
 </br>
 
 ---
-## 6. PCB4 and Power Shim Case assembly - 10m
+## STEP 6
+### PCB4 and Power Shim Case assembly
+#### Estimated Build Time: 10 minutes
+
 ### PARTS
 1. PCB4
    1. USB Plug
@@ -242,7 +253,10 @@
 </br>
 
 ---
-## 7. PCB1 and Blinky Tape - 20m
+## STEP 7
+### PCB1 and Blinky Tape
+#### Estimated Build Time: 20 minutes
+
 ### PARTS
 1. PCB1
    1. 2x - Buttons
@@ -286,7 +300,10 @@
 </br>
 
 ---
-## 8. Top PCB Cover final assembly - 5m
+## STEP 8
+### Top Cover and PCB1 final assembly
+#### Estimated Build Time: 5 minutes
+
 ### PARTS
 1. Top Cover (and cap if it has one)
 2. 1x - 4M Hex Nut

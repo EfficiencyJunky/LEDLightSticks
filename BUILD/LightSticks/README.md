@@ -6,8 +6,8 @@
 
 
 # BUILD TOC - 3-4 hour build time
-1. Acrylic Tube, Flat Bar and 3D Printed Inserts 
-2. LED Assembly
+1. [Acrylic Tube, Flat Bar and 3D Printed Inserts](#step-1)
+2. [LED Assembly](#step-2)
 3. On/Off switch and PCB2
 4. 3D Printed Handle, run wire from PCB2 through it and attach to bottom insert
 5. PCBs 3, 4 and 3D Printed Battery clip
@@ -20,7 +20,9 @@
 </br>
 
 ---
-## 1. Acrylic Tube, Flat Bar and 3D Printed Inserts -- 30m
+## STEP 1
+### Acrylic Tube, Flat Bar and 3D Printed Inserts
+#### Estimated Build Time: 30 minutes
 ### PARTS
 1. 2" (50mm) outside diameter Acrylic Tube x 24" long
 2. 3D Printed top/bottom inserts
@@ -60,7 +62,9 @@
 </br>
 
 ---
-## 2. LED assembly -- 45m
+## STEP 2
+### LED assembly
+#### Estimated Build Time: 45 minutes
 ### PARTS
 1. Flat bar from previoius section
 2. 2x -- LED strip (60 LEDs per meter) cut to 34 LEDs each

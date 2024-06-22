@@ -99,7 +99,7 @@
 12. Solder the 2 wires on each cable assembly to the LED strip. Make sure the Black wire is ground and red wire is 5V
 13. Slide the Heat shrink over the connections and use the heat gun to shrink it around them
 14. Now apply a strip of double sided tape to one side of the flat bar between the two mounting holes but don't cover the holes.
-15. Place one of the LED strips on the flat bar with equal distance from each end to each mounting hole.
+15. Place one of the LED strips on the flat bar with equal distance from each end to each mounting hole. (the two second marks you made on the aluminum bar in STEP 1 should roughly be where the ends of the LED strip land. Roughly 10mm from the center of the mounting holes in the flat bar)
 16. Flip the flat bar over and repeat steps 12 and 13 with the other strip. Make sure that the JST connector assemblies on the LED strips match on each end and that the LEDs on either side of the flat bar are lined up with eachother. smooth out any kinks in the LED strips so they are as flat as possible on the flat bar.
 17. Now place the foam wrap flat on a table or other flat surface. Place the flat bar on the edge of the foam wrap and roll it up as tightly as possible in the foam wrap.
 18. Secure the foam wrap in place with one long strip of packaging tape. Take care not to get any bubbles or creases in the tape.

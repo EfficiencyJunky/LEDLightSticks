@@ -85,22 +85,24 @@
 
 
 ### BUILD INSTRUCTIONS
-1. Strip around 5mm of casing off of each of the wires from the 3 wire JST-XH assemblies
-2. Tin the ends of the wires
-3. Tin the pads on the ends of the LED strips with the arrow pointing away from the pads
-4. Place a piece of heat shrink over the wires of the assembly and slide down to the JST connector to keep out of the way
-5. Solder the 3 wires on each cable assembly to the LED strip. Make sure that Blue is Ground, Green is Data, and Yellow is 5V
-6. Slide the Heat shrink over the connections and use the heat gun to shrink it around them
-7. Strip around 5mm of casing off of the wires from the 2 wire JST-XH assemblies
-8. Tin the ends of the wires and the pads on the LED strip
-9. Place a piece of heat shrink over the wires of the assembly and slide down to the JST connector to keep out of the way
-10. Solder the 2 wires on each cable assembly to the LED strip. Make sure the Black wire is ground and red wire is 5V
-11. Slide the Heat shrink over the connections and use the heat gun to shrink it around them
-12. Now apply a strip of double sided tape to one side of the flat bar between the two mounting holes but don't cover the holes.
-13. Place one of the LED strips on the flat bar with equal distance from each end to each mounting hole.
-14. Flip the flat bar over and repeat steps 12 and 13 with the other strip. Make sure that the JST connector assemblies on the LED strips match on each end and that the LEDs on either side of the flat bar are lined up with eachother. smooth out any kinks in the LED strips so they are as flat as possible on the flat bar.
-15. Now place the foam wrap flat on a table or other flat surface. Place the flat bar on the edge of the foam wrap and roll it up as tightly as possible in the foam wrap.
-16. Secure the foam wrap in place with one long strip of packaging tape. Take care not to get any bubbles or creases in the tape.
+1. Cut the JST-XHx3 cable assembly wires to 8 cm from where they come out of the back of the JST Connector
+2. Strip around 5mm of casing off of each of the wires
+3. Tin the ends of the wires
+4. Tin the pads on the ends of the LED strips with the arrow pointing away from the pads
+5. Place a piece of heat shrink over the wires of the assembly and slide down to the JST connector to keep out of the way
+6. Solder the 3 wires on each cable assembly to the LED strip. Make sure that Blue is Ground, Green is Data, and Yellow is 5V
+7. Slide the Heat shrink over the connections and use the heat gun to shrink it around them
+8. Cut the JST-XHx2 cable assembly wires to 4 cm from where they come out of the back of the JST Connector cable assembly
+9. Strip around 5mm of casing off of the wires
+10. Tin the ends of the wires and the pads on the LED strip
+11. Place a piece of heat shrink over the wires of the assembly and slide down to the JST connector to keep out of the way
+12. Solder the 2 wires on each cable assembly to the LED strip. Make sure the Black wire is ground and red wire is 5V
+13. Slide the Heat shrink over the connections and use the heat gun to shrink it around them
+14. Now apply a strip of double sided tape to one side of the flat bar between the two mounting holes but don't cover the holes.
+15. Place one of the LED strips on the flat bar with equal distance from each end to each mounting hole.
+16. Flip the flat bar over and repeat steps 12 and 13 with the other strip. Make sure that the JST connector assemblies on the LED strips match on each end and that the LEDs on either side of the flat bar are lined up with eachother. smooth out any kinks in the LED strips so they are as flat as possible on the flat bar.
+17. Now place the foam wrap flat on a table or other flat surface. Place the flat bar on the edge of the foam wrap and roll it up as tightly as possible in the foam wrap.
+18. Secure the foam wrap in place with one long strip of packaging tape. Take care not to get any bubbles or creases in the tape.
 
 
 </br>

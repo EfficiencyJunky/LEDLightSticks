@@ -46,17 +46,18 @@
 3. Remove the Jig and use the 5/32" or M4 PlastiDrill Bit to drill the holes in the acrylic tube. Be careful not to allow the bit to creep. You may want to use a tiny drill bit (like a 1/16" bit) to drill an initial pilot hole where the sharpie mark was made, which will allow the tip of the 5/32" plasti-drill bit to seat in that hole when drilling the final hole. Also try to make sure the drill is perpendicular to the tube so that the hole goes in straight.
 4. Place one of the 3D Printed inserts into the tube and make sure the M4 bolt goes all the way through. Also make sure that the top of the insert is relatively flush with the top of the acrylic tube. ideally there is less than 0.5mm of protrusion.
 5. Measure 12mm from one end of the Flat Bar and make a mark halfway between the outer edges. Then make a second mark 10mm below that (this mark will be used in step 2)
-6. Use the 3/16" Regular Drill Bit to drill a hole in the middle of the flat bar at the 12mm mark
+6. Use the 3/16" Regular Drill Bit to drill a hole in the middle of the flat bar at the 12mm mark. it's ok for this hole if it isn't perfectly centered on the flat bar but it should be as close as possible
 7. With the 3D Printed insert still seated in the tube, slide the flat bar in the slot of the insert so that the hole in the flatbar aligns with the holes for the insert. **IMPORTANT:** Make sure not to knick the insides of the acrylic tube when sliding the flatbar into it. 
 8. Secure the insert and flat bar in place with the M4 bolt and nut. Don't tighten too tight.
 9. Flip the Acrylic tube over and slide the Hole Placement Jig on the other end of the tube, making sure the Flat Bar slots into the opening in the center of the jig. Again make sure there are no gaps between the tube and the seat of the jig.
 10. Twist the jig slightly to make it so the flat bar doesn't jiggle if the tube is shaken. This will make the flat bar twist ever so slightly from one end of the tube to the other. This is necessary to prevent it from rattling.
-11. Mark the hole placements for the mounting bolt on the outside of the acrylic tube and on the flat bar
-12. Remove the jig, the mounting bolt and insert on the other end and pull out the flat bar. Again make sure not to scrape the insides of the acrylic tube.
-13. Make a second mark 10mm below the one that was just made on the flat bar (this mark will be used in step 2)
-14. Use the 5/32" or M4 PlastiDrill Bit to drill the holes in the acrylic tube
-15. Use the 3/16" Regular Drill Bit to drill a hole in the flat bar at the mark
-16. Now place both 3D printed inserts into the ends of the tube and slide the flat bar back into place. Test to make sure the M4 bolts are able to secure the inserts and flat bar on both ends of the tube.
+11. Mark the hole placements for the mounting bolt on the outside of the acrylic tube
+12. Mark the hole placement on the flat bar by drawing a vertical line using the slot in the hole placement jig. The bottom of the line will be where the second hole in the flat bar will go.
+13. Remove the jig, the mounting bolt and insert on the other end and pull out the flat bar. Again make sure not to scrape the insides of the acrylic tube.
+14. Make a second mark 10mm below the bottom of the line that was just made on the flat bar (this mark will be used in step 2)
+15. Use the 5/32" or M4 PlastiDrill Bit to drill the holes in the acrylic tube
+16. Use the 3/16" Regular Drill Bit to drill a hole in the flat bar at the mark
+17. Now place both 3D printed inserts into the ends of the tube and slide the flat bar back into place. Test to make sure the M4 bolts are able to secure the inserts and flat bar on both ends of the tube.
 
 
 

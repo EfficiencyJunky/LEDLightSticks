@@ -71,8 +71,8 @@
 ### PARTS
 1. Flat bar from previoius section
 2. 2x -- LED strip (60 LEDs per meter) cut to 34 LEDs each
-3. 2x -- JST-XHx3 cable assembly (24 awg)  -- cut wires to 8 cm
-4. 2x -- JST-XHx2 cable assembly (20 or 22 awg) -- cut wires to 4 cm
+3. 2x -- JST-XHx3 cable assembly (24 awg)
+4. 2x -- JST-XHx2 cable assembly (20 or 22 awg)
 5. 4x -- Heat shrink -- 3/8" 3:1 ratio black -- cut to 1cm
 6. Permanent double sided tape
 7. 2x -- 2.5mm wide zip ties
@@ -88,14 +88,14 @@
 
 
 ### BUILD INSTRUCTIONS
-1. Cut the JST-XHx3 cable assembly wires to 8 cm from where they come out of the back of the JST Connector
+1. Cut the JST-XHx3 cable assembly wires to 8.5 cm from where they come out of the back of the JST Connector
 2. Strip around 5mm of casing off of each of the wires
 3. Tin the ends of the wires
 4. Tin the pads on the ends of the LED strips with the arrow pointing away from the pads
 5. Place a piece of heat shrink over the wires of the assembly and slide down to the JST connector to keep out of the way
 6. Solder the 3 wires on each cable assembly to the LED strip. Make sure that Blue is Ground, Green is Data, and Yellow is 5V
 7. Slide the Heat shrink over the connections and use the heat gun to shrink it around them
-8. Cut the JST-XHx2 cable assembly wires to 4 cm from where they come out of the back of the JST Connector cable assembly
+8. Cut the JST-XHx2 cable assembly wires to 4.5 cm from where they come out of the back of the JST Connector cable assembly
 9. Strip around 5mm of casing off of the wires
 10. Tin the ends of the wires and the pads on the LED strip
 11. Place a piece of heat shrink over the wires of the assembly and slide down to the JST connector to keep out of the way

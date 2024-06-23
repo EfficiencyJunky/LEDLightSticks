@@ -241,6 +241,8 @@
    1. USB Plug
    2. MicroFit R/A 2x2 Female Header
 2. 2x 3D Printed Power Shim Case Pieces
+   -- [TOP Power Shim Case Piece 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP3-SmallComponents/V2p2--powerShimCase_top_123.stl)
+   -- [BOTTOM Power Shim Case Piece 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP3-SmallComponents/V2p2--powerShimCase_bottom_123.stl)
 
 ### TOOLS
 * **Soldering Iron**

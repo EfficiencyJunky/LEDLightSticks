@@ -26,13 +26,15 @@
 ### PARTS
 1. 2" (50mm) outside diameter Acrylic Tube x 24" long
 2. 3D Printed top/bottom inserts
-3. 2x -- M4 x 55mm Philips Head Bolt
-4. 2x -- M4 hex nuts
-5. 1/2" x 1/8" Aluminum Flat bar at least 24" long
+   -- [TOP Insert 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP1-Inserts/V2p2--M4--Insert_top_133.stl)
+   -- [BOTTOM Insert 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP1-Inserts/V2p2--M4--Insert_bottom_133.stl)
+4. 2x -- M4 x 55mm Philips Head Bolt
+5. 2x -- M4 hex nuts
+6. 1/2" x 1/8" Aluminum Flat bar at least 24" long
 
 ### TOOLS
 <!-- * **3/16" PlastiDrill Bit** for 10-32 Main Mounting Bolt Holes in Acrylic Tube -->
-* **3D Printed Hole Placement Jig**
+* **3D Printed Hole Placement Jig** -- [Jig 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP0-Jig/V2p2--Jig_123.stl)
 * **Fine Tip Sharpie**
 * **5/32" or M4 PlastiDrill Bit** for M4 Main Mounting Bolt Holes in Acrylic Tube
 * **3/16" Regular Drill Bit** for hole in Flat Bar and D-rings
@@ -194,14 +196,15 @@
 #### Estimated Build Time: 20 minutes
 
 ### PARTS
-1. Acrylic Tube with LEDs Assembly and M4 x 55mm bolt from Step 4
-2. 1x -- M4 Hex Nut
-3. D-Ring
-4. M4 x 55mm Bolt 
-5. 3x -- M4 x 16mm bolts from step 3
-6. PCB3
+1. 3D Printed Handle -- [Handle 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP2-Handle/V2p2--M4--handle_135.stl)
+2. Acrylic Tube with LEDs Assembly and M4 x 55mm bolt from Step 4
+3. 1x -- M4 Hex Nut
+4. D-Ring
+5. M4 x 55mm Bolt 
+6. 3x -- M4 x 16mm bolts from step 3
+7. PCB3
    1. 1x - Molex Vertical Male with BMI
-7. 3x - No6 x 1/4" thread cutting screws
+8. 3x - No6 x 1/4" thread cutting screws
 
 
 ### TOOLS
@@ -307,7 +310,7 @@
 #### Estimated Build Time: 5 minutes
 
 ### PARTS
-1. Top Cover (and cap if it has one)
+1. 3D Printed Top Cover -- [Top Cover 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP4-TopCover/V2p2--M4--TopCover_COMPLETE_133.stl)
 2. 1x - 4M Hex Nut
 3. 1x - 4M x 55mm Bolt
 4. 1x - D-Ring

@@ -11,3 +11,7 @@ CODE/_TESTING/
 *.gcode
 *.dxf
 
+BUILD/LightSticks/TUTORIAL_IMAGES/STEP_01/original_dimensions/
+BUILD/LightSticks/TUTORIAL_IMAGES/STEP_02/original_dimensions/
+ELECTRONICS/FUSION_ARCHIVE_FILES/
+ENCLOSURE/3D_MODELS/V2p2/FusionFiles/

@@ -19,10 +19,10 @@
 // Usecase examples in the official Github Repo can be found here: https://github.com/Blinkinlabs/BlinkyTape_Arduino/blob/2.1.0/examples/ColorSwirl/ColorSwirl.ino
 
 
-// #define __BLINKY_TAPE_TWO_BUTTON__
+#define __BLINKY_TAPE_TWO_BUTTON__
 // #define __BLINKY_TAPE_ONE_BUTTON__
 // #define __TEENSY__
-#define __TRINKET_PRO_ONE_BUTTON__
+// #define __TRINKET_PRO_ONE_BUTTON__
 
 // ******* Blinky Tape With TWO External Button *******
 #if defined(__BLINKY_TAPE_TWO_BUTTON__)

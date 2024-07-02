@@ -1,50 +1,40 @@
 # LED Light Sticks 2.0 - BUILD INFO
 
 
-**10-32 parts**
-* 3/16" PlastiDrill Bit for 10-32 Main Mounting Bolt Holes in Acrylic Tube
-* 7/32" Regular Drill Bit for hole in Flat Bar and D-rings
-* Phillips Screw Driver
-
-
-
-**Jigs**
-* **Acrylic Tube Hole Placement Jig**
-
-
 ## BOM
 * [GDrive Link](https://docs.google.com/spreadsheets/d/1XgmDQo2DfhCwQfmSnIjqbdjcX9vWRjDVB-0DTwXrrGI/edit#gid=0)
 
 
-
-
 # BUILD TOC - 3-4 hour build time
-1. Acrylic Tube, Flat Bar and 3D Printed Inserts 
-2. LED Assembly
-3. On/Off switch and PCB2
-4. 3D Printed Handle, run wire from PCB2 through it and attach to bottom insert
-5. PCBs 3, 4 and 3D Printed Battery clip
-6. PCB 1
-7. Insert battery and test
-8. 3D Printed Top Cover
-9. 3D Printed bottom Cap
-
+1. [Acrylic Tube, Flat Bar and 3D Printed Inserts](#step-1)
+2. [LED Assembly](#step-2)
+3. [Bottom Insert, On/Off switch and PCB2](#step-3)
+4. [Assemble Acrylic Tube, Top/Bottom Inserts and Flat Bar/LED assembly](#step-4)
+5. [PCB3 and Handle assembly](#step-5)
+6. [PCB4 and Power Shim Case assembly](#step-6)
+7. [PCB1 and Blinky Tape -- BRAIN BOARD](#step-7)
+8. [Top Cover and PCB1 final assembly](#step-8)
+9. [Insert battery and test](#step-9)
 
 </br>
 </br>
 
 ---
-## 1. Acrylic Tube, Flat Bar and 3D Printed Inserts -- 30m
+## STEP 1
+### Acrylic Tube, Flat Bar and 3D Printed Inserts
+#### Estimated Build Time: 30 minutes
 ### PARTS
 1. 2" (50mm) outside diameter Acrylic Tube x 24" long
 2. 3D Printed top/bottom inserts
-3. 2x -- M4 x 55mm Philips Head Bolt
-4. 2x -- M4 hex nuts
-5. 1/2" x 1/8" Aluminum Flat bar at least 24" long
+   -- [TOP Insert 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP1-Inserts/V2p2--M4--Insert_top_133.stl)
+   -- [BOTTOM Insert 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP1-Inserts/V2p2--M4--Insert_bottom_133.stl)
+4. 2x -- M4 x 55mm Philips Head Bolt
+5. 2x -- M4 hex nuts
+6. 1/2" x 1/8" Aluminum Flat bar at least 24" long
 
 ### TOOLS
 <!-- * **3/16" PlastiDrill Bit** for 10-32 Main Mounting Bolt Holes in Acrylic Tube -->
-* **3D Printed Hole Placement Jig**
+* **3D Printed Hole Placement Jig** -- [Jig 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP0-Jig/V2p2--Jig_123.stl)
 * **Fine Tip Sharpie**
 * **5/32" or M4 PlastiDrill Bit** for M4 Main Mounting Bolt Holes in Acrylic Tube
 * **3/16" Regular Drill Bit** for hole in Flat Bar and D-rings
@@ -53,20 +43,21 @@
 ### BUILD INSTRUCTIONS
 1. Slide the Acrylic Tube Hole Placement Jig snugly over one end of the acrylic tube. Make sure there are no gaps between the tube and the seat of the jig
 2. Using a fine tip sharpie, mark the placements for the mounting bolt holes 
-3. Remove the Jig and use the 5/32" or M4 PlastiDrill Bit to drill the holes in the acrylic tube
-4. Place one of the 3D Printed inserts into the tube and make sure the M4 bolt goes all the way through
+3. Remove the Jig and use the 5/32" or M4 PlastiDrill Bit to drill the holes in the acrylic tube. Be careful not to allow the bit to creep. You may want to use a tiny drill bit (like a 1/16" bit) to drill an initial pilot hole where the sharpie mark was made, which will allow the tip of the 5/32" plasti-drill bit to seat in that hole when drilling the final hole. Also try to make sure the drill is perpendicular to the tube so that the hole goes in straight.
+4. Place one of the 3D Printed inserts into the tube and make sure the M4 bolt goes all the way through. Also make sure that the top of the insert is relatively flush with the top of the acrylic tube. ideally there is less than 0.5mm of protrusion.
 5. Measure 12mm from one end of the Flat Bar and make a mark halfway between the outer edges. Then make a second mark 10mm below that (this mark will be used in step 2)
-6. Use the 3/16" Regular Drill Bit to drill a hole in the middle of the flat bar at the 12mm mark
+6. Use the 3/16" Regular Drill Bit to drill a hole in the middle of the flat bar at the 12mm mark. it's ok for this hole if it isn't perfectly centered on the flat bar but it should be as close as possible
 7. With the 3D Printed insert still seated in the tube, slide the flat bar in the slot of the insert so that the hole in the flatbar aligns with the holes for the insert. **IMPORTANT:** Make sure not to knick the insides of the acrylic tube when sliding the flatbar into it. 
 8. Secure the insert and flat bar in place with the M4 bolt and nut. Don't tighten too tight.
 9. Flip the Acrylic tube over and slide the Hole Placement Jig on the other end of the tube, making sure the Flat Bar slots into the opening in the center of the jig. Again make sure there are no gaps between the tube and the seat of the jig.
 10. Twist the jig slightly to make it so the flat bar doesn't jiggle if the tube is shaken. This will make the flat bar twist ever so slightly from one end of the tube to the other. This is necessary to prevent it from rattling.
-11. Mark the hole placements for the mounting bolt on the outside of the acrylic tube and on the flat bar
-12. Remove the jig, the mounting bolt and insert on the other end and pull out the flat bar. Again make sure not to scrape the insides of the acrylic tube.
-13. Make a second mark 10mm below the one that was just made on the flat bar (this mark will be used in step 2)
-14. Use the 5/32" or M4 PlastiDrill Bit to drill the holes in the acrylic tube
-15. Use the 3/16" Regular Drill Bit to drill a hole in the flat bar at the mark
-16. Now place both 3D printed inserts into the ends of the tube and slide the flat bar back into place. Test to make sure the M4 bolts are able to secure the inserts and flat bar on both ends of the tube.
+11. Mark the hole placements for the mounting bolt on the outside of the acrylic tube
+12. Mark the hole placement on the flat bar by drawing a vertical line using the slot in the hole placement jig. The bottom of the line will be where the second hole in the flat bar will go.
+13. Remove the jig, the mounting bolt and insert on the other end and pull out the flat bar. Again make sure not to scrape the insides of the acrylic tube.
+14. Make a second mark 10mm below the bottom of the line that was just made on the flat bar (this mark will be used in step 2)
+15. Use the 5/32" or M4 PlastiDrill Bit to drill the holes in the acrylic tube
+16. Use the 3/16" Regular Drill Bit to drill a hole in the flat bar at the mark
+17. Now place both 3D printed inserts into the ends of the tube and slide the flat bar back into place. Test to make sure the M4 bolts are able to secure the inserts and flat bar on both ends of the tube.
 
 
 
@@ -74,12 +65,14 @@
 </br>
 
 ---
-## 2. LED assembly -- 45m
+## STEP 2
+### LED assembly
+#### Estimated Build Time: 45 minutes
 ### PARTS
 1. Flat bar from previoius section
 2. 2x -- LED strip (60 LEDs per meter) cut to 34 LEDs each
-3. 2x -- JST-XHx3 cable assembly (24 awg)  -- cut wires to 8 cm
-4. 2x -- JST-XHx2 cable assembly (20 or 22 awg) -- cut wires to 4 cm
+3. 2x -- JST-XHx3 cable assembly (24 awg)
+4. 2x -- JST-XHx2 cable assembly (20 or 22 awg)
 5. 4x -- Heat shrink -- 3/8" 3:1 ratio black -- cut to 1cm
 6. Permanent double sided tape
 7. 2x -- 2.5mm wide zip ties
@@ -95,29 +88,34 @@
 
 
 ### BUILD INSTRUCTIONS
-1. Strip around 5mm of casing off of each of the wires from the 3 wire JST-XH assemblies
-2. Tin the ends of the wires
-3. Tin the pads on the ends of the LED strips with the arrow pointing away from the pads
-4. Place a piece of heat shrink over the wires of the assembly and slide down to the JST connector to keep out of the way
-5. Solder the 3 wires on each cable assembly to the LED strip. Make sure that Blue is Ground, Green is Data, and Yellow is 5V
-6. Slide the Heat shrink over the connections and use the heat gun to shrink it around them
-7. Strip around 5mm of casing off of the wires from the 2 wire JST-XH assemblies
-8. Tin the ends of the wires and the pads on the LED strip
-9. Place a piece of heat shrink over the wires of the assembly and slide down to the JST connector to keep out of the way
-10. Solder the 2 wires on each cable assembly to the LED strip. Make sure the Black wire is ground and red wire is 5V
-11. Slide the Heat shrink over the connections and use the heat gun to shrink it around them
-12. Now apply a strip of double sided tape to one side of the flat bar between the two mounting holes but don't cover the holes.
-13. Place one of the LED strips on the flat bar with equal distance from each end to each mounting hole.
-14. Flip the flat bar over and repeat steps 12 and 13 with the other strip. Make sure that the JST connector assemblies on the LED strips match on each end and that the LEDs on either side of the flat bar are lined up with eachother. smooth out any kinks in the LED strips so they are as flat as possible on the flat bar.
-15. Now place the foam wrap flat on a table or other flat surface. Place the flat bar on the edge of the foam wrap and roll it up as tightly as possible in the foam wrap.
-16. Secure the foam wrap in place with one long strip of packaging tape. Take care not to get any bubbles or creases in the tape.
+1. Cut the JST-XHx3 cable assembly wires to 8.5 cm from where they come out of the back of the JST Connector
+2. Strip around 5mm of casing off of each of the wires
+3. Tin the ends of the wires
+4. Tin the pads on the ends of the LED strips with the arrow pointing away from the pads
+5. Place a piece of heat shrink over the wires of the assembly and slide down to the JST connector to keep out of the way
+6. Solder the 3 wires on each cable assembly to the LED strip. Make sure that Blue is Ground, Green is Data, and Yellow is 5V
+7. Slide the Heat shrink over the connections and use the heat gun to shrink it around them
+8. Cut the JST-XHx2 cable assembly wires to 4.5 cm from where they come out of the back of the JST Connector cable assembly
+9. Strip around 5mm of casing off of the wires
+10. Tin the ends of the wires and the pads on the LED strip
+11. Place a piece of heat shrink over the wires of the assembly and slide down to the JST connector to keep out of the way
+12. Solder the 2 wires on each cable assembly to the LED strip. Make sure the Black wire is ground and red wire is 5V
+13. Slide the Heat shrink over the connections and use the heat gun to shrink it around them
+14. Now apply a strip of double sided tape to one side of the flat bar between the two mounting holes but don't cover the holes.
+15. Place one of the LED strips on the flat bar with equal distance from each end to each mounting hole. (the two second marks you made on the aluminum bar in STEP 1 should roughly be where the ends of the LED strip land. Roughly 10mm from the center of the mounting holes in the flat bar)
+16. Flip the flat bar over and repeat steps 12 and 13 with the other strip. Make sure that the JST connector assemblies on the LED strips match on each end and that the LEDs on either side of the flat bar are lined up with eachother. smooth out any kinks in the LED strips so they are as flat as possible on the flat bar.
+17. Now place the foam wrap flat on a table or other flat surface. Place the flat bar on the edge of the foam wrap and roll it up as tightly as possible in the foam wrap.
+18. Secure the foam wrap in place with one long strip of packaging tape. Take care not to get any bubbles or creases in the tape.
 
 
 </br>
 </br>
 
 ---
-## 3. Bottom Insert, On/Off switch and PCB2 - 45m
+## STEP 3
+### Bottom Insert, On/Off switch and PCB2
+#### Estimated Build Time: 45 minutes
+
 ### PARTS
 1. Bottom Insert
 2. 3x -- M4 Thin Square Nut
@@ -163,7 +161,10 @@
 </br>
 
 ---
-## 4. Assemble Acrylic Tube, Top/Bottom Inserts and Flat Bar/LED assembly - 10m
+## STEP 4
+### Assemble Acrylic Tube, Top/Bottom Inserts and Flat Bar/LED assembly
+#### Estimated Build Time: 10 minutes
+
 ### PARTS
 1. Acrylic Tube
 2. Top Insert
@@ -191,17 +192,20 @@
 </br>
 
 ---
+## STEP 5
+### PCB3 and Handle assembly
+#### Estimated Build Time: 20 minutes
 
-## 5. PCB3 and Handle assembly -- 20m
 ### PARTS
-1. Acrylic Tube with LEDs Assembly and M4 x 55mm bolt from Step 4
-2. 1x -- M4 Hex Nut
-3. D-Ring
-4. M4 x 55mm Bolt 
-5. 3x -- M4 x 16mm bolts from step 3
-6. PCB3
+1. 3D Printed Handle -- [Handle 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP2-Handle/V2p2--M4--handle_135.stl)
+2. Acrylic Tube with LEDs Assembly and M4 x 55mm bolt from Step 4
+3. 1x -- M4 Hex Nut
+4. D-Ring
+5. M4 x 55mm Bolt 
+6. 3x -- M4 x 16mm bolts from step 3
+7. PCB3
    1. 1x - Molex Vertical Male with BMI
-7. 3x - No6 x 1/4" thread cutting screws
+8. 3x - No6 x 1/4" thread cutting screws
 
 
 ### TOOLS
@@ -229,12 +233,17 @@
 </br>
 
 ---
-## 6. PCB4 and Power Shim Case assembly - 10m
+## STEP 6
+### PCB4 and Power Shim Case assembly
+#### Estimated Build Time: 10 minutes
+
 ### PARTS
 1. PCB4
    1. USB Plug
    2. MicroFit R/A 2x2 Female Header
 2. 2x 3D Printed Power Shim Case Pieces
+   -- [TOP Power Shim Case Piece 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP3-SmallComponents/V2p2--powerShimCase_top_123.stl)
+   -- [BOTTOM Power Shim Case Piece 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP3-SmallComponents/V2p2--powerShimCase_bottom_123.stl)
 
 ### TOOLS
 * **Soldering Iron**
@@ -252,7 +261,10 @@
 </br>
 
 ---
-## 7. PCB1 and Blinky Tape - 20m
+## STEP 7
+### PCB1 and Blinky Tape
+#### Estimated Build Time: 20 minutes
+
 ### PARTS
 1. PCB1
    1. 2x - Buttons
@@ -296,9 +308,12 @@
 </br>
 
 ---
-## 8. Top PCB Cover final assembly - 5m
+## STEP 8
+### Top Cover and PCB1 final assembly
+#### Estimated Build Time: 5 minutes
+
 ### PARTS
-1. Top Cover (and cap if it has one)
+1. 3D Printed Top Cover -- [Top Cover 3D Model](https://github.com/EfficiencyJunky/LEDLightSticks/blob/main/ENCLOSURE/3D_MODELS/V2p2/Lights_M4/STEP4-TopCover/V2p2--M4--TopCover_COMPLETE_133.stl)
 2. 1x - 4M Hex Nut
 3. 1x - 4M x 55mm Bolt
 4. 1x - D-Ring

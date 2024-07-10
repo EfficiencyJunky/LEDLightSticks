@@ -1,14 +1,14 @@
-/*-------------------------------------------------------------------------------------------------------*
- *                          GRADIENT PALETTES                                                            *
- * Below are a handful of Gradient Palettes that make it easier to apply a range of colors               *
- *        to an animation without changing the animation itself                                          *
- * A great resource on creating color palettes here: https://www.youtube.com/watch?v=Ukq0tH2Tnkc         *
- * Here's a great website for creating palettes (multiply position by 2.55): https://cssgradient.io/     *
- * Another great site for creating palettes: https://coolors.co/gradient-palette/f44369-3e3b92?number=7  *
- * Or find a pallete someone else has made here: http://soliton.vm.bytemark.co.uk/pub/cpt-city/          *
- * In order to use CPT-City you'll need to use the PaletteKnife Bookmarklet                              *
- * Get the Bookmarklet here: http://fastled.io/tools/paletteknife/                                       *
- *-------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------------*
+ *                          GRADIENT PALETTES                                                                   *
+ * Below are a handful of Gradient Palettes that make it easier to apply a range of colors                      *
+ *        to an animation without changing the animation itself                                                 *
+ * A great resource on creating color palettes here: https://www.youtube.com/watch?v=Ukq0tH2Tnkc                *
+ * Here's a great website for creating palettes (multiply position by 2.55): https://cssgradient.io/  USE THIS  *
+ * Another great site for creating palettes: https://coolors.co/gradient-palette/f44369-3e3b92?number=7         *
+ * Or find a pallete someone else has made here: http://soliton.vm.bytemark.co.uk/pub/cpt-city/                 *
+ * In order to use CPT-City you'll need to use the PaletteKnife Bookmarklet                                     *
+ * Get the Bookmarklet here: http://fastled.io/tools/paletteknife/                                              *
+ *--------------------------------------------------------------------------------------------------------------*/
 
 #ifndef GradientPalettes_h
 #define GradientPalettes_h
@@ -734,6 +734,58 @@ DEFINE_GRADIENT_PALETTE( tricias_Fairy_Wings_gp ) {
   255,  247, 37, 133 // wrapping around
   // 255,  76, 201, 240  // NOT wrapping around
 };
+
+
+
+// **********************************************************
+//      VIRTUAL RIOT GRADIENT PALETTES
+// **********************************************************
+DEFINE_GRADIENT_PALETTE( tk_vr_headset_01_gp ) {
+    0,  0,    255,  255,
+//   16,  125,    0,  131,
+//   32,  103,    0,  153,
+//   48,   83,    0,  172,
+//   64,   61,    0,  194,
+//   80,   40,    0,  215,
+    84,   141,    0,  255,
+//   96,   18,    0,  237,
+  // 112,    0,    6,  250,
+//  128,    0,   49,  207,
+//  144,    0,   91,  165,
+  // 160,    0,  134,  122,
+    168,  173,     6,  172,
+//  176,    0,  172,   83,
+//  192,    0,  194,   61,
+  // 208,    0,  215,   40,
+//  224,    0,  237,   18,
+  // 240,    0,  255,    0,
+  255,  0,    255,  255,
+};
+
+DEFINE_GRADIENT_PALETTE( tk_vr_headset_02_gp ) {
+    0,  0,    255,  255,
+//   16,  125,    0,  131,
+//   32,  103,    0,  153,
+//   48,   83,    0,  172,
+//   64,   61,    0,  194,
+//   80,   40,    0,  215,
+    110,   141,    0,  255,
+//   96,   18,    0,  237,
+  // 112,    0,    6,  250,
+//  128,    0,   49,  207,
+//  144,    0,   91,  165,
+  // 160,    0,  134,  122,
+    206,  255,    0,  255,
+//  176,    0,  172,   83,
+//  192,    0,  194,   61,
+  // 208,    0,  215,   40,
+//  224,    0,  237,   18,
+  // 250,    173,     6,  172,
+  255,     0,    255,  255,
+};
+
+
+
 
 
 

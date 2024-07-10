@@ -34,75 +34,119 @@
 
 #include "LEDStripController.h"
 #include "GradientPalettes.h"
+#include "HardwareDefinitions.h"
 
 // **********************************************************
 //      STATIC MEMBER DEFINITIONS
 // **********************************************************
-//******* ORDER OF ANIMATIONS ********
-// this is how we set the order in which animations actually appear
-const Animations LEDStripController::animationsToUse[] = {
-                                                            // A_RAINBOW,
-                                                            // A_RAINBOW_GLITTER,
-                                                            A_PALETTE,
-                                                            A_PALETTE_GLITTER,
-                                                            // A_BPM,
-                                                            A_CONFETTI,
-                                                            A_SINELON,
-                                                            A_SINELON_DUAL,
-                                                            A_JUGGLE,
-                                                            A_PRIDE,
-                                                            A_COLORWAVES,
-                                                            A_FIRE,
-                                                            A_CYCLE_ALL,
-                                                            A_SOLID_COLOR,
-                                                            // A_PRIDE_GLITTER
-                                                            // A_DEVIN_ANIMATION,
-                                                        };
 
 
-//******* ORDER OF COLOR PALETTES ********
-// ARRAY OF GRADIENT PALETTES FOR ALL OUR USUAL ANIMATIONS
-const TProgmemRGBGradientPalettePtr LEDStripController::COLOR_PALETTES[] = {
-                                                                tk_Rainbow_gp,
-                                                                tk_Peacock_Colors_gp,
-                                                                Analogous_1_gp,
-                                                                tk_Fire_Multi_Pink_gp,
-                                                                Sunset_Real_gp,
-                                                                tk_Party_gp,
-                                                                rainbowsherbet_gp,
-                                                                ib_jul01_gp,
-                                                                tricias_Fairy_Fire_gp,
-                                                                tricias_Fairy_Wings_gp
+
+// ********* THE 3 DATA STRUCTURES BELOW ARE THE CODE FOR THE CURRENT VERSION OF THE VR HEADSET ******
+#if defined(__VR_HEADSET__)
+    //******* ORDER OF ANIMATIONS ********
+    // this is how we set the order in which animations actually appear
+    const Animations LEDStripController::animationsToUse[] = {
+                                                                A_PALETTE,
+                                                                A_PALETTE_GLITTER,
+                                                                A_CONFETTI,
+                                                                A_COLORWAVES,
+                                                                A_VR_ANIMATION_01,
+                                                                A_VR_ANIMATION_02,
+                                                                A_VR_ANIMATION_03,
                                                             };
 
 
+    //******* ORDER OF COLOR PALETTES ********
+    // ARRAY OF GRADIENT PALETTES FOR ALL OUR USUAL ANIMATIONS
+    const TProgmemRGBGradientPalettePtr LEDStripController::COLOR_PALETTES[] = {
+                                                                    tk_vr_headset_01_gp
+                                                                };
 
-// ARRAY OF ALL GRADIENT PALETTES FOR COLORWAVE ANIMATION
-const TProgmemRGBGradientPalettePtr LEDStripController::CW_PALETTES[] = {    
-    es_autumn_19_gp,
-    es_emerald_dragon_08_gp,
-    es_landscape_64_gp,
-    es_landscape_33_gp,
-    Blue_Cyan_Yellow_gp,
-    Coral_reef_gp,
-    gr65_hult_gp,
-    ib15_gp,
-    Analogous_1_gp,
-    tricias_Fairy_Wings_gp,
-    es_pinksplash_07_gp,
-    rgi_15_gp,
-    
-    // here's all the color palettes from the normal COLOR_PALETTES array
-    // tk_Rainbow_gp,
-    tk_Peacock_Colors_gp,
-    tk_Fire_Multi_Pink_gp,
-    Sunset_Real_gp,
-    tk_Party_gp,
-    rainbowsherbet_gp,
-    ib_jul01_gp,
-    tricias_Fairy_Fire_gp,
-    tricias_Fairy_Wings_gp    
-};
+
+
+    // ARRAY OF ALL GRADIENT PALETTES FOR COLORWAVE ANIMATION
+    const TProgmemRGBGradientPalettePtr LEDStripController::CW_PALETTES[] = {    
+        tk_vr_headset_02_gp 
+    };
+
+
+
+#else
+
+    // ********* THE 3 DATA STRUCTURES BELOW ARE THE CODE FOR THE CURRENT VERSION OF THE LED LIGHT STICKS ******
+
+    //******* ORDER OF ANIMATIONS ********
+    // this is how we set the order in which animations actually appear
+    const Animations LEDStripController::animationsToUse[] = {
+                                                                // A_RAINBOW,
+                                                                // A_RAINBOW_GLITTER,
+                                                                A_PALETTE,
+                                                                A_PALETTE_GLITTER,
+                                                                // A_BPM,
+                                                                A_CONFETTI,
+                                                                A_SINELON,
+                                                                A_SINELON_DUAL,
+                                                                A_JUGGLE,
+                                                                A_PRIDE,
+                                                                A_COLORWAVES,
+                                                                A_FIRE,
+                                                                A_CYCLE_ALL,
+                                                                A_SOLID_COLOR,
+                                                                // A_PRIDE_GLITTER
+                                                                // A_DEVIN_ANIMATION,
+                                                            };
+
+
+    //******* ORDER OF COLOR PALETTES ********
+    // ARRAY OF GRADIENT PALETTES FOR ALL OUR USUAL ANIMATIONS
+    const TProgmemRGBGradientPalettePtr LEDStripController::COLOR_PALETTES[] = {
+                                                                    tk_Rainbow_gp,
+                                                                    tk_Peacock_Colors_gp,
+                                                                    Analogous_1_gp,
+                                                                    tk_Fire_Multi_Pink_gp,
+                                                                    Sunset_Real_gp,
+                                                                    tk_Party_gp,
+                                                                    rainbowsherbet_gp,
+                                                                    ib_jul01_gp,
+                                                                    tricias_Fairy_Fire_gp,
+                                                                    tricias_Fairy_Wings_gp
+                                                                };
+
+
+    // ARRAY OF ALL GRADIENT PALETTES FOR COLORWAVE ANIMATION
+    const TProgmemRGBGradientPalettePtr LEDStripController::CW_PALETTES[] = {    
+        es_autumn_19_gp,
+        es_emerald_dragon_08_gp,
+        es_landscape_64_gp,
+        es_landscape_33_gp,
+        Blue_Cyan_Yellow_gp,
+        Coral_reef_gp,
+        gr65_hult_gp,
+        ib15_gp,
+        Analogous_1_gp,
+        tricias_Fairy_Wings_gp,
+        es_pinksplash_07_gp,
+        rgi_15_gp,
+        
+        // here's all the color palettes from the normal COLOR_PALETTES array
+        // tk_Rainbow_gp,
+        tk_Peacock_Colors_gp,
+        tk_Fire_Multi_Pink_gp,
+        Sunset_Real_gp,
+        tk_Party_gp,
+        rainbowsherbet_gp,
+        ib_jul01_gp,
+        tricias_Fairy_Fire_gp,
+        tricias_Fairy_Wings_gp    
+    };
+
+#endif
+
+
+
+
+
 
 
 
@@ -233,9 +277,9 @@ LEDStripController::LEDStripController( CRGB *leds,
     d_lfos = new LFO[_stripLength];
 
     for(uint16_t i=0; i < _stripLength; i++){
-        d_lfos[i].rate = random8(13, 40);
-        d_lfos[i].minb = random8(2, 20);
-        d_lfos[i].maxb = random8(100, 255);
+        d_lfos[i].rate = random8(13, 25);
+        d_lfos[i].minb = random8(40, 80);
+        d_lfos[i].maxb = random8(150, 255);
     }
 
     // we don't care about saving the cycleAnimation index so we just always start at 0
@@ -289,6 +333,9 @@ LEDStripController::LEDStripController( CRGB *leds,
     _animationFunctions[A_PRIDE]            = &LEDStripController::pride;
     _animationFunctions[A_PRIDE_GLITTER]    = &LEDStripController::prideWithGlitter;
     _animationFunctions[A_DEVIN_ANIMATION]  = &LEDStripController::devinAnimation;
+    _animationFunctions[A_VR_ANIMATION_01]  = &LEDStripController::vrAnimation01;
+    _animationFunctions[A_VR_ANIMATION_02]  = &LEDStripController::vrAnimation02;
+    _animationFunctions[A_VR_ANIMATION_03]  = &LEDStripController::vrAnimation03;
 
 }
 
@@ -1125,8 +1172,6 @@ void LEDStripController::gradientPalettesTest(){
 
 
 
-
-// ABRACADABRA
 // a re-creation of Devin Smith's LFO animation
 void LEDStripController::devinAnimation(){
 
@@ -1176,6 +1221,64 @@ void LEDStripController::devinAnimation(){
 
 
 }
+
+
+
+void LEDStripController::vrAnimation01(){
+//   static uint8_t startindex = 0;
+//   startindex--;
+
+    fill_palette( _leds, _stripLength, getHueIndex(_bpm), (256 / _stripLength) + 1, _colorPalette, _brightness, LINEARBLEND);
+    // fill_palette( _leds, _stripLength, getHueIndex(_bpm), (256 / _stripLength) + 1, _gradientTestPalette, 255, LINEARBLEND);
+    //fill_palette( _leds, _stripLength, getHueIndex(_bpm), (256 / _stripLength) + 1, _gradientTestPalette, 255, LINEARBLEND);
+}
+
+
+
+// a re-creation of Devin Smith's LFO animation adapted for the VR Headset
+// this spreads the whole palette across the entire strip
+void LEDStripController::vrAnimation02() {
+  
+    ms_uint32 = millis();
+
+    uint8_t brightness;
+
+    uint8_t hueIndex = (beatsin8(2, 1, 255) * beatsin8(2, 10, 50)) / 50;
+
+    for(uint16_t i=0; i < _stripLength; i++){
+        
+        brightness = beatsin8(d_lfos[i].rate * (stg.speedLevel+1), d_lfos[i].minb, d_lfos[i].maxb );
+
+        _leds[i] = ColorFromPalette( cw_Palette, i * (256 / _stripLength) + hueIndex, scale8(brightness, _brightness));
+        // _leds[i] = ColorFromPalette( cw_Palette, hueIndex, scale8(brightness, _brightness));
+
+    }
+
+}
+
+
+
+// a re-creation of Devin Smith's LFO animation adapted for the VR Headset 
+// this one uses the same color for the entire strip
+void LEDStripController::vrAnimation03() {
+  
+    ms_uint32 = millis();
+
+    uint8_t brightness;
+
+    uint8_t hueIndex = (beatsin8(2, 1, 255) * beatsin8(2, 10, 50)) / 50;
+
+    for(uint16_t i=0; i < _stripLength; i++){
+        
+        brightness = beatsin8(d_lfos[i].rate * (stg.speedLevel+1), d_lfos[i].minb, d_lfos[i].maxb );
+
+        // _leds[i] = ColorFromPalette( cw_Palette, i * (256 / _stripLength) + hueIndex, scale8(brightness, _brightness));
+        _leds[i] = ColorFromPalette( cw_Palette, hueIndex, scale8(brightness, _brightness));
+
+    }
+
+}
+
 
 
 
@@ -1255,7 +1358,11 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
         {   
             // this is the palette we will actually be modifying so we null it out
             // which causes a nice "materializing" effect to start out
-            cw_Palette = CRGBPalette16( CRGB::Black );
+            #if defined(__VR_HEADSET__)
+                cw_Palette = CW_PALETTES[ cw_PaletteIndex ];
+            #else
+                cw_Palette = CRGBPalette16( CRGB::Black );
+            #endif
 
             // this is the palette we will use as a target palette
             _colorPalette = CW_PALETTES[ cw_PaletteIndex ];
@@ -1295,6 +1402,28 @@ void LEDStripController::initializeAnimation(Animations animationToInitialize){
             _maxBPM = NORMAL_HUE_INDEX_BPM * NUM_SPEED_LEVELS;
             break;
         }
+        case A_VR_ANIMATION_01:
+        {
+            _minBPM = VR_HUE_INDEX_BPM;
+            // _maxBPM = VR_HUE_INDEX_BPM * NUM_SPEED_LEVELS;
+            _maxBPM = VR_HUE_INDEX_BPM;
+            break;
+        }
+        case A_VR_ANIMATION_02:
+        case A_VR_ANIMATION_03:
+        {
+
+            // cw_Palette = CRGBPalette16( CRGB::Black );
+            cw_Palette = CW_PALETTES[ d_PaletteIndex ];
+            _colorPalette = CW_PALETTES[ d_PaletteIndex ];
+            cw_timeToChangePalette = ms_uint32 + DEVIN_PALETTE_CHANGE_INTERVAL;
+            cw_timeToBlendPalettes = ms_uint32 + 40;
+
+            _minBPM = VR_HUE_INDEX_BPM;
+            _maxBPM = VR_HUE_INDEX_BPM * NUM_SPEED_LEVELS;
+            // _maxBPM = VR_HUE_INDEX_BPM;
+            break;
+        }        
         default:
         {
             break;

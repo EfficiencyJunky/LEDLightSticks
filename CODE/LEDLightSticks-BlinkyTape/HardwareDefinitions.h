@@ -18,6 +18,8 @@
 // #define EXTRA_PIN_B   11
 // Usecase examples in the official Github Repo can be found here: https://github.com/Blinkinlabs/BlinkyTape_Arduino/blob/2.1.0/examples/ColorSwirl/ColorSwirl.ino
 
+#define __VR_HEADSET__
+
 
 #define __BLINKY_TAPE_TWO_BUTTON__
 // #define __BLINKY_TAPE_ONE_BUTTON__
@@ -32,9 +34,15 @@
     
     // LED STRIP DEFINITIONS
     #define LEDS_01_PIN 13          // has PWM
-    #define LEDS_01_NUM_LEDS 34
     #define LEDS_02_PIN 9         // same as A9 and has PWM
-    #define LEDS_02_NUM_LEDS 34
+
+    #if defined(__VR_HEADSET__)
+        #define LEDS_01_NUM_LEDS 16 // for VR Headset
+        #define LEDS_02_NUM_LEDS 16 // for VR Headset
+    #else
+        #define LEDS_01_NUM_LEDS 34 // for LED Light Sticks
+        #define LEDS_02_NUM_LEDS 34 // for LED Light Sticks
+    #endif
 
     // BUTTON DEFINITIONS
     #define EXT_PRIMARY_BUTTON_PIN  11   // has PWM

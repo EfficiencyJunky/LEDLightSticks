@@ -118,6 +118,9 @@ enum Animations {
                     A_PRIDE,
                     A_PRIDE_GLITTER,
                     A_DEVIN_ANIMATION,
+                    A_VR_ANIMATION_01,
+                    A_VR_ANIMATION_02,
+                    A_VR_ANIMATION_03,
                     TOTAL_AVAILABLE_ANIMATIONS
                 };
 
@@ -159,6 +162,7 @@ enum Animations {
 #define SINELON_PIXEL_INDEX_BPM_MAX   13 * NUM_SPEED_LEVELS
 #define JUGGLE_PIXEL_INDEX_BPM_ADD    -6
 
+#define VR_HUE_INDEX_BPM 8
 
 
 // our base address is where we are starting our storage of settings
@@ -360,6 +364,9 @@ class LEDStripController
         void pride();
         void prideWithGlitter();
         void devinAnimation();
+        void vrAnimation01();
+        void vrAnimation02();
+        void vrAnimation03();
         void gradientPalettesTest();
 
 
